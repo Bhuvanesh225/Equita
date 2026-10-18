@@ -1,0 +1,56 @@
+ASSETS · "students working together classroom" · licences cc0, pd, by, by-sa · at least 1000px wide · image URLs 1920px wide where the source can size them · every image checked
+
+## Openverse: could not search it (no answer within 30 s)
+
+## Wikimedia Commons: 5 shown (dropped: 5 more with the same title)
+archival photographs, old maps, scans of prints and books, places as they look now
+
+commons:38900798  The headteacher bringing Syrian refugees and Jordanian students together (16315504668) (2014-10-23)
+  about    Lina is the headteacher in a girls' school in Zaatari village, just outside the Zaatari camp for Syrian refugees in northern Jordan. With funding fro…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/The_headteacher_bringing_Syrian_refugees_and_Jordanian_students_together_%2816315504668%29.jpg/1920px-The_headteacher_bringing_Syrian_refugees_and_Jordanian_students_together_%2816315504668%29.jpg
+  size     1920 × 1280, 366 KB; largest 5760 × 3840; landscape
+  page     https://commons.wikimedia.org/wiki/File:The_headteacher_bringing_Syrian_refugees_and_Jordanian_students_together_(16315504668).jpg
+  licence  CC BY 2.0 (https://creativecommons.org/licenses/by/2.0); credit required
+  credit   "The headteacher bringing Syrian refugees and Jordanian students together (16315504668)" by DFID - UK Department for International Development, CC BY 2.0, via Wikimedia Commons
+
+commons:163050357  Creston National Fish Hatchey Outdoor Classroom Project (8024279453) (Taken on 2 August 2012, 23:01…)
+  about    Montana Tribal Youth Conservation Corps (YCC) Nature Explore Outdoor Classroom Project, a collaborative project of Arbor Day Foundation and Dimension…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Creston_National_Fish_Hatchey_Outdoor_Classroom_Project_%288024279453%29.jpg/1920px-Creston_National_Fish_Hatchey_Outdoor_Classroom_Project_%288024279453%29.jpg
+  size     1920 × 1289, 899 KB; largest 2896 × 1944; landscape
+  page     https://commons.wikimedia.org/wiki/File:Creston_National_Fish_Hatchey_Outdoor_Classroom_Project_(8024279453).jpg
+  licence  public domain (https://creativecommons.org/publicdomain/mark/1.0/); no credit required, credit anyway
+  credit   "Creston National Fish Hatchey Outdoor Classroom Project (8024279453)" by USFWS Mountain Prairie, public domain, via Wikimedia Commons
+
+commons:39462028  Balikatan 2008 DVIDS98280 (2008-02-26)
+  about    Adm. Timothy J. Keating, commander of U.S. Pacific Command, compares flags with Maragondon National High School students during a tour of civil milit…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Balikatan_2008_DVIDS98280.jpg/1920px-Balikatan_2008_DVIDS98280.jpg
+  size     1920 × 1526, 534 KB; largest 3225 × 2563; landscape
+  page     https://commons.wikimedia.org/wiki/File:Balikatan_2008_DVIDS98280.jpg
+  licence  public domain (https://creativecommons.org/publicdomain/mark/1.0/); no credit required, credit anyway
+  credit   "Balikatan 2008 DVIDS98280", public domain, via Wikimedia Commons
+
+commons:165995013  BLM women in wildfire 2019 (49060482408) (Taken on 13 November 2019, 14…)
+  about    A video of trainees posing together with their shovels. Students at the second annual Women in Wildland Fire Boot Camp conduct live burning exercises…
+  image    https://upload.wikimedia.org/wikipedia/commons/5/53/BLM_women_in_wildfire_2019_%2849060482408%29.jpg
+  size     1920 × 1080, 474 KB; landscape
+  page     https://commons.wikimedia.org/wiki/File:BLM_women_in_wildfire_2019_(49060482408).jpg
+  licence  public domain (https://creativecommons.org/publicdomain/mark/1.0/); no credit required, credit anyway
+  credit   "BLM women in wildfire 2019 (49060482408)" by BLM Oregon & Washington, public domain, via Wikimedia Commons
+
+commons:177209762  Csenki-Relief, Petőfistrasse 40, 2025 Püspökladány (Taken in August 2025)
+  about    Imre Csenki Elementary Art School. The L-shaped groundfloor gable school building is the headquarters of the Imre Csenki Elementary Art School instit…
+  image    https://upload.wikimedia.org/wikipedia/commons/4/48/Csenki-Relief%2C_Pet%C5%91fistrasse_40%2C_2025_P%C3%BCsp%C3%B6klad%C3%A1ny.jpg
+  size     1081 × 1583, 280 KB; portrait
+  page     https://commons.wikimedia.org/wiki/File:Csenki-Relief,_Pet%C5%91fistrasse_40,_2025_P%C3%BCsp%C3%B6klad%C3%A1ny.jpg
+  licence  CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0); credit required
+  credit   "Csenki-Relief, Petőfistrasse 40, 2025 Püspökladány" by Globetrotter19, CC BY-SA 4.0, via Wikimedia Commons
+  note     Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence.
+
+## Art Institute of Chicago: nothing usable
+
+## The Metropolitan Museum of Art: nothing usable
+
+Next. Look before you choose: --get downloads into the project and records the credit; open the file to see it.
+  node C:/Users/pusap/.pi/agent/skills/taste-skill/scripts/assets.mjs --get <ref>[,<ref>...]
+  node C:/Users/pusap/.pi/agent/skills/taste-skill/scripts/assets.mjs --credits     the footer credit line and the list for your report
+These pictures show the subject's world. Never present one as the client's own product, room, dish, person or team.

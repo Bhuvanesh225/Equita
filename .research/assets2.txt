@@ -1,0 +1,58 @@
+ASSETS · "students lecture hall studying group" · licences cc0, pd, by, by-sa · at least 1000px wide · image URLs 1920px wide where the source can size them · every image checked
+
+## Openverse: nothing usable
+
+## Wikimedia Commons: 5 shown
+archival photographs, old maps, scans of prints and books, places as they look now
+
+commons:21369523  Defense.gov photo essay 080421-D-7203C-014 (Taken on 21 April 2008)
+  about    Defense Secretary Robert M. Gates speaks to a group of 84 senior cadets majoring in Advanced National Security Studies at the United States Military…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Defense.gov_photo_essay_080421-D-7203C-014.jpg/1920px-Defense.gov_photo_essay_080421-D-7203C-014.jpg
+  size     1920 × 1305, 548 KB; largest 3989 × 2712; landscape
+  page     https://commons.wikimedia.org/wiki/File:Defense.gov_photo_essay_080421-D-7203C-014.jpg
+  licence  public domain (https://creativecommons.org/publicdomain/mark/1.0/); no credit required, credit anyway
+  credit   "Defense.gov photo essay 080421-D-7203C-014" by Cherie Cullen, public domain, via Wikimedia Commons
+
+commons:44114769  The oist (1922) (14565256198) (1922)
+  about    Identifier : oist39albi ( find matches ) Title : The oist Year : 1886 ( 1880s ) Authors : Subjects : Birds Publisher : Albion, N.Y. : Frank H. Lattin…
+  image    https://upload.wikimedia.org/wikipedia/commons/f/f4/The_oist_%281922%29_%2814565256198%29.jpg
+  size     1904 × 1944, 513 KB; square
+  page     https://commons.wikimedia.org/wiki/File:The_oist_(1922)_(14565256198).jpg
+  licence  no known copyright restrictions (https://www.flickr.com/commons/usage/); no credit required, credit anyway
+  credit   "The oist (1922) (14565256198)" by Internet Archive Book Images, no known copyright restrictions, via Wikimedia Commons
+  note     Not a formal licence: the archive that published it states it knows of no copyright restrictions.
+
+commons:43753506  Course catalog (1974) (14577484449) (1974)
+  about    Identifier : coursecatalog7475nort ( find matches ) Title : (Course catalog) Year : 1909 ( 1900s ) Authors : Northeastern University (Boston, Mass.)…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Course_catalog_%281974%29_%2814577484449%29.jpg/1920px-Course_catalog_%281974%29_%2814577484449%29.jpg
+  size     1920 × 1827, 1.4 MB; largest 2308 × 2196; square
+  page     https://commons.wikimedia.org/wiki/File:Course_catalog_(1974)_(14577484449).jpg
+  licence  no known copyright restrictions (https://www.flickr.com/commons/usage/); no credit required, credit anyway
+  credit   "Course catalog (1974) (14577484449)" by Internet Archive Book Images, no known copyright restrictions, via Wikimedia Commons
+  note     Not a formal licence: the archive that published it states it knows of no copyright restrictions.
+
+commons:107332386  The Chicago Sunday Bee About Books 13 Oct. 1946 (1946-10-13)
+  about    About Books __Edited by E. R. CAMPFIELD...— America Belatedly Discovers Upton Sinclair’s Greatness A WORLD TO WIN By Upton Sinclair Viking, $3.75 Sep…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/The_Chicago_Sunday_Bee_About_Books_13_Oct._1946.jpg/1920px-The_Chicago_Sunday_Bee_About_Books_13_Oct._1946.jpg
+  size     1920 × 2794, 1.6 MB; largest 4681 × 6812; portrait
+  page     https://commons.wikimedia.org/wiki/File:The_Chicago_Sunday_Bee_About_Books_13_Oct._1946.jpg
+  licence  CC0 (https://creativecommons.org/publicdomain/zero/1.0/deed.en); no credit required, credit anyway
+  credit   "The Chicago Sunday Bee About Books 13 Oct. 1946" by The Chicago Bee, Edited by E. R. CAMPFIELD, CC0, via Wikimedia Commons
+
+commons:43538820  The past, present and future of the Yale University School of Medicine and affiliated clinical inst… (1922)
+  about    Identifier : 26831530R.nlm.nih.gov Title : The past, present & future of the Yale University School of Medicine and affiliated clinical institutions…
+  image    https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/The_past%2C_present_and_future_of_the_Yale_University_School_of_Medicine_and_affiliated_clinical_institutions_-_including_the_New_Haven_Hospital%2C_the_New_Haven_Dispensary%2C_the_Connecticut_Training_%2814778218264%29.jpg/1920px-thumbnail.jpg
+  size     1920 × 1460, 496 KB; largest 2186 × 1662; landscape
+  page     https://commons.wikimedia.org/wiki/File:The_past,_present_and_future_of_the_Yale_University_School_of_Medicine_and_affiliated_clinical_institutions_-_including_the_New_Haven_Hospital,_the_New_Haven_Dispensary,_the_Connecticut_Training_(14778218264).jpg
+  licence  no known copyright restrictions (https://www.flickr.com/commons/usage/); no credit required, credit anyway
+  credit   "The past, present and future of the Yale University School of Medicine and affiliated cli…" by Internet Archive Book Images, no known copyright restrictions, via Wikimedia Commons
+  note     Not a formal licence: the archive that published it states it knows of no copyright restrictions.
+
+## Art Institute of Chicago: nothing usable
+
+## The Metropolitan Museum of Art: nothing usable
+
+Next. Look before you choose: --get downloads into the project and records the credit; open the file to see it.
+  node C:/Users/pusap/.pi/agent/skills/taste-skill/scripts/assets.mjs --get <ref>[,<ref>...]
+  node C:/Users/pusap/.pi/agent/skills/taste-skill/scripts/assets.mjs --credits     the footer credit line and the list for your report
+These pictures show the subject's world. Never present one as the client's own product, room, dish, person or team.

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Equita — group work, shared evenly</title>
+    <meta
+      name="description"
+      content="Equita matches project tasks to what each student is good at, keeps the hours even between them, and shows a teacher who is carrying the group. Works for a team of friends or a whole class."
+    />
+    <meta name="theme-color" content="#FBFAF8" />
+    <meta name="color-scheme" content="light" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Equita — group work, shared evenly" />
+    <meta
+      property="og:description"
+      content="Tasks matched to skills, hours kept even, and the whole class visible to the teacher."
+    />
+    <meta property="og:site_name" content="Equita" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Equita — group work, shared evenly" />
+    <meta
+      name="twitter:description"
+      content="Tasks matched to skills, hours kept even, and the whole class visible to the teacher."
+    />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Set before first paint so a returning visitor gets their saved scheme and
+      // nobody sees a flash of the wrong one.
+      (function () {
+        try {
+          var stored = localStorage.getItem("equita.scheme");
+          var scheme = stored || "paper";
+          document.documentElement.dataset.scheme = scheme;
+          if (localStorage.getItem("equita.contrast") === "more") {
+            document.documentElement.dataset.contrast = "more";
+          }
+        } catch (e) {
+          document.documentElement.dataset.scheme = "paper";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="padding: 40px; font: 16px/1.6 system-ui, sans-serif">
+        <h1 style="font-size: 24px">Equita needs JavaScript</h1>
+        <p>This app is a live board and dashboard, so it cannot run without it.</p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "Equita — group work, split fairly",
+  "short_name": "Equita",
+  "description": "Plans student project work in hours, places each task with the person who can do it, and shows the group when the split has tipped.",
+  "start_url": "/today",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBFAF8",
+  "theme_color": "#14171A",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

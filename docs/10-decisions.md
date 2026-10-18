@@ -1,0 +1,198 @@
+# 10 — Decisions
+
+A log of decisions that a reasonable person would otherwise re-litigate. Each entry says what
+was decided, why, and what would have to change for the decision to be wrong. **Add an entry
+when you make a choice the next agent would question.**
+
+---
+
+## D-01 · The plan and the allocation are two-step (locked)
+
+`POST /plan` and `POST /assign/auto` return a proposal and write nothing. A second explicit
+call applies it. `src/routes/project/Plan.tsx` implements both flows this way.
+
+**Why.** Nobody should ever discover that pressing a button re-wrote their board. The plan's
+own file comment says it: "Nobody should ever discover that pressing a button re-wrote their
+board."
+
+**Would change if** the product were a background service that acts on your behalf. It is not.
+
+---
+
+## D-02 · One call per screen, not one call per panel
+
+`GET /api/projects/:id` returns the project, its tasks, equity, history, activity, comments,
+check-ins, reviews, nudges, insight demand and the viewer's capabilities. The workspace
+renders from that alone.
+
+**Why.** One definition of what a project looks like, no chance of two panels disagreeing,
+and the live channel only needs to refetch one URL. `server/routes/projects.js` states this
+explicitly.
+
+**Consequence for new screens:** if a new screen needs project data, reuse
+`GET /api/projects/:id` rather than adding a narrower endpoint. It is cheaper to render less
+than to maintain a second shape.
+
+---
+
+## D-03 · The live channel refetches, it does not diff
+
+A server event bumps a version; every `useApi` with `live: true` refetches its whole resource
+after a 180 ms coalesce. See `src/lib/live.tsx`.
+
+**Why.** Applying diffs in the browser is where live boards start disagreeing with the
+server, and that class of bug is invisible until it is expensive. One small request is the
+cheaper trade.
+
+**Would change if** a payload became large enough for a refetch to be noticeable. Not true at
+this size (the workspace is ~64 kB of gzip'd JS and a few tens of kB of JSON).
+
+---
+
+## D-04 · Reviews go to the teacher, not the reviewee
+
+`POST /api/projects/:id/reviews` writes a review that the subject does not read; the
+aggregated reading is teacher-only (`GET /reviews/summary`, `403` for students).
+
+**Why.** This is the design decision that makes peers honest: a review written to be read by
+the person you are reviewing is a compliment, not a signal.
+
+**Would change if** the product stopped being used in classrooms.
+
+---
+
+## D-05 · Board lanes are people, not statuses
+
+`TaskBoard` has one lane per member plus a "Nobody" lane. Status is a property of the card
+(`StatusTag`), not the column.
+
+**Why.** Every other project tool organises by status; organising by *who* is what makes the
+distribution visible, which is the entire subject of the product.
+
+**Consequence:** `GroupBuilder` uses lanes for **teams** instead — the one deliberate
+exception. Say so in that file's comment block.
+
+---
+
+## D-06 · Equity is judged on delivered work, with commitments reported beside it
+
+The score uses `credited` (progress-weighted hours) and the API reports `committed` too,
+because the gap between them is the useful signal. From `server/engines/equity.js`:
+
+> Equity is judged on *delivered* work, not on promises. A task somebody was given is not a
+> task somebody did.
+
+**Consequence for screens:** a member row must show both numbers (or at least be able to
+explain which one a bar is drawing). `LoadBar`'s `caption` is where that belongs.
+
+---
+
+## D-07 · Nothing is a category
+
+Members get a continuous position and an hours number (`state` is a label derived from
+position, shown via `StateChip`), so somebody slightly behind is not "a free rider".
+
+**Consequence:** never render a member as a binary (good/bad, contributor/free-rider). Use
+`StateChip` and the numbers.
+
+---
+
+## D-08 · Fixed: `planningRouter` is mounted at `/api`
+
+See `docs/06-traps.md` T15. The router declares full paths, so mounting it at `/api/projects`
+made every write endpoint a 404. Fixed in `server/index.js`, with a comment stating the rule.
+
+**Do not** "simplify" the mount table without reading it first — the two mount styles in this
+repo are deliberate:
+
+```js
+app.use("/api", planningRouter);          // declares /projects/:id/plan
+app.use("/api/projects", projectsRouter); // declares /:id/equity
+app.use("/api", tasksRouter);             // declares /tasks/:id and /projects/:id/tasks
+```
+
+---
+
+## D-09 · Verification tooling is part of the deliverable
+
+`scripts/` is not scratch. `shoot.mjs`, `inspect.mjs`, `shapes.mjs`, `probe.mjs`,
+`encscan.mjs` and now `smoke.mjs` are the mechanical substitute for "looks fine to me", and
+`package.json` exposes `smoke` and `selfcheck` for them.
+
+**Why.** The most expensive bug in this repository shipped precisely because a screen was
+verified by looking at it. A screenshot proves a read; only a click or `smoke.mjs` proves a
+write.
+
+**Consequence:** every new endpoint a screen depends on gets added to `scripts/smoke.mjs`, and
+every new class of layout bug found gets a check in `scripts/inspect.mjs`.
+
+---
+
+## D-10 · The docs are the handoff
+
+`AGENTS.md` + `docs/00…10` + `TODO.md` + `ROADMAP.md` replace the old single-file handoff.
+`HANDOFF.md` is kept only because it records the first session's reasoning; it is superseded
+where the two disagree, and `docs/00-state.md` is the authority on state.
+
+**Consequence:** a change that makes the docs wrong is an incomplete change.
+
+---
+
+# Open decisions (not yet made — make one and record it here)
+
+## O-01 · Broken engine links: alias the router, or change the emitters?
+
+Six link families emitted by engines/routes do not resolve (`docs/00-state.md`).
+`docs/08-screen-specs-small.md` argues for **aliasing in the router**: fewer files, and it
+keeps notification rows already stored with the old `link` working. The alternative —
+rewriting the emitters and migrating stored rows — is more correct long-term but touches five
+files plus a data migration.
+
+**Recommendation:** alias. Then, later, switch the emitters and drop the aliases in one
+change. Either way, record the choice and add a check that follows a real link.
+
+## O-02 · Is a class group a project?
+
+`nudges.js` emits `/classrooms/:id/groups/:projectId` ("Open the group"), and
+`POST /api/classrooms/:id/projects` **creates one project per team**. So a class group *is* a
+project in this data model, and the missing route should redirect to the workspace.
+
+**Recommendation:** redirect (spec'd in `docs/08-screen-specs-small.md`). If a "group" ever
+gains a distinct identity (a group without a project), this becomes a real screen instead.
+
+## O-03 · Should a student be able to leave a class?
+
+`DELETE /api/classrooms/:id/students/:userId` requires teaching rights, so a student cannot
+remove themselves from a class, and `/settings` has no honest control to offer.
+
+**Options:** (a) allow self-leave when `userId === req.user.id`; (b) leave it read-only and
+say so. (a) is better product behaviour and a ~6-line server change with a test.
+
+## O-04 · Should `PATCH /api/auth/me` accept `role`?
+
+`POST /api/classrooms` tells non-teachers *"Switch your role in settings if you teach"*, but
+`PATCH /me` does not accept `role`, so the instruction is false. Either add the field (guarded
+so an account owning a class cannot stop being a teacher) or change the sentence.
+
+**Recommendation:** add the field — a person who teaches and signs up as a student is a real
+case, and the sentence already promises it.
+
+## O-05 · `GET /api/projects/:id/reviews/summary` returns `members: []`
+
+Even for a teacher, with no reviews yet. Confirm whether that is intended (nothing to
+aggregate) or an early return that hides members who could be reviewed. `docs/00-state.md` D8.
+
+## O-06 · Where does the copilot's `classroomId` context come from?
+
+`POST /api/insights/copilot` accepts `projectId` and `classroomId`, and
+`GET /copilot/starters` accepts the same. The console and the workspace should pass their own
+context when they add a copilot affordance (they do not yet). Decide whether the copilot panel
+is context-aware (`src/shell/Copilot.tsx`) or stays global.
+
+## O-07 · Is `/insights` worth a screen of its own, or a tab on `/today`?
+
+The dashboard already contains `classes`, `cards`, `trend` and `nudges`. `/insights` risks
+being a second dashboard. `docs/07-screen-specs.md` caps it at six sections and gives it a
+distinct job (fairness as a subject, compared across projects and classes). If, while
+building it, it turns into a duplicate of `/today`, fold the useful parts into `/today` and
+redirect — and record that here.

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en-GB" data-scheme="paper">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Equita — group work, split fairly</title>
+    <meta
+      name="description"
+      content="Equita plans student projects in hours, places the work with the people who can do it, and shows the whole group when one person is carrying the rest. For student teams and for schools."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14171a" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Equita — group work, split fairly" />
+    <meta
+      property="og:description"
+      content="Every hour of group work belongs to a named person, and the even share is always visible. Plans, allocation and an equity panel that reads the real numbers."
+    />
+
+    <!--
+      The scheme is chosen before the first paint, so a reader who prefers dark
+      never sees a white flash. The default is the paper scheme.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("equita.scheme");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.dataset.scheme = stored || (prefersDark ? "ink" : "paper");
+        } catch (error) {
+          document.documentElement.dataset.scheme = "paper";
+        }
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Inter:wght@400;450;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="padding: 2rem; font-family: system-ui, sans-serif; line-height: 1.6">
+        <h1 style="font-size: 1.5rem">Equita</h1>
+        <p>
+          This application needs JavaScript. It plans project work in hours, places each task with the person who can do it, and
+          shows the group when the split has tipped.
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

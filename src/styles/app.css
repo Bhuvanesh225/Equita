@@ -1,0 +1,1027 @@
+/* ==========================================================================
+   Equita — surfaces, primitives and the signature mark
+
+   No shadows at rest anywhere. Surfaces are separated by a step in tone, and
+   shadows appear only on things that genuinely float: a menu, a dialog, the
+   command palette. Nothing is rounded. Nothing is a gradient.
+   ========================================================================== */
+
+/* ---------- page scaffolding -------------------------------------------- */
+
+.shell {
+  width: 100%;
+  max-width: 84rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 60rem) {
+  .shell {
+    padding-inline: 2.5rem;
+  }
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding-block: 1.5rem 4rem;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.page-head__title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.page-head__kicker {
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+}
+
+.page-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 56rem) {
+  .grid--split {
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .grid--halves {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .grid--thirds {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .grid--quarters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .grid--2-1 {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+/* ---------- panels ------------------------------------------------------ */
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.panel--flush {
+  background: transparent;
+  border-color: transparent;
+}
+
+.panel--recessed {
+  background: var(--color-paper-2);
+  border-color: transparent;
+}
+
+.panel--accent {
+  background: var(--color-accent-soft);
+  border-color: transparent;
+}
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  min-height: 3rem;
+}
+
+.panel__title {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+.panel__hint {
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+  font-weight: 400;
+}
+
+/* Title over hint, action on the right of both: room for a long name. */
+.panel__head--stacked {
+  align-items: flex-start;
+}
+
+.panel__lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.panel__lead .panel__title {
+  display: block;
+}
+
+/*
+ * A card title is a target in its own right, so it needs a hit box taller than
+ * the line of type inside it. The negative margin keeps the layout unchanged.
+ */
+.panel__title a {
+  display: block;
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
+}
+
+.panel__body {
+  padding: 1rem;
+  min-width: 0;
+}
+
+.panel__body--tight {
+  padding: 0.75rem;
+}
+
+.panel__foot {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stack--tight {
+  gap: 0.5rem;
+}
+
+.stack--loose {
+  gap: 1.25rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.row--between {
+  justify-content: space-between;
+}
+
+.row--wrap {
+  flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* ---------- buttons ----------------------------------------------------- */
+
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-ink);
+  --btn-edge: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.25rem;
+  padding-inline: 0.75rem;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: 1px solid var(--btn-edge);
+  border-radius: 0;
+  font-size: var(--text-sm);
+  font-weight: 550;
+  letter-spacing: 0.002em;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.btn:hover {
+  --btn-bg: var(--color-paper-3);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/*
+ * A disabled button has to look inert rather than look like a pale version of
+ * the action, so it drops the variant's colours entirely and takes the quiet
+ * paper instead of being a 45%-opacity button you keep trying to press.
+ */
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  --btn-bg: var(--color-paper-3);
+  --btn-fg: var(--color-ink-3);
+  --btn-edge: var(--color-line);
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--primary {
+  --btn-bg: var(--color-accent);
+  --btn-fg: var(--color-accent-ink);
+}
+.btn--primary:hover {
+  --btn-bg: var(--color-accent-deep);
+  --btn-fg: var(--color-paper);
+}
+
+.btn--ink {
+  --btn-bg: var(--color-ink);
+  --btn-fg: var(--color-paper);
+}
+.btn--ink:hover {
+  --btn-bg: color-mix(in oklab, var(--color-ink) 84%, var(--color-accent));
+}
+
+.btn--outline {
+  --btn-edge: var(--color-line-strong);
+  --btn-fg: var(--color-ink);
+}
+.btn--outline:hover {
+  --btn-bg: var(--color-paper-2);
+}
+
+.btn--ghost {
+  --btn-fg: var(--color-ink-2);
+}
+.btn--ghost:hover {
+  --btn-fg: var(--color-ink);
+}
+
+.btn--danger {
+  --btn-bg: var(--color-risk-soft);
+  --btn-fg: var(--color-risk);
+}
+.btn--danger:hover {
+  --btn-bg: var(--color-risk);
+  --btn-fg: var(--color-paper);
+}
+
+.btn--sm {
+  height: 1.875rem;
+  padding-inline: 0.55rem;
+  font-size: var(--text-xs);
+}
+
+.btn--lg {
+  height: 2.75rem;
+  padding-inline: 1.25rem;
+  font-size: var(--text-base);
+}
+
+.btn--icon {
+  width: 2.25rem;
+  padding: 0;
+}
+.btn--icon.btn--sm {
+  width: 1.875rem;
+}
+
+@media (pointer: coarse) {
+  .btn {
+    height: 2.75rem;
+    padding-inline: 1rem;
+  }
+  .btn--icon {
+    width: 2.75rem;
+  }
+}
+
+.btn-group {
+  display: inline-flex;
+  border: 1px solid var(--color-line-strong);
+}
+.btn-group .btn {
+  border: 0;
+  border-left: 1px solid var(--color-line);
+}
+.btn-group .btn:first-child {
+  border-left: 0;
+}
+.btn-group .btn[aria-pressed="true"] {
+  --btn-bg: var(--color-ink);
+  --btn-fg: var(--color-paper);
+}
+
+/* ---------- form fields ------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.field__label {
+  font-size: var(--text-sm);
+  font-weight: 550;
+  color: var(--color-ink-2);
+}
+
+.field__hint {
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+.field__error {
+  font-size: var(--text-xs);
+  color: var(--color-risk);
+  font-weight: 500;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 0;
+  padding: 0.5rem 0.625rem;
+  font-size: var(--text-base);
+  min-height: 2.25rem;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: var(--color-ink-3);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+  border-color: var(--color-accent);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--color-ink-3);
+}
+
+.input[aria-invalid="true"],
+.textarea[aria-invalid="true"] {
+  border-color: var(--color-risk);
+}
+
+@media (pointer: coarse) {
+  .input,
+  .select {
+    min-height: 2.75rem;
+  }
+}
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search .input {
+  padding-left: 2.1rem;
+}
+.search__icon {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--color-ink-3);
+  pointer-events: none;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+.switch input {
+  appearance: none;
+  width: 2.25rem;
+  height: 1.25rem;
+  background: var(--color-paper-3);
+  border: 1px solid var(--color-line-strong);
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  flex: none;
+}
+.switch input::after {
+  content: "";
+  position: absolute;
+  inset: 2px auto 2px 2px;
+  width: 0.875rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  transition: transform 0.18s var(--ease-out-quint);
+}
+.switch input:checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.switch input:checked::after {
+  transform: translateX(1rem);
+  border-color: transparent;
+}
+
+/* A range input for capacity, drawn as a share track with the current value
+   marked the same way every other bar in the product is marked. */
+.range {
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background: transparent;
+}
+.range::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--color-paper-3);
+}
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 6px;
+  height: 1.5rem;
+  margin-top: -0.6rem;
+  background: var(--color-ink);
+  border: 0;
+  border-radius: 0;
+}
+.range::-moz-range-track {
+  height: 6px;
+  background: var(--color-paper-3);
+}
+.range::-moz-range-thumb {
+  width: 6px;
+  height: 1.5rem;
+  background: var(--color-ink);
+  border: 0;
+  border-radius: 0;
+}
+
+/* ---------- tags -------------------------------------------------------- */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.4rem;
+  font-size: var(--text-xs);
+  font-weight: 550;
+  background: var(--color-paper-2);
+  color: var(--color-ink-2);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.tag--accent {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-deep);
+}
+.tag--over {
+  background: var(--color-over-soft);
+  color: var(--color-over);
+}
+.tag--risk {
+  background: var(--color-risk-soft);
+  color: var(--color-risk);
+}
+.tag--quiet {
+  background: var(--color-quiet-soft);
+  color: var(--color-quiet);
+}
+.tag--line {
+  background: transparent;
+  border-color: var(--color-line-strong);
+  color: var(--color-ink-2);
+}
+.tag--ink {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.tag--dot::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: currentColor;
+  flex: none;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: var(--color-paper-3);
+  color: var(--color-ink);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  flex: none;
+  user-select: none;
+  border: 1px solid hsl(var(--member-hue, 0) 30% 78%);
+}
+[data-scheme="ink"] .avatar {
+  border-color: hsl(var(--member-hue, 0) 26% 34%);
+}
+.avatar--lg {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+.avatar--sm {
+  width: 1.375rem;
+  height: 1.375rem;
+  font-size: 0.5625rem;
+}
+.avatar-group {
+  display: flex;
+  align-items: center;
+}
+.avatar-group .avatar + .avatar {
+  margin-left: -0.45rem;
+}
+
+/* ---------- the signature: the load bar --------------------------------- */
+
+/* A member's hours, drawn against an even share, with a tick at the even
+   position. It appears on the dashboard, the board, the equity panel and the
+   class console, so the product has one mark rather than four. */
+
+.loadbar {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.loadbar__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+.loadbar__value {
+  font-weight: 600;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.loadbar__track {
+  position: relative;
+  height: 12px;
+  background: var(--color-paper-3);
+  overflow: visible;
+}
+
+.loadbar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: hsl(var(--member-hue) 46% 44%);
+  transition: width 0.5s var(--ease-out-quint);
+}
+
+[data-scheme="ink"] .loadbar__fill {
+  background: hsl(var(--member-hue) 48% 56%);
+}
+
+/*
+ * Colour in this interface means who, and nothing else. A bar that repaints
+ * itself the moment somebody falls behind is a bar you can no longer read a
+ * person from — and the very people it repaints are the ones a group is most
+ * likely to talk about. So the fill stays the member's colour, and the alarm is
+ * carried by the track behind it and by the figure itself.
+ */
+.loadbar--over .loadbar__track {
+  background: var(--color-over-soft);
+}
+.loadbar--risk .loadbar__track {
+  background: var(--color-risk-soft);
+}
+.loadbar--over .loadbar__value {
+  color: var(--color-over);
+}
+.loadbar--risk .loadbar__value {
+  color: var(--color-risk);
+}
+.loadbar--under .loadbar__value {
+  color: var(--color-ink-3);
+}
+
+/* The even-share marker. It is the whole point of the component, so it is drawn
+   in the full ink and overhangs the track. */
+.loadbar__even {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--color-ink);
+  transform: translateX(-1px);
+}
+
+.loadbar__even::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  transform: translateX(-50%);
+}
+
+.loadbar__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.625rem;
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The share bar: one bar divided into each member's slice of the whole. Used on
+   the landing page, the class console and the project header. Equal slices are
+   the default state and the ideal; unequal slices are the finding. */
+.sharebar {
+  display: flex;
+  height: 14px;
+  background: var(--color-paper-3);
+  overflow: hidden;
+}
+
+.sharebar__seg {
+  height: 100%;
+  background: hsl(var(--member-hue) 46% 46%);
+  border-right: 1px solid var(--color-surface);
+  transition: width 0.5s var(--ease-out-quint);
+  min-width: 2px;
+}
+.sharebar__seg:last-child {
+  border-right: 0;
+}
+.sharebar--even .sharebar__seg {
+  border-right-color: transparent;
+  outline: 1px solid var(--color-surface);
+}
+.sharebar__seg--empty {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-paper-3) 0 6px,
+    var(--color-line) 6px 12px
+  );
+}
+
+.sharebar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+}
+
+.sharebar__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sharebar__swatch {
+  width: 0.6rem;
+  height: 0.6rem;
+  background: hsl(var(--member-hue) 46% 46%);
+  flex: none;
+}
+
+/* ---------- meters ------------------------------------------------------ */
+
+.meter {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 2.75rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--text-sm);
+}
+
+.meter__label {
+  color: var(--color-ink-2);
+  white-space: nowrap;
+}
+
+.meter__track {
+  position: relative;
+  height: 8px;
+  background: var(--color-paper-3);
+}
+
+.meter__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-ink);
+  transition: width 0.5s var(--ease-out-quint);
+}
+
+.meter--accent .meter__fill {
+  background: var(--color-accent);
+}
+.meter--over .meter__fill {
+  background: var(--color-over);
+}
+.meter--risk .meter__fill {
+  background: var(--color-risk);
+}
+
+/* The thresholds a score is judged against, drawn on the meter itself. */
+.meter__mark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--color-ink-3);
+}
+
+.meter__value {
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+}
+
+/* ---------- stat -------------------------------------------------------- */
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.stat__value {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__value--sm {
+  font-size: 1.25rem;
+}
+
+.stat__label {
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+.stat__note {
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+}
+
+.stat--accent .stat__value {
+  color: var(--color-accent-deep);
+}
+.stat--over .stat__value {
+  color: var(--color-over);
+}
+.stat--risk .stat__value {
+  color: var(--color-risk);
+}
+/* ---------- meaning carried by type alone -------------------------------- */
+
+/*
+ * Where a figure is being judged — a fairness part, a person's state, a group's
+ * score — the meaning is in the colour of the figure, not in a block behind it.
+ * A table of numbers has to stay scannable; a column of filled chips does not
+ * scan, it shouts.
+ */
+.tx-accent {
+  color: var(--color-accent-deep);
+}
+.tx-over {
+  color: var(--color-over);
+}
+.tx-risk {
+  color: var(--color-risk);
+}
+.tx-quiet {
+  color: var(--color-quiet);
+}
+.tx-ink {
+  color: var(--color-ink);
+}
+[data-scheme="ink"] .tx-accent {
+  color: var(--color-accent-deep);
+}
+[data-scheme="ink"] .tx-over {
+  color: var(--color-over);
+}
+[data-scheme="ink"] .tx-risk {
+  color: var(--color-risk);
+}
+[data-scheme="ink"] .tx-quiet {
+  color: var(--color-quiet);
+}
+
+/*
+ * Notes beneath a table: one short paragraph per column, laid out as columns so
+ * the reader can line each note up under the column it is about. Prose in a
+ * flex row with `max-width` on the items wraps mid-word, which is what happened
+ * before this existed.
+ */
+.roll__notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+.roll__notes b {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/*
+ * A page head is a title block, a set of actions, and optionally a row of tabs
+ * that belongs to the whole width. The earlier rule set only covered the title
+ * block, which is why the heading is now named rather than implied by the
+ * wrapper's class.
+ */
+.page-head__heading {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  font-variation-settings: "opsz" 32, "wdth" 98;
+  margin: 0;
+  color: var(--color-ink);
+}
+
+.page-head__sub {
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  line-height: 1.5;
+  max-width: 68ch;
+}
+
+.page-head__tabs {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+/* ---------- page furniture shared by the signed-in screens -------------- */
+
+/** A row of figures at the top of a screen, divided by hairlines. */
+.grid--stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.grid--stats > * {
+  padding: 0.85rem 1rem;
+  border-right: 1px solid var(--color-line);
+}
+
+.grid--stats > *:last-child {
+  border-right: 0;
+}
+
+@media (max-width: 40rem) {
+  .grid--stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .grid--stats > *:nth-child(2n) {
+    border-right: 0;
+  }
+  .grid--stats > *:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--color-line);
+  }
+}
+
+/** A heading inside a page, for a section that is not its own panel. */
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--color-ink);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.section-title::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--color-line);
+}
+
+/* ---------- the weekly check-in ---------------------------------------- */
+
+.checkin-moods {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-surface);
+}
+
+.checkin-mood {
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 550;
+  color: var(--color-ink-2);
+  cursor: pointer;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+
+.checkin-mood + .checkin-mood {
+  border-left: 1px solid var(--color-line);
+}
+
+.checkin-mood:hover {
+  background: var(--color-paper-3);
+}
+
+.checkin-mood[aria-pressed="true"] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+@media (max-width: 30rem) {
+  .checkin-moods {
+    grid-template-columns: 1fr 1fr;
+  }
+  .checkin-mood:nth-child(3) {
+    border-left: 0;
+  }
+  .checkin-mood:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--color-line);
+  }
+}
