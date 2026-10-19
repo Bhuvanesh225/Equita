@@ -15,29 +15,31 @@ The phase order and its reasoning live in `ROADMAP.md`; the finish line is in `A
 ## P0 — Make the repository safe to work in, and make the built app actually work
 
 ### P0-1 · Version control
-- [ ] `git init`, add a `.gitignore` (`node_modules/`, `dist/`, `data/`, `.shots/`, `.tmp/`,
+- [x] `git init`, add a `.gitignore` (`node_modules/`, `dist/`, `data/`, `.shots/`, `.tmp/`,
       `*.log`, `.work*`), and commit the current state as the first commit.
-      **No `.git` exists. Do this before any large refactor** — there is currently no way to
-      undo a bad write.
-      *Acceptance:* `git status` is clean; `data/` and `dist/` are untracked.
+      Two commits now: the first sitting's snapshot and the P0-2 link aliases (`4446d11`).
+      *Acceptance:* `git status` is clean; `data/` and `dist/` are untracked. **Met.**
 
 ### P0-2 · Fix the six broken link families
 Every one of these is a live 404 today. Best-effort fix is aliasing in the router (see
 `docs/10-decisions.md` O-01 and `docs/08-screen-specs-small.md`).
-- [ ] Register `/people/:personId` → `People` in detail mode (`src/App.tsx`). Already linked
+- [x] Register `/people/:personId` → `People` in detail mode (`src/App.tsx`). Already linked
       from `src/routes/project/Equity.tsx:93` and `src/routes/ProjectWorkspace.tsx:307`, and
       emitted by `GET /api/insights/search`.
-- [ ] Register `/projects/:projectId/board` → the workspace element (emitted by `nudges.js`,
+- [x] Register `/projects/:projectId/board` → the workspace element (emitted by `nudges.js`,
       `tasks.js`, `planning.js`, `insights.js`, `copilot.js`, always with `?task=`).
-- [ ] Register `/classrooms/:classroomId/groups/:projectId` → `<Navigate to={`/projects/${projectId}`} replace />`.
-- [ ] Accept `panel` as an alias for `tab` in `ProjectWorkspace`, mapping
+- [x] Register `/classrooms/:classroomId/groups/:projectId` → `<Navigate to={`/projects/${projectId}`} replace />`.
+- [x] Accept `panel` as an alias for `tab` in `ProjectWorkspace`, mapping
       `equity→equity`, `plan→board`, `team→people`.
-- [ ] Accept `?panel=attention` on the console (copilot emits it).
+- [x] Accept `?panel=attention` on the console (copilot emits it). Also accepts
+      `?panel=roster|students|coverage|skills`.
 - [ ] Follow one engine-generated `href` per family in a test (add to `scripts/smoke.mjs` or
       as routes in a `shoot.mjs` run).
       *Acceptance:* clicking the first nudge on `/today` opens the project board with that
       task's sheet open; clicking a notification lands somewhere real; clicking a name in
-      `?tab=people` opens a record.
+      `?tab=people` opens a record. **The routes resolve (verified with `shoot.mjs` on
+      `/projects/:id/board?task=…`, `/people/:id` and `/classrooms/:id/groups/:projectId`),
+      but the automated check is still missing.**
 
 ### P0-3 · The workspace's write path, end to end
 - [x] `planningRouter` mount fixed (`server/index.js`); `plan`, `plan/apply`, `assign/auto`,
@@ -52,9 +54,8 @@ Every one of these is a live 404 today. Best-effort fix is aliasing in the route
       browser console. Note any that do not in this file.
 
 ### P0-4 · Health and hygiene
-- [ ] `npm run build` must pass and be run before every delivery (it passes now: last run
-      clean, largest chunk `react` 301 kB / 95 kB gzip).
-- [ ] `README.md` — write it (see the final task in P4; a minimal accurate one is enough now).
+- [ ] `npm run build` must pass and be run before every delivery.
+- [x] `README.md` — written at the third sitting; keep it accurate as screens land.
 - [x] `npm run selfcheck` fixed — it now points at `scripts/smoke.mjs`; `npm run smoke` added.
 - [ ] Delete `legacy/` once you are sure nothing references it (`legacy/index.html`,
       `script.js`, `styles.css` — the previous static landing page).
@@ -76,41 +77,57 @@ Every one of these is a live 404 today. Best-effort fix is aliasing in the route
 
 ## P1 — The core surfaces a teacher or student would actually use
 
-### P1-1 · `/projects/new` — `NewProject` *(spec: `docs/07-screen-specs.md`)*
-- [ ] Build the brief-style form: name, brief, mode (standalone/class), class picker, hand-in
+### P1-1 · `/projects/new` — `NewProject` *(spec: `docs/07-screen-specs.md`)* **built**
+- [x] Build the brief-style form: name, brief, mode (standalone/class), class picker, hand-in
       date, members by email.
-- [ ] Wire to `POST /api/projects`; on success toast + navigate to the workspace.
-- [ ] Gate `mode=class` on `canTeach`; students get standalone only, with an honest hint.
-- [ ] Field-level errors from `ApiError.isInput`; `busy` state.
-      *Acceptance:* `tsc` + `shoot` + `inspect` (1440, 390, both schemes) clean; a created
-      project appears in `/projects` with the brief intact and exactly one member.
+- [x] Wire to `POST /api/projects`; on success toast + navigate to the workspace, with the
+      toast's action carrying `?plan=1` so the two-step plan flow is one press away
+      (`docs/10-decisions.md` O-01b).
+- [x] Gate `mode=class` on teaching at least one class; students get standalone only, with an
+      honest hint.
+- [x] Field-level errors from `ApiError.isInput`; `busy` state.
+      *Acceptance:* `tsc` + `inspect` clean at 1440 and 390, both schemes. **Live POST verified:
+      the created project appeared in `/api/projects` with the brief intact and both named
+      members added.**
 
-### P1-2 · `/classrooms` — `Classrooms` *(spec)*
-- [ ] List from `GET /api/classrooms`; teacher cards with `students`, `projects`, `meanScore`;
+### P1-2 · `/classrooms` — `Classrooms` *(spec)* **built**
+- [x] List from `GET /api/classrooms`; teacher cards with `students`, `projects`, `meanScore`;
       student view without teacher-only controls.
-- [ ] `Start a class` dialog → `POST /api/classrooms`.
-- [ ] `Join with a code` dialog → `POST /api/classrooms/join` (and keep `/join` working).
-- [ ] Join code shown + copyable; `comparisonBars` across classes when there is more than one.
-- [ ] Handle `meanScore: null` as "no groups yet".
-      *Acceptance:* create a class as `teacher`; join it with `free`; verify enrolment through
-      `/api/auth/me`; `inspect` clean at both widths.
+- [x] `Start a class` dialog → `POST /api/classrooms`.
+- [x] `Join with a code` dialog → `POST /api/classrooms/join` (and `/join` still works).
+- [x] Join code shown + copyable on every card (`JoinCode` in `src/components/blocks.tsx`, so
+      the console and the list share one implementation); `ComparisonBars` across classes when
+      there is more than one, and `meanScore` compared rather than restated per card.
+- [x] Handle `meanScore: null` as "no groups yet" (a `Tag`, not a zero).
+      *Acceptance:* create-a-class and join-with-a-code both **verified live** — the new class
+      came back with a code, and joining with it from `free` actually enrolled that account
+      (`/api/auth/me` memberships). `inspect` clean at 1440 and 390, both schemes, both roles.
 
-### P1-3 · `/classrooms/:classroomId` — `ClassroomConsole` *(spec; the largest remaining screen)*
-- [ ] Shell: one `useApi("/api/classrooms/:id")`, `PageHead` (subject · term, name, counts,
+### P1-3 · `/classrooms/:classroomId` — `ClassroomConsole` *(spec; the largest remaining screen)* **built**
+Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Attention`, `Dialogs`).
+- [x] Shell: one `useApi("/api/classrooms/:id")`, `PageHead` (subject · term, name, counts,
       join code, `Add students`, `Build the groups`, `Set an assignment`, class menu).
-- [ ] Tab **Overview**: `analytics` stats, `trend` `LineChart`, `ClassProject` panels with
-      `modest` score/progress, per-member `LoadBar`, `attention`.
-- [ ] Tab **Roster**: `ClassStudent` rows (`StateChip`, share, `owed`, `acrossGroups`,
-      `FlagList` limit 2) linking to the record; `Add students` dialog; `Remove` behind a
-      `Confirm` with the honest consequence described (their work stays, tasks are released).
-- [ ] Tab **Coverage**: `coverage` rows (`holders`, `strong`, `meanLevel` `Meter`,
-      `topHolders`), `gaps` as a `callout--over`, roster-size stats.
-- [ ] Tab **Attention**: `attention` grouped by severity, class `nudges` via `Nudges compact`.
-- [ ] Class menu: `Edit the class` and `Change the fairness policy` → `PATCH /api/classrooms/:id`.
-- [ ] `Set an assignment` dialog → `POST /api/classrooms/:id/projects`.
-      *Acceptance:* all four tabs render from **one** request; add/remove/policy/assignment all
-      verified live; `inspect` clean at 1440 and 390 on every tab and both schemes; the roster
-      scrolls in `.scroll-x` on mobile with `hOverflow: 0`.
+- [x] Tab **Overview**: every `analytics` figure as a `Stat` (including the repaired
+      `neverReviewed`), `trend` `LineChart` with rules at 75 and 50, one panel per
+      `ClassProject` with `ScoreMark`, `ProgressLine`, a `LoadBar` per member and the
+      group's `attention`, and a one-line coverage summary linking to the Coverage tab.
+- [x] Tab **Roster**: `ClassStudent` rows (`StateChip`, `LoadBar`, `owed`, `acrossGroups`,
+      `FlagList` limit 2) linking to the record, sorted behind-first; `Add students` dialog;
+      `Remove` behind a `Confirm` that describes what really happens.
+- [x] Tab **Coverage**: `gaps` as a `callout--over`, one row per cluster (`holders`, `strong`,
+      `meanLevel` `Meter`, `topHolders`), roster/coverage `Stat`s.
+- [x] Tab **Attention**: `attention` grouped by the engine's own severity, the class `nudges`
+      through `Nudges compact`, `nudgeCounts` as the panel hint.
+- [x] Class menu: `Edit the class` and `Change the fairness policy` → `PATCH /api/classrooms/:id`.
+      The policy dialog sends `{policy: {policy: {...}}}` — the outer key is the config column,
+      the inner one is the policy block. See the file comment in `classroom/Dialogs.tsx`.
+- [x] `Set an assignment` dialog → `POST /api/classrooms/:id/projects`. The endpoint always
+      creates one project per team, so "the whole class" is one team; the dialog offers the
+      group builder as the alternative rather than pretending to do both.
+      *Acceptance:* all four tabs render from **one** request; `inspect` clean at 1440 and 390
+      in both schemes for `teacher` and `student`; no card pushes the page sideways at 390.
+- [ ] Add/remove/policy/assignment verified **live** (the write path is wired and typed, but
+      this has not been clicked through with a mouse yet — see P0-3).
 
 ### P1-4 · `/classrooms/:classroomId/students/:studentId` — `StudentRecord` *(spec)*
 - [ ] Build from `GET /api/classrooms/:id/students/:userId`: `reading` sentence, `totals`

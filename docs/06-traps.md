@@ -152,3 +152,62 @@ reseed if you need ids.
 ### T22 — Reviews go to the teacher, and the summary endpoint is teacher-only
 `GET /api/projects/:id/reviews/summary` returns `403` for a student, so any screen that calls
 it must pass `null` as the `useApi` path for non-teachers (see `src/routes/project/Reviews.tsx`).
+## From the fourth session (2026-10-19 — the remaining screens)
+
+### T23 — A figure the engine filled in with a literal zero
+`classroomOverview()` returned `neverReviewed: 0` as a constant. Nothing failed, because a
+stub that returns zero is indistinguishable from a classroom that reviews everything — and
+the console printed "every group has been read" for classes where nobody had read anything.
+**Fixed** in `server/engines/classroom.js`: `classProjects()` now carries `reviewCount`
+(how many peer reviews the group has) and the overview counts the groups with none.
+**The rule this broke is the house rule:** a number on screen has to be traceable to data.
+If you find a second constant standing in for a computation, treat it as a bug, not a
+placeholder.
+
+### T24 — One word, two measures: `even` was the committed share in one place and the
+### delivered share in another
+`classProjects()` exposed `members[].even` as `m.even.committed`, but `owed` is
+`even − credited` and every load bar in the product draws `credited` against `even.credited`.
+The class roster therefore read "11.3h behind an even share" on a student whose equity flag,
+one line below, said "4.7h behind an even share of delivered work". Both numbers were real;
+they answered different questions with the same words.
+**Fixed** in `server/engines/classroom.js`: `even` is the even share **of delivered work**
+(the one every load bar draws), and the committed share is exposed separately as
+`evenCommitted`. **The rule:** when a payload field is named after a measure, check which
+measure — `EquityMember` carries `even.committed` and `even.credited` separately for exactly
+this reason.
+
+### T25 — `overflow: hidden` + `text-overflow: ellipsis` on a `<span>`
+`.rowitem__title` and `.rowitem__sub` are spans, and both carry the ellipsis pair. Neither
+property does anything on an inline box, so a long activity-feed subject never truncated and
+pushed the page sideways on a phone (a 109px horizontal scroll on the project's Activity tab
+that only appeared at 390px). **Fixed** in `src/styles/surfaces.css` by making both
+`display: block`. If you put the truncation trio on an element, it must be a block or a flex
+item — not an inline span.
+
+### T26 — A grid with no `grid-template-columns` cannot shrink
+`.grid` set `display: grid` and a gap, and left the columns to the implicit `auto` sizing.
+For items that cannot shrink, `auto` resolves to max-content, so at 390px a panel holding a
+name, a chip and a figure pushed the whole page sideways — the page scrolled instead of the
+row wrapping. It only showed on narrow screens, which is why the desktop sweeps missed it.
+**Fixed** in `src/styles/app.css`: `.grid { grid-template-columns: minmax(0, 1fr); }`. The
+`@media (min-width: 56rem)` modifiers still override it.
+
+### T27 — Five filter chips are wider than a phone
+`.seg` is an `inline-flex` with no wrapping, so the five filters on `/projects` measured
+369px inside a 316px column and gave the page a 16px horizontal scroll. **Fixed** in
+`src/styles/surfaces.css` with `flex-wrap: wrap; max-width: 100%`.
+
+### T28 — A link that is only as tall as its line of type
+Twenty-ish pixels of inline text is under the 24px floor every target in this product is held
+to, and it is the most-tapped thing on the screen. `.panel__title a` had already solved this
+with padding paid back by a negative margin; the same trick is now a class, `.tap`, in
+`src/styles/app.css`. **Use `.tap` on any link that is a name, a row label or a link at the
+end of a sentence** — not on a `.btn`, which carries its own padding and centring.
+
+### T29 — `inspect.mjs` flags *every* interactive element under 24px tall
+including a link inside a sentence, which WCAG 2.5.8 exempts. Rather than weaken the checker,
+the project fixed the targets: `.tap` (above), the board card's title button, and the five
+weight labels on the equity meter, which were clipping ("Engagement 15% weight" is 150px of
+type in a 120px column). **Do not add an exemption to `inspect.mjs` to make a screen pass.**
+Either the target grows or the layout around it changes.

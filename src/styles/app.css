@@ -59,6 +59,16 @@
 
 .grid {
   display: grid;
+  /*
+   * A single column that is allowed to shrink.
+   *
+   * Without this, the one implicit column is sized `auto`, which for a grid
+   * item that cannot shrink is its max-content width — so at 390px a panel
+   * holding a name, a chip and a figure pushed the whole page sideways instead
+   * of letting the row wrap. `minmax(0, 1fr)` is the same column on a wide
+   * screen and a shrinkable one on a narrow screen.
+   */
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
 }
 
@@ -159,6 +169,28 @@
  */
 .panel__title a {
   display: block;
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
+}
+
+/*
+ * Text that is a target.
+ *
+ * A person's name beside a state chip, a link at the end of a sentence, the
+ * kicker above a heading — all of them are rendered as ordinary inline type,
+ * which is about 20px tall and therefore under the 24px floor every target in
+ * this product is held to. It is also the most-tapped thing on the screen, so
+ * the floor matters most here.
+ *
+ * `display: inline-block` plus the same trick `.panel__title a` uses — half a
+ * rem of padding paid back with a negative margin — adds the missing pixels
+ * without moving a single word or changing any spacing a reader can see.
+ *
+ * It is a class rather than a selector such as `.row a` on purpose: a `.btn`
+ * that happens to sit in a row must keep its own padding and centring.
+ */
+.tap {
+  display: inline-block;
   padding-block: 0.25rem;
   margin-block: -0.25rem;
 }

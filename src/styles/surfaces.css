@@ -461,7 +461,15 @@
   background: var(--color-paper-2);
 }
 
+/*
+ * Both of these are spans, and both carry `overflow: hidden` plus
+ * `text-overflow: ellipsis`. That combination only does anything on a block
+ * box: as inline boxes they neither clipped nor ellipsised, so a long subject
+ * on an activity feed quietly pushed the page sideways on a phone. Making them
+ * blocks is what turns the intent into behaviour.
+ */
 .rowitem__title {
+  display: block;
   font-size: var(--text-sm);
   font-weight: 500;
   min-width: 0;
@@ -471,6 +479,7 @@
 }
 
 .rowitem__sub {
+  display: block;
   font-size: var(--text-xs);
   color: var(--color-ink-3);
   min-width: 0;
@@ -1200,6 +1209,13 @@
 
 .seg {
   display: inline-flex;
+  /*
+   * Five filter chips are wider than a phone. Wrapping lets the control shrink
+   * to the space it is given instead of pushing the page out sideways; on a wide
+   * screen there is room and nothing wraps.
+   */
+  flex-wrap: wrap;
+  max-width: 100%;
   border: 1px solid var(--color-line-strong);
 }
 

@@ -151,6 +151,32 @@ files plus a data migration.
 **Recommendation:** alias. Then, later, switch the emitters and drop the aliases in one
 change. Either way, record the choice and add a check that follows a real link.
 
+**Decided (fourth sitting): alias, in the router.** `/projects/:projectId/board` serves the
+same element as the workspace, `/people/:personId` serves `People` (still a stub), and
+`/classrooms/:classroomId/groups/:projectId` redirects to the group's board, because a class
+group *is* a project in this data model. `ProjectWorkspace` accepts `?panel=` as an alias for
+`?tab=` (with `plan→board`, `team→people`) and `ClassroomConsole` accepts `?panel=attention`.
+The emitters are unchanged, so every notification row already in the database still resolves.
+An unfinished piece of this decision: no check yet *follows* a real engine-written link
+(`TODO.md` P0-5).
+
+**Would change if** the emitters get rewritten — at which point the aliases should be deleted
+in the same commit, not left as two vocabularies.
+
+## O-01b · How does a toast reach the plan dialog?
+
+The screen that starts a project pushes a toast whose action is *Plan from the brief*
+(`docs/07-screen-specs.md`), but the dialog lives inside `ProjectWorkspace` and there was no
+URL that opened it. The alternative was to duplicate the two-step plan UI on `/projects/new`,
+which the spec forbids.
+
+**Decided:** `?plan=1` on the workspace opens the plan dialog and is consumed on arrival
+(deleted from the URL with `replace`), so a later reload does not reopen it. This is the same
+pattern as `?task=`: screen state lives in the URL.
+
+**Would change if** the workspace grows a general `?dialog=` vocabulary. If it does, `plan`
+should move under it rather than sit beside it.
+
 ## O-02 · Is a class group a project?
 
 `nudges.js` emits `/classrooms/:id/groups/:projectId` ("Open the group"), and

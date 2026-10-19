@@ -191,7 +191,11 @@ export default function Projects() {
               .sort((a, b) => a.equity!.score - b.equity!.score)
               .map((project) => ({
                 id: project.id,
-                label: <Link to={`/projects/${project.id}`}>{project.name}</Link>,
+                label: (
+                  <Link className="tap" to={`/projects/${project.id}`}>
+                    {project.name}
+                  </Link>
+                ),
                 value: project.equity!.score,
                 tone: project.equity!.score >= 70 ? "var(--color-accent)" : project.equity!.score >= 55 ? "var(--color-over)" : "var(--color-risk)",
                 note: `${plural(project.memberCount, "person", "people")} · ${hours(project.openCount === 0 ? project.taskCount : project.openCount)} open`,
@@ -323,7 +327,10 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
         {attention ? (
           <div className={`callout callout--${project.equity && project.equity.score < 45 ? "risk" : "over"}`}>
             {attentionSentence(project)}
-            <Link to={`/projects/${project.id}`}> Open the board</Link>.
+            <Link className="tap" to={`/projects/${project.id}`}>
+              Open the board
+            </Link>
+            .
           </div>
         ) : null}
       </div>

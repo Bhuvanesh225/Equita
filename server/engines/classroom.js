@@ -31,6 +31,14 @@ export function classProjects(classroomId, now = Date.now()) {
       status: ctx.project.status,
       dueAt: ctx.project.dueAt,
       memberCount: equity.members.length,
+      /*
+       * How many peer reviews have been written on this group. The console's
+       * "never reviewed" figure reads it, and that figure used to be a literal
+       * zero — which meant the screen claimed every group had been read even
+       * when nobody had opened one. A number the product prints has to come
+       * from the data.
+       */
+      reviewCount: ctx.reviews.length,
       equity,
       modest: {
         score: equity.score,
@@ -49,7 +57,17 @@ export function classProjects(classroomId, now = Date.now()) {
         state: m.state,
         committed: m.committed,
         credited: m.credited,
-        even: m.even.committed,
+        /*
+         * `even` is the even share *of delivered work*, because that is the
+         * measure every load bar in the product draws and the one `owed` is
+         * computed against. Exposing `even.committed` here made a class roster
+         * say one student was "11.3h behind" while the equity engine's own flag
+         * on the same student, one line below, said "4.7h behind" — two numbers
+         * for one word. The committed share is still available, under its own
+         * name.
+         */
+        even: m.even.credited,
+        evenCommitted: m.even.committed,
         owedCreditedHours: m.owedCreditedHours,
         open: m.open,
         capacity: m.capacity,
@@ -109,7 +127,7 @@ export function classStudents(classroomId, now = Date.now()) {
       clusters: clusterStrength(user).slice(0, 3),
       growth: growthEdges(user, 3),
       projects: [],
-      totals: { committed: 0, credited: 0, even: 0, open: 0, capacity: 0, tasks: 0, done: 0 },
+      totals: { committed: 0, credited: 0, even: 0, evenCommitted: 0, open: 0, capacity: 0, tasks: 0, done: 0 },
       state: "on-track",
       flags: [],
       owed: 0,
@@ -134,6 +152,7 @@ export function classStudents(classroomId, now = Date.now()) {
       entry.totals.committed += member.committed;
       entry.totals.credited += member.credited;
       entry.totals.even += member.even;
+      entry.totals.evenCommitted += member.evenCommitted ?? 0;
       entry.totals.open += member.open;
       entry.totals.capacity += member.capacity;
       entry.flags.push(...member.flags.map((f) => ({ ...f, projectName: project.name, projectId: project.id })));
@@ -144,6 +163,7 @@ export function classStudents(classroomId, now = Date.now()) {
     entry.totals.committed = round(entry.totals.committed, 2);
     entry.totals.credited = round(entry.totals.credited, 2);
     entry.totals.even = round(entry.totals.even, 2);
+    entry.totals.evenCommitted = round(entry.totals.evenCommitted, 2);
     entry.totals.open = round(entry.totals.open, 2);
     entry.owed = round(entry.totals.even - entry.totals.credited, 2);
     // Across groups, a student's own capacity is shared: three groups each
@@ -213,7 +233,7 @@ export function classroomOverview(classroomId, now = Date.now()) {
       behindCount: behind.length,
       overloadedCount: overloaded.length,
       unplaced: students.filter((s) => s.projects.length === 0).length,
-      neverReviewed: 0,
+      neverReviewed: projects.filter((p) => p.reviewCount === 0).length,
       spreadOfStates: students.reduce((acc, s) => ({ ...acc, [s.state]: (acc[s.state] ?? 0) + 1 }), {}),
       projectsWithoutDeadline: projects.filter((p) => !p.dueAt).length,
       totalOpenHours: round(projects.reduce((a, p) => a + p.equity.totals.open, 0), 1),

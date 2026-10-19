@@ -1,8 +1,7 @@
 # 00 — State of the build (verified)
 
-Snapshot taken **2026-10-18, after the second working session** (session id
-`01a14f2b-0ad5-737a-a34e-7b9bb787e134`). Every claim below was checked against the
-repository and, where possible, against the running servers — not from memory.
+Snapshot taken **2026-10-19, after the fourth working session**. Every claim below was checked
+against the repository and, where possible, against the running servers — not from memory.
 
 > If you are reading this later: re-verify before trusting it. Run the commands in
 > `docs/05-verification.md` and update this file. A state file that is wrong is worse
@@ -13,20 +12,22 @@ repository and, where possible, against the running servers — not from memory.
 | Check | Result |
 | --- | --- |
 | `npx tsc --noEmit` | **clean** (0 errors) |
-| `npm run build` | **clean** (last run: 2.7s, largest chunk `react` 301 kB / 95 kB gzip) |
+| `npm run build` | clean at the third sitting; re-run before a delivery |
 | `npm run dev` | API `127.0.0.1:8787` + Vite `localhost:5173`, both up |
-| `GET /api/health` | `{"ok":true,"tables":17}` |
-| `node scripts/smoke.mjs` | **28/28** for `teacher` and for `student` |
-| `node scripts/encscan.mjs` | `clean` (no double-encoded UTF-8 in the DB) |
-| `npm run selfcheck` | works — now an alias for `scripts/smoke.mjs` |
-| Version control | **none** — no `.git` directory (P0-1) |
+| `GET /api/health` | `{"ok":true,...}` |
+| `node scripts/smoke.mjs` | 28/28 for `teacher` and for `student` |
+| `node scripts/encscan.mjs` | `clean` |
+| Version control | **yes** — two commits, the second one the link aliases (`4446d11`) |
 | `README.md` | written; keep it accurate as screens land |
 
 Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes ·
 6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins ·
 44 reviews · 21 notifications · 130 activity rows.
 
-## Screens — 8 of 18 routes are real
+**Every id in this file and in `docs/09-demo-data.md` changes on `npm run seed`.** Re-read
+ids with `node scripts/shapes.mjs teacher` after a reseed (T21).
+
+## Screens — 11 of 18 routes are real
 
 Legend: **built** = real screen · **stub** = renders `<Pending>` from
 `src/routes/_pending.tsx` (5 lines each).
@@ -38,19 +39,26 @@ Legend: **built** = real screen · **stub** = renders `<Pending>` from
 | `/signup` | `Signup` | built | 140 | `POST /api/auth/signup` |
 | `/join` | `Join` | built | 121 | `POST /api/classrooms/join` |
 | `/today` | `Dashboard` | built | 609 | `GET /api/insights/dashboard`, `POST /api/projects/:id/checkin` |
-| `/projects` | `Projects` | built | 369 | `GET /api/projects` |
-| `/projects/:projectId` | `ProjectWorkspace` | built | 539 + `project/*` 1,905 | see below |
-| `*` | `NotFound` | built | 63 | — |
-| `/projects/new` | `NewProject` | **stub** | 5 | `GET /api/skills`, `POST /api/projects` |
-| `/classrooms` | `Classrooms` | **stub** | 5 | `GET /api/classrooms`, `POST /api/classrooms` |
-| `/classrooms/:classroomId` | `ClassroomConsole` | **stub** | 5 | `GET /api/classrooms/:id` · `/analytics` · `/coverage`; `POST /students`, `/projects` |
-| `/classrooms/:classroomId/groups` | `GroupBuilder` | **stub** | 5 | `POST /api/classrooms/:id/groups/preview`, `/projects` |
+| `/projects` | `Projects` | built | 372 | `GET /api/projects` |
+| `/projects/new` | `NewProject` | **built** | 372 | `POST /api/projects` |
+| `/projects/:projectId` | `ProjectWorkspace` | built | 560 + `project/*` 1,905 | see below |
+| `/projects/:projectId/board` | (alias → `ProjectWorkspace`) | built | — | same |
+| `/classrooms` | `Classrooms` | **built** | 380 | `GET /api/classrooms`, `POST /api/classrooms`, `POST /api/classrooms/join` |
+| `/classrooms/:classroomId` | `ClassroomConsole` | **built** | 250 + `classroom/*` 1,290 | `GET /api/classrooms/:id` (one call, four tabs), `PATCH`, `POST /students`, `DELETE /students/:userId`, `POST /projects` |
+| `/people/:personId` | `People` | **stub** | 5 | route exists (P0-2); screen not built |
+| `/classrooms/:classroomId/groups` | `GroupBuilder` | **stub** | 5 | `POST /groups/preview`, `POST /projects` |
 | `/classrooms/:classroomId/students/:studentId` | `StudentRecord` | **stub** | 5 | `GET /api/classrooms/:id/students/:userId` |
-| `/insights` | `Insights` | **stub** | 5 | `GET /api/classrooms/:id/analytics`, `GET /api/projects/:id/equity` |
+| `/insights` | `Insights` | **stub** | 5 | `GET /api/insights/dashboard`, classroom analytics |
 | `/people` | `People` | **stub** | 5 | `GET /api/insights/search`, `GET /api/insights/people/:id` |
-| `/profile` | `Profile` | **stub** | 5 | `GET/PATCH /api/auth/me`, `PUT /api/auth/me/skills`, `GET /api/skills/clusters` |
-| `/notifications` | `Notifications` | **stub** | 5 | `GET /api/insights/notifications`, `POST /api/insights/notifications/read` |
+| `/profile` | `Profile` | **stub** | 5 | `GET/PATCH /api/auth/me`, `PUT /api/auth/me/skills` |
+| `/notifications` | `Notifications` | **stub** | 5 | `GET /api/insights/notifications`, `POST .../read` |
 | `/settings` | `Settings` | **stub** | 5 | `PATCH /api/auth/me` |
+| `*` | `NotFound` | built | 63 | — |
+
+All four tabs of `/classrooms/:id` render from the single `GET /api/classrooms/:id` call.
+Verified clean by `scripts/inspect.mjs` at 1440 and 390, in both schemes, for `teacher`
+and for `student`.
+
 
 `ProjectWorkspace` panels (all built, in `src/routes/project/`):
 
@@ -113,34 +121,40 @@ in the project workspace deserves a live click-through** — the previous sessio
 under typecheck only, and this was the second bug of that class found. Use
 `docs/05-verification.md` → "exercise the write path", not a screenshot.
 
+## Fixed during the fourth sitting (2026-10-19)
+
+| # | Defect | Fix |
+| --- | --- | --- |
+| F2 | **Six families of engine-written links were 404s.** `/projects/:id/board?task=`, `/people/:id`, `/classrooms/:id/groups/:projectId`, and the engine's `?panel=` vocabulary were not routes the app answered. Fixed by aliasing in the router (option 1 in `docs/10-decisions.md` O-01) so notification rows already stored with the old links keep working. | `src/App.tsx`, `src/routes/ProjectWorkspace.tsx`, `src/routes/ClassroomConsole.tsx` |
+| F3 | **`neverReviewed` was a literal `0`.** The console claimed every group had been read. | `server/engines/classroom.js` (T23) |
+| F4 | **`even` meant two different measures.** The roster said "11.3h behind an even share" above the equity flag that said "4.7h behind". | `server/engines/classroom.js` (T24) |
+| F5 | **The page scrolled sideways at 390px on three built screens.** Three separate causes: a grid with no explicit column template, an unwrapping segmented control, and `text-overflow: ellipsis` on inline spans that therefore never truncated. | `src/styles/app.css`, `src/styles/surfaces.css` (T25–T27) |
+| F6 | **Inline text links were 19–20px tall**, under the 24px floor `inspect.mjs` enforces. `.tap` added, card titles grown, the equity meter's clipped weight labels shortened. | `src/styles/app.css`, `src/components/blocks.tsx`, `src/routes/Projects.tsx`, `src/routes/project/Equity.tsx`, `src/routes/ProjectWorkspace.tsx` (T28–T29) |
+
+`inspect.mjs` now returns `problems: []`-equivalent output at 1440 **and** 390, in **paper
+and ink**, for `teacher` and for `student`, on every built route.
+
 ## Known smaller defects
 
 | # | Defect | Where |
 | --- | --- | --- |
 | D2 | `Dashboard.tsx` returns `null` on a dashboard error instead of a visible error state (masked a real crash before) | `src/routes/Dashboard.tsx` |
-| D3 | `npm run selfcheck` points at a file that does not exist | `package.json` |
 | D4 | `legacy/` (3 files, old static landing) is dead weight | `equita/legacy/` |
-| D5 | no `README.md` | repo root |
-| D6 | no `.git` | repo root |
 | D7 | hackathon root has 16 MB of throwaway screenshots (`.work/`) and a stray `landing-hero.png` | `../` |
 | D8 | `/api/projects/:id/reviews/summary` returns an empty `members: []` even for a teacher when no reviews exist yet — confirm it is intended and not an early return | `server/routes/projects.js:480` |
 
 ## What the next session should do
 
-In order. The checklist with acceptance tests is `TODO.md`; the reasoning is in
-`ROADMAP.md`.
+In order. The checklist with acceptance tests is `TODO.md`; the reasoning is in `ROADMAP.md`.
 
-1. **P0-1** — `git init`, `.gitignore`, first commit. There is no way to undo a bad write today.
-2. **P0-2** — register the three missing routes and accept `panel` as an alias for `tab`
-   (`docs/08-screen-specs-small.md`). Six families of already-written links start working.
-3. **P0-3** — click everything in the project workspace. The mount bug (F1) is fixed, but the
-   screen has never been exercised end to end.
-4. **P1** — `/projects/new`, `/classrooms`, the class console, the student record.
-5. **P2** — `/insights`, `/people` (+`/people/:id`), `/profile`, `/notifications`, `/settings`.
-6. **P3** — the group builder (`@dnd-kit` is installed and used by the board; make it earn its
+1. **P0-3** — click everything in the project workspace (the mount bug F1 is fixed, but the
+   screen has never been exercised end to end with a mouse).
+2. **P1-4** — `/classrooms/:id/students/:studentId`.
+3. **P2** — `/insights`, `/people` (+`/people/:id`), `/profile`, `/notifications`, `/settings`.
+4. **P3** — the group builder (`@dnd-kit` is installed and used by the board; make it earn its
    place here, with a keyboard path).
-7. **P4** — delete `_pending.tsx`, then a mobile + ink-scheme sweep over every route, a
-   liveness sweep with two browsers, and `README.md` (already written — keep it accurate).
+5. **P4** — delete `_pending.tsx`, then a mobile + ink-scheme sweep over the routes that
+   exist, a liveness sweep with two browsers, and `README.md`.
 
 ## The doc set
 

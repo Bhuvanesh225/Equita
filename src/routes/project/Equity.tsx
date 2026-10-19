@@ -63,13 +63,22 @@ export function EquityPanel({
               <Meter
                 key={part.key}
                 label={
-                  <span className="row" style={{ gap: "0.4rem" }}>
+                  /*
+                   * The weight has to be on screen — a weighted average nobody
+                   * can see is a number nobody can argue with — but the meter's
+                   * label column is 7.5rem wide, and "Engagement 15% weight" is
+                   * 150px of type in a 120px slot, which clipped it. The
+                   * abbreviation fits, and the full sentence moves to the hint.
+                   */
+                  <span className="row" style={{ gap: "0.35rem" }}>
                     {part.label}
-                    <span className="label">{Math.round((equity.weights[part.key] ?? 0) * 100)}% weight</span>
+                    <span className="label" title={`${Math.round((equity.weights[part.key] ?? 0) * 100)}% of the fairness score`}>
+                      {Math.round((equity.weights[part.key] ?? 0) * 100)}%
+                    </span>
                   </span>
                 }
                 value={equity.parts[part.key]}
-                hint={part.blurb}
+                hint={`${part.blurb} — worth ${Math.round((equity.weights[part.key] ?? 0) * 100)}% of the score`}
               />
             ))}
           </div>
@@ -90,7 +99,7 @@ export function EquityPanel({
                 <div className="stack stack--tight">
                   <div className="row row--between" style={{ gap: "0.5rem" }}>
                     <span className="row" style={{ gap: "0.4rem", minWidth: 0 }}>
-                      <Link to={`/people/${member.id}`} className="truncate" style={{ fontWeight: 600, fontSize: "var(--text-sm)" }}>
+                      <Link to={`/people/${member.id}`} className="truncate tap" style={{ fontWeight: 600, fontSize: "var(--text-sm)" }}>
                         {member.name}
                       </Link>
                       <StateChip state={member.state} hours={member.owedCreditedHours} />

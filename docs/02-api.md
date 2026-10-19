@@ -170,17 +170,19 @@ All of these are mounted at `/api/projects/…` (fixed — see `docs/00-state.md
 | POST | `/api/classrooms/:id/projects` | `{name, brief?, dueAt?, teams:[{name, memberIds}], autoPlan?, autoAssign?}` | `{created:[{id,name,members,planned,placed}]}` |
 | GET | `/api/classrooms/:id/analytics` | — | `{analytics, trend, coverage, students, projects}` |
 
-`GET /api/classrooms/:id` top-level keys:
+`GET /api/classrooms/:id` top-level keys: (**`even` is the even share of _delivered_ work** —
+`member.even.credited`. The committed share is exposed separately as `evenCommitted`. Getting
+this wrong once produced two different "hours behind" on one screen; see T24.)
 
 | Key | For |
 | --- | --- |
 | `classroom` | `{id, name, code, subject, term, ownerId, policy, createdAt}` — `code` is the join code to display |
-| `projects` | `ClassProject[]` — each with `equity`, `modest:{score,gini,daysLeft,progress,done,tasks,unassigned,open}`, `members[]`, `attention[]`, `weakest`, `strongest` |
-| `students` | `ClassStudent[]` — `top`, `clusters`, `growth`, `projects[]` (per-project `{state,committed,credited,even,owed,flags}`), `totals`, `state`, `flags[]`, `owed`, `share`, `acrossGroups` |
+| `projects` | `ClassProject[]` — each with `equity`, `reviewCount`, `modest:{score,gini,daysLeft,progress,done,tasks,unassigned,open}`, `members[]`, `attention[]`, `weakest`, `strongest` |
+| `students` | `ClassStudent[]` — `top`, `clusters`, `growth`, `projects[]` (per-project `{state,committed,credited,even,owed,flags}`), `totals` (`{committed,credited,even,evenCommitted,open,capacity,available}`), `state`, `flags[]`, `owed`, `share`, `acrossGroups` |
 | `nudges` | class-scoped nudges, with `subjectId`, `action.href` |
 | `nudgeCounts` | `{total, critical, warn, info}` |
 | `coverage` | `[{cluster, name, holders, strong, meanLevel, topHolders:[{id,name,level}]}]` |
-| `analytics` | `{groups, students, meanScore, worstScore, bestScore, meanGini, meanProgress, behindCount, overloadedCount, unplaced, neverReviewed, spreadOfStates, projectsWithoutDeadline, totalOpenHours}` |
+| `analytics` | `{groups, students, meanScore, worstScore, bestScore, meanGini, meanProgress, behindCount, overloadedCount, unplaced, neverReviewed, spreadOfStates, projectsWithoutDeadline, totalOpenHours}` — `neverReviewed` is the number of groups with no peer reviews on them (it used to be a constant `0`; see T23). |
 | `trend` | `[{week, takenAt, score, gini, projects}]` |
 | `attention` | `[{kind, studentId, name, hue, detail, severity}]` |
 | `viewer` | `{id, isTeacher, role}` |

@@ -28,7 +28,7 @@ import {
 } from "../lib/format";
 import { Avatar, MemberDot, Panel, StateChip, Tag } from "./ui";
 import { Confirm } from "./overlays";
-import { IconAlert, IconArrowRight, IconBlocked, IconClock, IconInfo, IconLink } from "./icons";
+import { IconAlert, IconArrowRight, IconBlocked, IconClock, IconCopy, IconInfo, IconLink } from "./icons";
 import type { ActivityEntry, EquityFlag, Nudge, Task, TaskStatus } from "../lib/types";
 
 /* ---------- page furniture ---------------------------------------------- */
@@ -120,9 +120,56 @@ export function ScoreMark({ score, gini, label }: { score: number; gini?: number
   );
 }
 
+/* ---------- the join code ----------------------------------------------- */
+
+/**
+ * A class's join code, with the one action anybody ever takes on it. It appears
+ * on the class list and again in the console, so it is defined once here rather
+ * than twice with two different copies of the failure message.
+ */
+export function JoinCode({ code, compact }: { code: string; compact?: boolean }) {
+  const { push } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const copy = () => {
+    void navigator.clipboard?.writeText(code).then(
+      () => {
+        setCopied(true);
+        push({ title: `Join code ${code} copied`, detail: "Anyone with an Equita account can use it to join this class.", tone: "good" });
+        setTimeout(() => setCopied(false), 2000);
+      },
+      () => push({ title: "The clipboard was blocked", detail: `The code is ${code} — select it and copy by hand.`, tone: "bad" }),
+    );
+  };
+
+  return (
+    <span className="row" style={{ gap: "0.35rem", minWidth: 0 }}>
+      {compact ? null : <span className="label">Code</span>}
+      <Tag edge title={`Students type ${code} to join this class`}>
+        <span className="tnum" style={{ letterSpacing: "0.08em" }}>
+          {code}
+        </span>
+      </Tag>
+      <button type="button" className="btn btn--ghost btn--icon btn--sm" onClick={copy} aria-label={`Copy the join code ${code}`} title={`Copy ${code}`}>
+        {copied ? <span aria-hidden="true">✓</span> : <IconCopy size={13} />}
+      </button>
+    </span>
+  );
+}
+
 /* ---------- flags and nudges -------------------------------------------- */
 
-export function FlagList({ flags, limit = 4 }: { flags: EquityFlag[]; limit?: number }) {
+/**
+ * The shape a flag actually has to have to be rendered.
+ *
+ * `scope` and the member fields are optional because the classroom engine hands
+ * a student their flags from several groups at once, where the scope is not the
+ * interesting part — the project it came from is. Widening the prop here keeps
+ * the one flag renderer rather than growing a second one for that case.
+ */
+export type FlagLike = Pick<EquityFlag, "kind" | "severity" | "detail"> & Partial<Pick<EquityFlag, "scope" | "memberId" | "memberName">>;
+
+export function FlagList({ flags, limit = 4 }: { flags: FlagLike[]; limit?: number }) {
   const [open, setOpen] = useState(false);
   if (!flags.length) return null;
   const shown = open ? flags : flags.slice(0, limit);
@@ -144,7 +191,7 @@ export function FlagList({ flags, limit = 4 }: { flags: EquityFlag[]; limit?: nu
         </div>
       ))}
       {flags.length > limit ? (
-        <button type="button" className="btn btn--ghost btn--sm" onClick={() => setOpen((v) => !v)}>
+        <button type="button" className="btn btn--ghost btn--sm" style={{ alignSelf: "flex-start" }} onClick={() => setOpen((v) => !v)}>
           {open ? "Show fewer" : `Show ${flags.length - limit} more`}
         </button>
       ) : null}
@@ -382,7 +429,13 @@ export function TaskCard({
       <button
         type="button"
         className="card__title"
-        style={{ background: "none", border: 0, padding: 0, textAlign: "left", cursor: onOpen ? "pointer" : "grab", font: "inherit", fontWeight: 550, color: "inherit" }}
+        /*
+         * The title is the control that opens the task, so it carries the same
+         * 24px floor as any other target. The padding is paid back with a
+         * negative margin, which is the house trick for growing a hit box
+         * without moving the type.
+         */
+        style={{ background: "none", border: 0, padding: "0.25rem 0", margin: "-0.25rem 0", textAlign: "left", cursor: onOpen ? "pointer" : "grab", font: "inherit", fontWeight: 550, color: "inherit" }}
         onClick={onOpen}
       >
         {task.title}

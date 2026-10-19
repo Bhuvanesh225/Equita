@@ -608,7 +608,7 @@ export interface ClassStudent {
     open: number;
     flags: Array<{ kind: string; severity: Severity; detail: string }>;
   }>;
-  totals: { committed: number; credited: number; even: number; open: number; capacity: number; available?: number; tasks?: number; done?: number };
+  totals: { committed: number; credited: number; even: number; evenCommitted?: number; open: number; capacity: number; available?: number; tasks?: number; done?: number };
   state: MemberState;
   flags: Array<{ kind: string; severity: Severity; detail: string; projectName?: string; projectId?: string }>;
   owed: number;
@@ -623,6 +623,8 @@ export interface ClassProject {
   status: ProjectStatus;
   dueAt: string | null;
   memberCount: number;
+  /** How many peer reviews have been written on this group. */
+  reviewCount?: number;
   equity: Equity;
   modest: {
     score: number;
@@ -641,7 +643,10 @@ export interface ClassProject {
     state: MemberState;
     committed: number;
     credited: number;
+    /** The even share of *delivered* work — what every load bar draws. */
     even: number;
+    /** The even share of work taken on, which is a different number. */
+    evenCommitted?: number;
     owedCreditedHours: number;
     open: number;
     capacity: number;
@@ -670,6 +675,7 @@ export interface ClassroomOverview {
     behindCount: number;
     overloadedCount: number;
     unplaced: number;
+    neverReviewed: number;
     spreadOfStates: Record<string, number>;
     projectsWithoutDeadline: number;
     totalOpenHours: number;

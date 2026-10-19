@@ -9,7 +9,7 @@
  * the brief, place the unclaimed work, and add a task by hand — and each of them
  * opens a dialog rather than writing anything on its own.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import { patch } from "../lib/api";
@@ -72,6 +72,20 @@ export default function ProjectWorkspace() {
   const [planOpen, setPlanOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
 
+  /*
+   * `/projects/:id?plan=1` is how the "Plan from the brief" button on a toast
+   * lands after a project is created with a brief on it. The parameter is
+   * consumed on arrival — the dialog is a consequence of the press, not of the
+   * URL staying there — so a later reload does not reopen it unbidden.
+   */
+  useEffect(() => {
+    if (params.get("plan") !== "1") return;
+    setPlanOpen(true);
+    const next = new URLSearchParams(params);
+    next.delete("plan");
+    setParams(next, { replace: true });
+  }, [params, setParams]);
+
   const { data, loading, error, refresh } = useApi<Workspace>(`/api/projects/${projectId}`);
   const { data: skillData } = useApi<{ skills: Skill[] }>("/api/skills");
   const moves = useTaskMoves(refresh);
@@ -132,7 +146,9 @@ export default function ProjectWorkspace() {
             {workspace.project.classroom ? (
               <>
                 {" · "}
-                <Link to={`/classrooms/${workspace.project.classroom.id}`}>{workspace.project.classroom.name}</Link>
+                <Link className="tap" to={`/classrooms/${workspace.project.classroom.id}`}>
+                  {workspace.project.classroom.name}
+                </Link>
               </>
             ) : null}
           </>
