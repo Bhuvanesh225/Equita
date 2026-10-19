@@ -6,7 +6,7 @@
  * than the whole application.
  */
 import { Suspense, lazy, type ReactNode } from "react";
-import { Navigate, Outlet, RouterProvider, createBrowserRouter, useLocation } from "react-router-dom";
+import { Navigate, Outlet, RouterProvider, createBrowserRouter, useLocation, useParams } from "react-router-dom";
 
 import { SessionProvider, useSession } from "./lib/session";
 import { LiveProvider, ToastProvider } from "./lib/live";
@@ -90,12 +90,24 @@ const router = createBrowserRouter([
           { path: "/projects", element: page(<Projects />) },
           { path: "/projects/new", element: page(<NewProject />) },
           { path: "/projects/:projectId", element: page(<ProjectWorkspace />) },
+          /*
+           * The engines link to a task on the board as `/projects/:id/board?task=…`,
+           * which is not the shape this workspace reads (`?tab=board&task=…`). Rather
+           * than rewrite five server files and migrate every notification row already
+           * stored with the old link, the old shape is served here. The same element
+           * handles it — it reads `:projectId` and ignores the extra segment.
+           */
+          { path: "/projects/:projectId/board", element: page(<ProjectWorkspace />) },
           { path: "/classrooms", element: page(<Classrooms />) },
           { path: "/classrooms/:classroomId", element: page(<ClassroomConsole />) },
           { path: "/classrooms/:classroomId/groups", element: page(<GroupBuilder />) },
+          /* A class group is a project in this data model, so "open the group" is the board. */
+          { path: "/classrooms/:classroomId/groups/:projectId", element: <GroupRedirect /> },
           { path: "/classrooms/:classroomId/students/:studentId", element: page(<StudentRecord />) },
           { path: "/insights", element: page(<Insights />) },
           { path: "/people", element: page(<People />) },
+          /* `/api/insights/search` and two built screens already link to a person this way. */
+          { path: "/people/:personId", element: page(<People />) },
           { path: "/profile", element: page(<Profile />) },
           { path: "/notifications", element: page(<Notifications />) },
           { path: "/settings", element: page(<Settings />) },
@@ -105,6 +117,12 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
+/** The engine's `/classrooms/:id/groups/:projectId` resolves to that group's board. */
+function GroupRedirect() {
+  const { projectId = "" } = useParams<{ projectId: string }>();
+  return <Navigate to={`/projects/${projectId}`} replace />;
+}
 
 export function App() {
   return (

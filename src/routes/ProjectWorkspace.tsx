@@ -38,10 +38,33 @@ const TABS: Array<{ value: Tab; label: string }> = [
   { value: "reviews", label: "Reviews" },
 ];
 
+/**
+ * The engines say `?panel=equity` and `?panel=plan`; this screen says `?tab=`. Both
+ * are accepted, because notification rows written by an earlier version of the
+ * server are already stored with the panel spelling and a broken link in a
+ * notification is a bug no later fix can reach.
+ */
+const PANEL_TABS: Record<string, Tab> = {
+  board: "board",
+  plan: "board",
+  equity: "equity",
+  fairness: "equity",
+  team: "people",
+  people: "people",
+  activity: "activity",
+  reviews: "reviews",
+};
+
+function readTab(params: URLSearchParams): Tab {
+  const requested = params.get("tab") ?? params.get("panel");
+  if (requested && requested in PANEL_TABS) return PANEL_TABS[requested];
+  return "board";
+}
+
 export default function ProjectWorkspace() {
   const { projectId = "" } = useParams();
   const [params, setParams] = useSearchParams();
-  const tab = (params.get("tab") as Tab | null) ?? "board";
+  const tab = readTab(params);
   const view = (params.get("view") as "board" | "table" | null) ?? "board";
   const taskParam = params.get("task");
   const [onlyUnassigned, setOnlyUnassigned] = useState(false);
@@ -57,6 +80,9 @@ export default function ProjectWorkspace() {
     const next = new URLSearchParams(params);
     if (value === null) next.delete(key);
     else next.set(key, value);
+    // Switching tabs must also drop the engine's `panel` spelling, or choosing
+    // "Board" (which means deleting `tab`) would fall back to the panel it arrived with.
+    if (key === "tab") next.delete("panel");
     setParams(next, { replace: true });
   };
 
