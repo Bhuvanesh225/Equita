@@ -28,7 +28,7 @@ import { IconArrowRight, IconSearch } from "../components/icons";
 import type { Dashboard, SearchResult } from "../lib/types";
 
 interface PersonCard {
-  person: { id: string; name: string; headline: string; hue: number; capacity: number; school: string };
+  person: { id: string; name: string; headline: string; hue: number; capacity: number; school?: string | null };
   top: Array<{ slug: string; name: string; cluster: string; level: number; appetite: number }>;
   clusters: Array<{ cluster: string; name: string; level: number }>;
   sharedProjects: Array<{ id: string; name: string }>;
@@ -46,6 +46,10 @@ function PeopleSearch() {
   const [params, setParams] = useSearchParams();
   const settled = params.get("q") ?? "";
   const [draft, setDraft] = useState(settled);
+
+  useEffect(() => {
+    setDraft(settled);
+  }, [settled]);
 
   /*
    * The query lives in the URL so a search is shareable and the back button

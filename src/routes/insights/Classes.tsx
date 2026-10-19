@@ -15,7 +15,7 @@
 import { Link } from "react-router-dom";
 
 import { useApi } from "../../lib/live";
-import { hours, pct, plural } from "../../lib/format";
+import { decimal, hours, pct, plural } from "../../lib/format";
 import { Panel, Spinner, Stat, Tag } from "../../components/ui";
 import { Quiet, ScoreMark } from "../../components/blocks";
 import { ComparisonBars, LineChart } from "../../components/charts";
@@ -43,7 +43,7 @@ export function ClassPanel({ summary }: { summary: ClassSummary }) {
     }
 
     const { analytics, projects, coverage, trend } = data;
-    const scored = trend.filter((point) => point.score > 0);
+    const scored = trend;
     const weakest = [...coverage].sort((a, b) => a.meanLevel - b.meanLevel).slice(0, 3);
     const groupsScored = [...projects].sort((a, b) => a.score - b.score);
 
@@ -51,13 +51,13 @@ export function ClassPanel({ summary }: { summary: ClassSummary }) {
       <div className="stack stack--loose">
         <div className="grid grid--stats">
           <Stat
-            value={analytics.groups ? analytics.meanScore.toFixed(1) : "—"}
+            value={analytics.groups ? decimal(analytics.meanScore) : "—"}
             label="Mean fairness"
             tone={analytics.meanScore >= 70 ? "accent" : analytics.meanScore >= 55 ? "over" : "risk"}
             note={analytics.groups ? `of ${plural(analytics.groups, "group")}` : "no groups yet"}
           />
           <Stat
-            value={analytics.groups ? analytics.worstScore.toFixed(1) : "—"}
+            value={analytics.groups ? decimal(analytics.worstScore) : "—"}
             label="Weakest group"
             tone={analytics.worstScore >= 70 ? "accent" : analytics.worstScore >= 55 ? "over" : "risk"}
             note={groupsScored[0] ? groupsScored[0].name : "nothing to compare"}
@@ -112,7 +112,7 @@ export function ClassPanel({ summary }: { summary: ClassSummary }) {
 
         {scored.length > 1 ? (
           <LineChart
-            ariaLabel={`Mean fairness of ${summary.name} each week, from ${scored[0].score.toFixed(0)} to ${scored[scored.length - 1].score.toFixed(0)} out of 100`}
+             ariaLabel={`Mean fairness of ${summary.name} each week, from ${decimal(scored[0].score, 0)} to ${decimal(scored[scored.length - 1].score, 0)} out of 100`}
             min={0}
             max={100}
             height={148}
@@ -142,13 +142,13 @@ export function ClassPanel({ summary }: { summary: ClassSummary }) {
                   <span
                     className="meter__track"
                     style={{ width: "4.5rem" }}
-                    title={`Mean self-reported level ${row.meanLevel.toFixed(2)} of 5 across ${plural(row.holders, "holder")}. The tick is 3 of 5.`}
+                     title={`Mean self-reported level ${decimal(row.meanLevel, 2)} of 5 across ${plural(row.holders, "holder")}. The tick is 3 of 5.`}
                   >
                     <span className="meter__fill meter--accent" style={{ width: `${Math.max(0, Math.min(100, (row.meanLevel / 5) * 100))}%` }} />
                     <span className="meter__mark" style={{ left: "60%" }} />
                   </span>
                   <span className="tnum card__meta nowrap">
-                    {row.meanLevel.toFixed(1)}/5 · {plural(row.holders, "holder")}
+                     {decimal(row.meanLevel)}/5 · {plural(row.holders, "holder")}
                   </span>
                 </span>
               </div>

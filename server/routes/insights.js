@@ -29,9 +29,8 @@ const myProjects = (userId) =>
     `SELECT DISTINCT p.* FROM projects p
        LEFT JOIN project_members pm ON pm.project_id = p.id
        LEFT JOIN enrollments e ON e.classroom_id = p.classroom_id AND e.user_id = ?
-      WHERE (pm.user_id = ? OR e.user_id = ? OR p.owner_id = ?) AND p.status != 'archived'
-      ORDER BY p.due_at IS NULL, p.due_at, p.updated_at DESC`,
-    userId,
+      WHERE (pm.user_id = ? OR p.owner_id = ? OR e.role IN ('teacher', 'assistant')) AND p.status != 'archived'
+       ORDER BY p.due_at IS NULL, p.due_at, p.updated_at DESC`,
     userId,
     userId,
     userId,
@@ -306,9 +305,8 @@ insightsRouter.get("/search", (req, res) => {
     `SELECT DISTINCT p.id, p.name, p.mode, p.classroom_id FROM projects p
        LEFT JOIN project_members pm ON pm.project_id = p.id
        LEFT JOIN enrollments e ON e.classroom_id = p.classroom_id AND e.user_id = ?
-      WHERE (pm.user_id = ? OR e.user_id = ? OR p.owner_id = ?) AND (p.name LIKE ? OR p.brief LIKE ?)
-      LIMIT 8`,
-    userId,
+      WHERE (pm.user_id = ? OR p.owner_id = ? OR e.role IN ('teacher', 'assistant')) AND (p.name LIKE ? OR p.brief LIKE ?)
+       LIMIT 8`,
     userId,
     userId,
     userId,
@@ -365,7 +363,14 @@ insightsRouter.get("/people/:id", (req, res) => {
   }));
   const profile = { id: user.id, name: user.name, skills: new Map(skills.map((s) => [s.slug, s])) };
   res.json({
-    person: { id: user.id, name: user.name, headline: user.headline, hue: user.hue, capacity: user.capacity, school: user.school },
+    person: {
+      id: user.id,
+      name: user.name,
+      headline: user.headline,
+      hue: user.hue,
+      capacity: user.capacity,
+      school: req.user.id === user.id || shared.length > 0 ? user.school : null,
+    },
     top: topSkills(profile, 8),
     clusters: clusterStrength(profile),
     sharedProjects: shared,

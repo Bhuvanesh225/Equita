@@ -35,7 +35,7 @@ type Card = Dashboard["cards"][number];
 
 export default function Insights() {
   const { data, loading, error, refresh } = useApi<Dashboard>("/api/insights/dashboard");
-  const { data: classList } = useApi<{ classrooms: Classroom[] }>("/api/classrooms");
+  const classList = useApi<{ classrooms: Classroom[] }>("/api/classrooms");
 
   if (loading && !data) {
     return (
@@ -72,8 +72,9 @@ export default function Insights() {
   const mine = cards.filter((card) => card.mine);
   const unclaimed = cards.filter((card) => card.unassigned > 0);
   const teacher = dashboard.user.role === "teacher";
-  const studentClasses = (classList?.classrooms ?? []).filter((entry) => entry.role !== "teacher");
-  const nothingAtAll = !cards.length && !classes.length && !studentClasses.length;
+  const studentClasses = (classList.data?.classrooms ?? []).filter((entry) => entry.role !== "teacher");
+  const classListReady = teacher || !!classList.data;
+  const nothingAtAll = classListReady && !cards.length && !classes.length && !studentClasses.length;
 
   return (
     <div className="page">
@@ -131,7 +132,27 @@ export default function Insights() {
         </div>
       ) : null}
 
-      {!teacher && studentClasses.length ? <StudentClasses classrooms={studentClasses} /> : null}
+       {!teacher && classList.loading && !classList.data ? (
+         <Panel title="Your classes">
+           <Spinner label="Reading your classes" />
+         </Panel>
+       ) : null}
+
+       {!teacher && classList.error ? (
+         <Panel title="Your classes">
+           <EmptyState
+             title="Your classes did not load"
+             text={classList.error}
+             action={
+               <button type="button" className="btn btn--outline btn--sm" onClick={classList.refresh}>
+                 Try again
+               </button>
+             }
+           />
+         </Panel>
+       ) : null}
+
+       {!teacher && classList.data && studentClasses.length ? <StudentClasses classrooms={studentClasses} /> : null}
 
       <HandPanel dashboard={dashboard} />
     </div>
@@ -201,13 +222,13 @@ function ScorePanel({ cards }: { cards: Card[] }) {
                  */
                 <span className="row" style={{ gap: "0.35rem" }}>
                   {part.label}
-                  <span className="label" title={`${Math.round((weights[part.key] ?? 0) * 100)}% of the fairness score`}>
-                    {Math.round((weights[part.key] ?? 0) * 100)}%
+                  <span className="label" title={`${pct(weights[part.key] ?? 0)} of the fairness score`}>
+                    {pct(weights[part.key] ?? 0)}
                   </span>
                 </span>
               }
               value={meanParts[part.key]}
-              hint={`${part.blurb} — worth ${Math.round((weights[part.key] ?? 0) * 100)}% of the score`}
+              hint={`${part.blurb} — worth ${pct(weights[part.key] ?? 0)} of the score`}
             />
           ))}
           {mixedWeights ? (
@@ -449,12 +470,10 @@ function HandPanel({ dashboard }: { dashboard: Dashboard }) {
 
         {!attention.length && !dashboard.nudges.length ? (
           <Quiet>
-            Nothing to act on. Every group you can see is inside its own limits: nobody is carrying more than their share, nothing is past its
-            date, and the work on every board has an owner.
+             The engine returned no class attention or personal nudges for the data it can currently see.
           </Quiet>
         ) : null}
       </div>
     </Panel>
   );
 }
-
