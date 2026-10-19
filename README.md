@@ -15,7 +15,7 @@ between what was promised and what actually landed.
 
 ## Run it
 
-Node **22.5 or newer** is required (the server uses `node:sqlite`, with no native build step).
+Node **24.16.0** is pinned in `.nvmrc` (22.5+ also works because the server uses `node:sqlite`, with no native build step).
 
 ```bash
 npm install
@@ -30,10 +30,29 @@ Other scripts:
 
 ```bash
 npm run build        # production build
+npm start             # serve the built app and API on :8787
 npm run typecheck    # tsc --noEmit
 npm run seed         # wipe and reseed the demo dataset
 npm run smoke        # hit every endpoint the screens need and assert a status
+npm test              # offline integration test: fresh DB, real server, both demo roles
 ```
+
+The same checks are available as `make test`. It starts its own local API and SQLite database,
+so it does not need a running dev server or an internet connection.
+
+## Deploy with Docker
+
+The image builds the Vite client and runs the Express server that serves the client, API and live
+event stream on one port. The SQLite data directory is a named volume so a container restart does
+not erase work:
+
+```bash
+docker build -t equita .
+docker run --rm -p 8787:8787 -v equita-data:/app/data equita
+```
+
+Open <http://localhost:8787>. The first boot seeds the demonstration dataset when the volume is
+empty. Do not bake secrets into the image; this demo uses the built-in accounts listed below.
 
 ## Demo accounts
 
@@ -54,8 +73,8 @@ opened with one click from the sign-in screen (no password). Start with:
 | Auth (`/login`, `/signup`, `/join`) | built |
 | Today (`/today`) | built |
 | Projects (`/projects`, `/projects/:id`) | built — board, fairness panel, planning, allocation, task sheet, reviews |
-| Classes (`/classrooms`, console, group builder, student record) | **in progress** |
-| Fairness, People, Profile, Notifications, Settings | **in progress** |
+| Classes (`/classrooms`, console, group builder, student record) | built |
+| Fairness, People, Profile, Notifications, Settings | built |
 
 ## How it is built
 

@@ -582,7 +582,10 @@ export function buildProject(people, classroom, rawStory, { planSummary } = {}) 
   const weeks = story.checkinWeeks ?? 3;
   for (let w = 0; w < weeks; w++) {
     const at = iso(Date.now() - w * 7 * DAY - rand() * 36 * HOUR);
-    const week = weekKey(new Date(at));
+    /* Keep the label anchored to the seven-day slot, not the jittered timestamp.
+     * A 36-hour jitter can cross a calendar week boundary and make adjacent
+     * seeded check-ins share the unique (project, person, week) key. */
+    const week = weekKey(new Date(Date.now() - w * 7 * DAY));
     for (const key of memberKeys) {
       const person = memberOf(key);
       if (silentIds.has(person.id)) continue;

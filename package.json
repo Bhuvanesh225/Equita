@@ -10,10 +10,12 @@
     "dev:web": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "node server/index.js",
     "typecheck": "tsc --noEmit",
     "seed": "node server/seed.js --reset",
     "smoke": "node scripts/smoke.mjs",
-    "selfcheck": "node scripts/smoke.mjs"
+    "selfcheck": "node scripts/smoke.mjs",
+    "test": "node scripts/test.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
