@@ -39,9 +39,14 @@ export default function Dashboard() {
           title="The dashboard did not load"
           text={error ?? "Something went wrong reading your work."}
           action={
-            <button type="button" className="btn btn--primary" onClick={refresh}>
-              Try again
-            </button>
+            <>
+              <button type="button" className="btn btn--primary" onClick={refresh}>
+                Try again
+              </button>
+              <Link className="btn btn--outline" to="/projects">
+                Open your groups
+              </Link>
+            </>
           }
         />
       </div>
