@@ -157,5 +157,22 @@ await call(teacher, "DELETE", `/api/tasks/${taskId}`);
 const afterDelete = await call(teacher, "GET", `/api/projects/${projectId}`);
 if (afterDelete.tasks.some((task) => task.id === taskId)) throw new Error("deleted task still appears on the board");
 
+// The event stream is the live-update contract. Keep a student connected while
+// the teacher writes a comment and require the addressed SSE frame to arrive.
+const stream = await fetch(`${base}/events`, { headers: { cookie: sessions.get(student), accept: "text/event-stream" } });
+if (!stream.body) throw new Error("the live event stream has no body");
+const reader = stream.body.getReader();
+const decoder = new TextDecoder();
+const hello = decoder.decode((await reader.read()).value);
+if (!hello.includes('"type":"hello"')) throw new Error("the live stream did not send its hello frame");
+const liveComment = `live write ${Date.now()}`;
+await call(teacher, "POST", `/api/tasks/${beforeWorkspace.tasks[0].id}/comments`, { body: `@Maya ${liveComment}` });
+const event = await Promise.race([
+  reader.read(),
+  new Promise((_, reject) => setTimeout(() => reject(new Error("the addressed live event did not arrive")), 5000)),
+]);
+if (!decoder.decode(event.value).includes('"type":"comment"')) throw new Error("the live stream returned the wrong event");
+await reader.cancel();
+
 console.log("write-path passed: plan, tasks, assignment, ledger, project state, profile, class management, groups, notifications, and deletion");
 await new Promise((resolve) => server.close(resolve));

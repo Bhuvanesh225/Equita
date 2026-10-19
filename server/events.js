@@ -79,14 +79,16 @@ export function record(event) {
 
   if (!event.quiet) {
     const audience = event.projectId ? projectAudience(event.projectId) : event.classroomId ? classroomAudience(event.classroomId) : { userIds: [], classroomIds: [] };
-    publish(event.type ?? event.verb, {
-      ...(event.meta || {}),
-      projectId: event.projectId ?? null,
-      classroomId: event.classroomId ?? null,
-      actorId: event.actorId ?? null,
-      subject: event.subject ?? "",
-      activityId: id,
-    }, {
+    publish({
+      type: event.type ?? event.verb,
+      payload: {
+        ...(event.meta || {}),
+        projectId: event.projectId ?? null,
+        classroomId: event.classroomId ?? null,
+        actorId: event.actorId ?? null,
+        subject: event.subject ?? "",
+        activityId: id,
+      },
       to: [...new Set([...(audience.userIds || []), ...((event.notify ?? []).map((n) => n.userId))])],
       classrooms: audience.classroomIds,
       broadcast: event.broadcast,
