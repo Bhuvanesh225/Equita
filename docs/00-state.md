@@ -1,6 +1,6 @@
 # 00 — State of the build (verified)
 
-Snapshot taken **2026-10-19, after the fourth working session**. Every claim below was checked
+Snapshot taken **2026-10-19, after the continued build pass**. Every claim below was checked
 against the repository and, where possible, against the running servers — not from memory.
 
 > If you are reading this later: re-verify before trusting it. Run the commands in
@@ -17,8 +17,10 @@ against the repository and, where possible, against the running servers — not 
 | `GET /api/health` | `{"ok":true,...}` |
 | `node scripts/smoke.mjs` | 28/28 for `teacher` and for `student` |
 | `node scripts/encscan.mjs` | `clean` |
-| Version control | **yes** — two commits, the second one the link aliases (`4446d11`) |
+| Version control | **yes** — continued commits through group builder, privacy fixes, and reproducible test setup |
 | `README.md` | written; keep it accurate as screens land |
+| `npm test` | **clean** — fresh disposable SQLite database, real server, smoke as teacher and student |
+| Docker/runtime | `.nvmrc`, `Dockerfile`, `Makefile`, and `scripts/test.mjs` present |
 
 Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes ·
 6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins ·
@@ -27,7 +29,7 @@ Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes 
 **Every id in this file and in `docs/09-demo-data.md` changes on `npm run seed`.** Re-read
 ids with `node scripts/shapes.mjs teacher` after a reseed (T21).
 
-## Screens — 11 of 18 routes are real
+## Screens — all 18 application routes are real
 
 Legend: **built** = real screen · **stub** = renders `<Pending>` from
 `src/routes/_pending.tsx` (5 lines each).
@@ -45,14 +47,14 @@ Legend: **built** = real screen · **stub** = renders `<Pending>` from
 | `/projects/:projectId/board` | (alias → `ProjectWorkspace`) | built | — | same |
 | `/classrooms` | `Classrooms` | **built** | 380 | `GET /api/classrooms`, `POST /api/classrooms`, `POST /api/classrooms/join` |
 | `/classrooms/:classroomId` | `ClassroomConsole` | **built** | 250 + `classroom/*` 1,290 | `GET /api/classrooms/:id` (one call, four tabs), `PATCH`, `POST /students`, `DELETE /students/:userId`, `POST /projects` |
-| `/people/:personId` | `People` | **stub** | 5 | route exists (P0-2); screen not built |
-| `/classrooms/:classroomId/groups` | `GroupBuilder` | **stub** | 5 | `POST /groups/preview`, `POST /projects` |
-| `/classrooms/:classroomId/students/:studentId` | `StudentRecord` | **stub** | 5 | `GET /api/classrooms/:id/students/:userId` |
-| `/insights` | `Insights` | **stub** | 5 | `GET /api/insights/dashboard`, classroom analytics |
-| `/people` | `People` | **stub** | 5 | `GET /api/insights/search`, `GET /api/insights/people/:id` |
-| `/profile` | `Profile` | **stub** | 5 | `GET/PATCH /api/auth/me`, `PUT /api/auth/me/skills` |
-| `/notifications` | `Notifications` | **stub** | 5 | `GET /api/insights/notifications`, `POST .../read` |
-| `/settings` | `Settings` | **stub** | 5 | `PATCH /api/auth/me` |
+| `/people/:personId` | `People` | built | 436 | `GET /api/insights/people/:id` |
+| `/classrooms/:classroomId/groups` | `GroupBuilder` | built | 407 | `POST /groups/preview`, `POST /projects` |
+| `/classrooms/:classroomId/students/:studentId` | `StudentRecord` | built | 428 | `GET /api/classrooms/:id/students/:userId` |
+| `/insights` | `Insights` | built | 460 + `insights/Classes` | dashboard, classroom analytics |
+| `/people` | `People` | built | 436 | `GET /api/insights/search`, `GET /api/insights/people/:id` |
+| `/profile` | `Profile` | built | 448 | `GET/PATCH /api/auth/me`, `PUT /api/auth/me/skills` |
+| `/notifications` | `Notifications` | built | 206 | `GET /api/insights/notifications`, `POST .../read` |
+| `/settings` | `Settings` | built | 344 | `PATCH /api/auth/me`, class leave, sign out |
 | `*` | `NotFound` | built | 63 | — |
 
 All four tabs of `/classrooms/:id` render from the single `GET /api/classrooms/:id` call.
@@ -82,33 +84,23 @@ and for `student`.
 | `src/components/` (ui, blocks, charts, overlays, icons) | 2,023 |
 | built routes + panels | 5,466 |
 
-## Integration debt — routes the app links to but does not have (P0)
+## Integration debt — remaining verification rather than missing screens (P0)
 
-The engine-generated links and the router disagree. These are live 404s — the
-`*` catch-all renders `NotFound`. Verified by reading
-`server/engines/nudges.js`, `server/routes/tasks.js`, `server/routes/planning.js`,
-`server/routes/insights.js` against `src/App.tsx`.
+The engine-generated links are now registered by the router. The remaining P0 work is
+verification: follow one generated link from each family in a browser and exercise every
+workspace write control rather than assuming a successful screenshot proves a POST exists.
 
 | Emitted link | Where from | Correct app route today |
 | --- | --- | --- |
 | `/projects/:id/board?task=:taskId` | nudges, tasks, planning, insights search, copilot | `/projects/:id?tab=board&task=:taskId` |
 | `/projects/:id?panel=equity` | nudges (`unassigned-work`, `share-gap`, `rebalance`) | `/projects/:id?tab=equity` |
 | `/projects/:id?panel=plan` / `?panel=team` | nudges | `/projects/:id?tab=board` / `?tab=people` |
-| `/people/:personId` | insights search, `Equity.tsx`, `ProjectWorkspace.tsx` | **no route at all** |
-| `/classrooms/:classroomId/groups/:projectId` | nudges (`class-*`) | **no route at all** |
+| `/people/:personId` | insights search, `Equity.tsx`, `ProjectWorkspace.tsx` | `People` record |
+| `/classrooms/:classroomId/groups/:projectId` | nudges (`class-*`) | redirect to `/projects/:projectId` |
 | `/classrooms/:classroomId?panel=attention` | copilot | `/classrooms/:classroomId` (ignores the param) |
 
-Two ways to fix, both acceptable — pick one and record it in `docs/10-decisions.md`:
-
-1. **Alias in the router (smallest, safest):** register `/projects/:projectId/board`
-   → same element as the workspace; make `ProjectWorkspace` treat `panel` as an alias
-   for `tab`; add `/people/:personId` → `People` in drawer mode; add
-   `/classrooms/:classroomId/groups/:projectId` → redirect to `/projects/:projectId`.
-2. **Change the emitters** in `server/engines/nudges.js`, `server/routes/{tasks,planning,insights}.js`,
-   `server/engines/copilot.js` to match the router. More files, but one convention.
-
-Aliasing is recommended: it also keeps old notification rows (already stored with the
-old href) working.
+The alias-in-the-router approach is implemented in `src/App.tsx`, preserving old notification
+rows without rewriting stored links.
 
 ## Fixed during this documentation pass (2026-10-18, third sitting)
 

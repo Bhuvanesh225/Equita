@@ -130,10 +130,10 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       this has not been clicked through with a mouse yet — see P0-3).
 
 ### P1-4 · `/classrooms/:classroomId/students/:studentId` — `StudentRecord` *(spec)*
-- [ ] Build from `GET /api/classrooms/:id/students/:userId`: `reading` sentence, `totals`
+- [x] Build from `GET /api/classrooms/:id/students/:userId`: `reading` sentence, `totals`
       stats, `clusters` meters, `top` and `growth`, per-project blocks with `LoadBar`,
       tasks (`late` flag), contributions (the ledger), check-ins, `history` sparkline.
-- [ ] Handle `403` as a clean refusal (`EmptyState`), not a blank page.
+- [x] Handle `403` as a clean refusal (`EmptyState`), not a blank page.
 - [ ] Verified as teacher, as the person themselves, and as a classmate (403).
       *Acceptance:* `inspect` clean at both widths, both schemes; no arithmetic in JSX.
 
@@ -142,7 +142,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
 ## P2 — Reach and fairness
 
 ### P2-1 · `/insights` — `Insights` *(spec)*
-- [ ] Build from `GET /api/insights/dashboard` + per-class `GET /api/classrooms/:id/analytics`.
+- [x] Build from `GET /api/insights/dashboard` + per-class `GET /api/classrooms/:id/analytics`.
 - [ ] The score explained: `ScoreDial` + the five weighted parts as `Meter`s with their weights.
 - [ ] Your projects compared (`ComparisonBars` on `equity.score`) and unassigned hours surfaced.
 - [ ] Trend `LineChart` with an even-share rule line.
@@ -152,15 +152,15 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       every figure traceable to a payload field.
 
 ### P2-2 · `/people` + `/people/:personId` — `People` *(spec; depends on P0-2)*
-- [ ] Search bound to `?q=` with a debounce; results as `PersonRow`.
-- [ ] `PersonRow` → the person's record page from `GET /api/insights/people/:id`
+- [x] Search bound to `?q=` with a debounce; results as `PersonRow`.
+- [x] `PersonRow` → the person's record page from `GET /api/insights/people/:id`
       (`top`, `clusters`, `sharedProjects`, `isTeammate`, `school` when shared).
 - [ ] Explain what is *not* visible when `isTeammate` is false — never invent hours.
       *Acceptance:* `/people/:personId` registered and every existing link to it resolves;
       one request per settled query.
 
 ### P2-3 · `/profile` — `Profile` (rail label "Your strengths") *(spec)*
-- [ ] Skill selection (reuse `SkillPicker` from `src/routes/project/TaskForm.tsx`) with level
+- [x] Skill selection (reuse `SkillPicker` from `src/routes/project/TaskForm.tsx`) with level
       1–5 and appetite 1–5 per skill, grouped by cluster, from `GET /api/skills`.
 - [ ] `capacity` as a range with a live `hours()` readout.
 - [ ] `name`, `headline`, `school`, `hue` (as swatches, not a number input).
@@ -170,14 +170,14 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       reload; `inspect` clean at both widths, both schemes.
 
 ### P2-4 · `/notifications` — `Notifications` *(spec; depends on P0-2)*
-- [ ] List from `GET /api/insights/notifications`; New vs Earlier; tone dot by `kind`.
+- [x] List from `GET /api/insights/notifications`; New vs Earlier; tone dot by `kind`.
 - [ ] Row activation marks read (`POST …/read {ids}`) then navigates to the real route.
 - [ ] `Mark all read` → `{all: true}`.
       *Acceptance:* the rail badge drops to 0 without a reload (this is the cheapest
       end-to-end proof of the live channel — do it deliberately).
 
 ### P2-5 · `/settings` — `Settings` *(spec)*
-- [ ] You / Appearance (scheme via `useScheme`) / Your classes (with join codes) / Account
+- [x] You / Appearance (scheme via `useScheme`) / Your classes (with join codes) / Account
       (sign out behind a `Confirm`).
 - [ ] Close out O-03 (student leaving a class) and O-04 (`role` on `PATCH /me`) or change the
       server sentence that promises the role switch.
@@ -189,17 +189,17 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
 ## P3 — The group builder (the biggest single piece of new craft)
 
 ### P3-1 · `/classrooms/:classroomId/groups` — `GroupBuilder` *(spec)*
-- [ ] Controls: group size `Segmented`, required clusters, `Try another arrangement`
+- [x] Controls: group size `Segmented`, required clusters, `Try another arrangement`
       (`seed + 1`), objective `Stat` + four `parts` `Meter`s, `notes[]` as `Quiet`.
-- [ ] Board: one `.lane` per team (the one deliberate exception to "lanes are people"),
+- [x] Board: one `.lane` per team (the one deliberate exception to "lanes are people"),
       member cards with `@dnd-kit/core` (PointerSensor distance-6, as in
       `src/routes/project/Board.tsx`), per-team coverage bars, `weakestCluster` warning,
       `roles[]` rendered by `label`.
-- [ ] Drag between lanes recomputes coverage client-side (the preview API has no pinning);
+- [x] Drag between lanes recomputes coverage client-side (the preview API has no pinning);
       say so in a `Quiet` line. Re-running the preview discards manual edits.
-- [ ] **Non-drag path**: a `Menu` per member ("Move to Team 2") so the screen is fully usable
+- [x] **Non-drag path**: a `Menu` per member ("Move to Team 2") so the screen is fully usable
       by keyboard and without dragging. dnd is an enhancement.
-- [ ] Commit dialog: assignment name, brief, hand-in date, `autoPlan` and `autoAssign` toggles
+- [x] Commit dialog: assignment name, brief, hand-in date, `autoPlan` and `autoAssign` toggles
       → `POST /api/classrooms/:id/projects`; toast with the created count; navigate to console.
       *Acceptance:* preview verified with two seeds and two sizes; commit verified live (new
       projects appear in the console and in `/projects` with the right members); drag works with
@@ -211,7 +211,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
 ## P4 — Finish line
 
 ### P4-1 · Retire the stub layer
-- [ ] No route renders `<Pending>`; delete `src/routes/_pending.tsx` (its own comment says it
+- [x] No route renders `<Pending>`; delete `src/routes/_pending.tsx` (its own comment says it
       should be deleted when the last stub is gone).
 
 ### P4-2 · Mobile and scheme pass over **every** route
