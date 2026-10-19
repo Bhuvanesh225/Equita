@@ -9,9 +9,8 @@
       name="description"
       content="Equita plans student projects in hours, places the work with the people who can do it, and shows the whole group when one person is carrying the rest. For student teams and for schools."
     />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#14171a" media="(prefers-color-scheme: dark)" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -25,15 +24,13 @@
     />
 
     <!--
-      The scheme is chosen before the first paint, so a reader who prefers dark
-      never sees a white flash. The default is the paper scheme.
+      The light paper scheme is chosen before the first paint so the first frame
+      always matches the product's printed-brief metaphor.
     -->
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem("equita.scheme");
-          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          document.documentElement.dataset.scheme = stored || (prefersDark ? "ink" : "paper");
+          document.documentElement.dataset.scheme = "paper";
         } catch (error) {
           document.documentElement.dataset.scheme = "paper";
         }

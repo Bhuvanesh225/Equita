@@ -20,7 +20,6 @@ import {
   IconClose,
   IconLogout,
   IconMenu,
-  IconMoon,
   IconPeople,
   IconPerson,
   IconProjects,
@@ -28,7 +27,6 @@ import {
   IconSearch,
   IconSettings,
   IconSparkle,
-  IconSun,
   IconToday,
 } from "../components/icons";
 import type { Notification } from "../lib/types";
@@ -42,18 +40,13 @@ interface UiShape {
   copilot: { open: boolean; projectId?: string | null; classroomId?: string | null; question?: string };
   openCopilot: (scope?: { projectId?: string | null; classroomId?: string | null; question?: string }) => void;
   closeCopilot: () => void;
-  scheme: Scheme;
-  setScheme: (next: Scheme) => void;
 }
 
 const UiContext = createContext<UiShape | null>(null);
 
-export type Scheme = "paper" | "ink";
-
 export function UiProvider({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [copilot, setCopilot] = useState<UiShape["copilot"]>({ open: false });
-  const [scheme, setSchemeState] = useState<Scheme>(() => (document.documentElement.dataset.scheme === "ink" ? "ink" : "paper"));
 
   const openPalette = useCallback(() => setPaletteOpen(true), []);
   const closePalette = useCallback(() => setPaletteOpen(false), []);
@@ -61,16 +54,6 @@ export function UiProvider({ children }: { children: ReactNode }) {
     setCopilot({ open: true, projectId: scope?.projectId ?? null, classroomId: scope?.classroomId ?? null, question: scope?.question });
   }, []);
   const closeCopilot = useCallback(() => setCopilot((c) => ({ ...c, open: false })), []);
-  const setScheme = useCallback((next: Scheme) => {
-    document.documentElement.dataset.scheme = next;
-    try {
-      localStorage.setItem("equita.scheme", next);
-    } catch {
-      /* private browsing; the choice simply does not persist */
-    }
-    setSchemeState(next);
-  }, []);
-
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const meta = event.metaKey || event.ctrlKey;
@@ -88,8 +71,8 @@ export function UiProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<UiShape>(
-    () => ({ paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot, scheme, setScheme }),
-    [paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot, scheme, setScheme],
+    () => ({ paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot }),
+    [paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot],
   );
 
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>;
@@ -99,13 +82,6 @@ export function useUi(): UiShape {
   const context = useContext(UiContext);
   if (!context) throw new Error("useUi was used outside UiProvider");
   return context;
-}
-
-/* ---------- the scheme -------------------------------------------------- */
-
-export function useScheme() {
-  const { scheme, setScheme } = useUi();
-  return { scheme, setScheme };
 }
 
 /* ---------- notifications ----------------------------------------------- */
@@ -288,7 +264,6 @@ function Brand() {
 
 function Rail({ counts }: { counts: { projects: number; unread: number; openTasks: number } }) {
   const { user } = useSession();
-  const { scheme, toggle } = useSchemeMenu();
   const items = navItems(counts);
 
   return (
@@ -326,19 +301,9 @@ function Rail({ counts }: { counts: { projects: number; unread: number; openTask
             </span>
           </NavLink>
         ) : null}
-        <button type="button" className="rail__item" onClick={toggle} aria-pressed={scheme === "ink"}>
-          <span className="rail__icon">{scheme === "ink" ? <IconSun size={16} /> : <IconMoon size={16} />}</span>
-          <span className="rail__name">{scheme === "ink" ? "Light" : "Dark"}</span>
-        </button>
       </div>
     </aside>
   );
-}
-
-/** The rail and the account menu toggle the scheme the same way. */
-function useSchemeMenu() {
-  const { scheme, setScheme } = useScheme();
-  return { scheme, toggle: () => setScheme(scheme === "ink" ? "paper" : "ink") };
 }
 
 /* ---------- the top bar ------------------------------------------------- */
@@ -347,7 +312,6 @@ function TopBar({ counts }: { counts: { unread: number; openTasks: number } }) {
   const { user, signOut } = useSession();
   const { openPalette, openCopilot } = useUi();
   const { connected } = useLive();
-  const { scheme, setScheme } = useScheme();
   const [mobileNav, setMobileNav] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -401,7 +365,6 @@ function TopBar({ counts }: { counts: { unread: number; openTasks: number } }) {
                 items={[
                   { label: "Your strengths", onSelect: () => navigate("/profile"), hint: `${user.capacity}h/week` },
                   { label: "Settings", onSelect: () => navigate("/settings") },
-                  { label: scheme === "ink" ? "Switch to light" : "Switch to dark", onSelect: () => setScheme(scheme === "ink" ? "paper" : "ink") },
                   { label: "Sign out", onSelect: () => void signOut(), danger: true },
                 ]}
               />

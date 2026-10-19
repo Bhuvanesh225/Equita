@@ -67,7 +67,7 @@ Every one of these is a live 404 today. Best-effort fix is aliasing in the route
       `student` (403s accepted where a role denial is correct).
 - [x] `scripts/write-path.mjs` added: disposable real-server coverage for planning, task lifecycle,
       assignment, ledger, classes, groups, notifications, deletion, and an addressed SSE event.
-- [x] `EQUITA_WIDTH` / `EQUITA_HEIGHT` / `EQUITA_SCHEME` added to `scripts/shoot.mjs` and
+- [x] `EQUITA_WIDTH` / `EQUITA_HEIGHT` added to `scripts/shoot.mjs` and
       `scripts/inspect.mjs`, with `viewport`/`scheme` in the inspector's output.
 - [ ] Add a `--follow-links` mode (or a small addition to `scripts/smoke.mjs`) that reads the
       `href`s out of a payload and asserts the corresponding client route exists. This is the
@@ -88,7 +88,7 @@ Every one of these is a live 404 today. Best-effort fix is aliasing in the route
 - [x] Gate `mode=class` on teaching at least one class; students get standalone only, with an
       honest hint.
 - [x] Field-level errors from `ApiError.isInput`; `busy` state.
-      *Acceptance:* `tsc` + `inspect` clean at 1440 and 390, both schemes. **Live POST verified:
+      *Acceptance:* `tsc` + `inspect` clean at 1440 and 390 in light mode. **Live POST verified:
       the created project appeared in `/api/projects` with the brief intact and both named
       members added.**
 
@@ -103,7 +103,7 @@ Every one of these is a live 404 today. Best-effort fix is aliasing in the route
 - [x] Handle `meanScore: null` as "no groups yet" (a `Tag`, not a zero).
       *Acceptance:* create-a-class and join-with-a-code both **verified live** — the new class
       came back with a code, and joining with it from `free` actually enrolled that account
-      (`/api/auth/me` memberships). `inspect` clean at 1440 and 390, both schemes, both roles.
+      (`/api/auth/me` memberships). `inspect` clean at 1440 and 390 in light mode, both roles.
 
 ### P1-3 · `/classrooms/:classroomId` — `ClassroomConsole` *(spec; the largest remaining screen)* **built**
 Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Attention`, `Dialogs`).
@@ -127,7 +127,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       creates one project per team, so "the whole class" is one team; the dialog offers the
       group builder as the alternative rather than pretending to do both.
       *Acceptance:* all four tabs render from **one** request; `inspect` clean at 1440 and 390
-      in both schemes for `teacher` and `student`; no card pushes the page sideways at 390.
+       in light mode for `teacher` and `student`; no card pushes the page sideways at 390.
 - [ ] Add/remove/policy/assignment verified **live** (the write path is wired and typed, but
       this has not been clicked through with a mouse yet — see P0-3).
 
@@ -137,7 +137,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       tasks (`late` flag), contributions (the ledger), check-ins, `history` sparkline.
 - [x] Handle `403` as a clean refusal (`EmptyState`), not a blank page.
 - [ ] Verified as teacher, as the person themselves, and as a classmate (403).
-      *Acceptance:* `inspect` clean at both widths, both schemes; no arithmetic in JSX.
+       *Acceptance:* `inspect` clean at both widths in light mode; no arithmetic in JSX.
 
 ---
 
@@ -169,7 +169,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
 - [ ] Save through `useSession().saveSkills` / `saveProfile` — **not** direct API calls.
 - [ ] A read-only "where you are strong" panel computed from `clusters`/`top`.
       *Acceptance:* skills round-trip through a reload; profile edits update the rail without a
-      reload; `inspect` clean at both widths, both schemes.
+       reload; `inspect` clean at both widths in light mode.
 
 ### P2-4 · `/notifications` — `Notifications` *(spec; depends on P0-2)*
 - [x] List from `GET /api/insights/notifications`; New vs Earlier; tone dot by `kind`.
@@ -179,12 +179,12 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       end-to-end proof of the live channel — do it deliberately).
 
 ### P2-5 · `/settings` — `Settings` *(spec)*
-- [x] You / Appearance (scheme via `useScheme`) / Your classes (with join codes) / Account
+- [x] You / Appearance (fixed light palette) / Your classes (with join codes) / Account
       (sign out behind a `Confirm`).
 - [ ] Close out O-03 (student leaving a class) and O-04 (`role` on `PATCH /me`) or change the
       server sentence that promises the role switch.
-      *Acceptance:* the scheme persists across a reload and applies before first paint; sign-out
-      clears the session without the guard bouncing; `inspect` clean in both schemes.
+       *Acceptance:* the light palette applies before first paint; sign-out clears the session without
+       the guard bouncing; `inspect` clean in light mode.
 
 ---
 
@@ -206,7 +206,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
       *Acceptance:* preview verified with two seeds and two sizes; commit verified live (new
       projects appear in the console and in `/projects` with the right members); drag works with
       mouse and pointer; a keyboard-only user can complete every outcome; `inspect` clean at
-      both widths, both schemes.
+       both widths in light mode.
 
 ---
 
@@ -216,11 +216,9 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
 - [x] No route renders `<Pending>`; delete `src/routes/_pending.tsx` (its own comment says it
       should be deleted when the last stub is gone).
 
-### P4-2 · Mobile and scheme pass over **every** route
+### P4-2 · Mobile and light-mode pass over **every** route
 - [ ] `EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs <account> <all routes>` →
       `problems: []` everywhere.
-- [ ] `EQUITA_SCHEME=ink MSYS_NO_PATHCONV=1 node scripts/inspect.mjs <account> <all routes>` →
-      clean everywhere (run both together: `EQUITA_WIDTH=390 EQUITA_SCHEME=ink`).
 - [ ] Re-run the sweep for both `teacher` and `student`.
 
 ### P4-3 · Liveness pass
@@ -234,7 +232,7 @@ Panels live in `src/routes/classroom/` (`Overview`, `Roster`, `Coverage`, `Atten
 - [ ] `node scripts/smoke.mjs` passes for `teacher` and `student`.
 - [ ] `node scripts/encscan.mjs` prints `clean`.
 - [ ] No `<Pending>`; `_pending.tsx` deleted.
-- [ ] `inspect.mjs` `problems: []` on every route at 1440 and 390, in both schemes.
+- [ ] `inspect.mjs` `problems: []` on every route at 1440 and 390 in light mode.
 - [ ] Every screen live-updates.
 - [ ] No hard-coded figures in JSX (grep for digits inside JSX text nodes).
 - [ ] `README.md` accurate.

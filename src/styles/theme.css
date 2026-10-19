@@ -71,38 +71,12 @@
 }
 
 /* ==========================================================================
-   Schemes
+   Light-only visual system
 
-   `paper` is the default. `ink` is a real dark scheme, not an inverted filter:
-   the accent brightens, the signals lighten so they stay legible, and the tone
-   steps between surfaces are re-chosen rather than flipped.
+   Warm paper, dark ink, and signals that stay legible in a classroom and on a
+   printed brief.
    ========================================================================== */
 
-[data-scheme="ink"] {
-  --color-paper: #14171a;
-  --color-paper-2: #1b2023;
-  --color-paper-3: #232a2d;
-  --color-surface: #191e21;
-  --color-ink: #f2f1ed;
-  --color-ink-2: #b6bcb8;
-  --color-ink-3: #8c938f;
-  --color-line: #2c3437;
-  --color-line-strong: #3d474a;
-
-  --color-accent: #3ecfa6;
-  --color-accent-ink: #06231c;
-  --color-accent-soft: #143029;
-  --color-accent-deep: #8fe4c9;
-
-  --color-over: #e2ac52;
-  --color-over-soft: #352a15;
-  --color-risk: #f28f83;
-  --color-risk-soft: #3a201d;
-  --color-quiet: #a8b1b6;
-  --color-quiet-soft: #262d31;
-
-  color-scheme: dark;
-}
 
 /* A stronger outline for anyone who asks for it, ignoring the subtle default. */
 [data-contrast="more"] {
@@ -299,16 +273,6 @@
 }
 @utility member-line {
   background: hsl(var(--member-hue) 42% 58%);
-}
-
-[data-scheme="ink"] .member-ink {
-  color: hsl(var(--member-hue) 58% 72%);
-}
-[data-scheme="ink"] .member-soft {
-  background: hsl(var(--member-hue) 26% 20%);
-}
-[data-scheme="ink"] .member-edge {
-  border-color: hsl(var(--member-hue) 26% 34%);
 }
 
 /* Entrance motion. Every animated element renders in its final state first, so

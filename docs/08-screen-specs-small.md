@@ -139,15 +139,13 @@ router has those aliases, clicking a notification lands on `NotFound`. Fix the r
 **Purpose.** Account and appearance. The landing point for everything that is not about work.
 
 **Data.** `GET /api/auth/me`, `PATCH /api/auth/me` (via session `saveProfile`),
-`POST /api/auth/logout` (via session `signOut`). Appearance uses `useScheme()` from
-`src/shell/AppShell.tsx`.
+`POST /api/auth/logout` (via session `signOut`). Appearance is the fixed light paper palette.
 
 **Layout.** Four `Panel`s:
 - **You** — name, headline, school, capacity (same fields as `/profile`, but here they are
   formal; keep the wording shorter and link to `/profile` for the skill profile).
-- **Appearance** — the paper/ink switch as a `Segmented`, using `useScheme()`. Do not write a
-  second scheme implementation; the pre-paint script in `index.html` reads
-  `localStorage["equita.scheme"]`, which `useScheme` owns.
+- **Appearance** — a short explanation of the fixed paper palette. Do not add a scheme switch;
+  the light mode is part of Equita's printed-brief metaphor.
 - **Your classes** — one row per `memberships[]`: name, `role`, and the join `code` with a
   copy action. (Leaving a class has no endpoint today: `DELETE
   /api/classrooms/:id/students/:userId` requires teaching rights. Either leave the row
@@ -163,11 +161,10 @@ while owning a class) or change that server message. Do not ship a settings scre
 promises a switch it does not have.
 
 **Acceptance.**
-- [ ] The scheme switch persists across a reload and takes effect **before first paint**.
+- [ ] The paper palette applies **before first paint**.
 - [ ] Sign out clears the session and lands on `/login` with the guard not bouncing back.
 - [ ] No field can be saved empty; `Field error` shows the server's sentence.
-- [ ] `inspect` clean at 1440 and 390, **both schemes** (this is the screen where a scheme bug
-      is most likely, because it is where the scheme is switched).
+- [ ] `inspect` clean at 1440 and 390 in light mode.
 
 ---
 

@@ -18,8 +18,8 @@ that a project workspace *is* the brief — the board replaces the task table.
   **tone**, never in lines.
 - **Colour carries meaning only.** The signal colours are not decoration.
 - **The load bar is the signature.** One mark, everywhere, identical.
-- **One scheme variable.** `data-scheme="paper" | "ink"` on `<html>`, set pre-paint in
-  `index.html` from `localStorage["equita.scheme"]`. Everything must work in both.
+- **Light-only scheme.** `<html data-scheme="paper">` is set before paint in `index.html`.
+  The paper palette is the product language and is used everywhere.
 - **Tabular figures for numbers** (`.tnum`), always, so columns line up.
 
 ## Tokens (`src/styles/theme.css`)

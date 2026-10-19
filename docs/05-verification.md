@@ -39,24 +39,19 @@ and `scripts/encscan.mjs` (scans the DB for double-encoded UTF-8; re-run after a
 
 ## Widths and schemes
 
-`shoot.mjs` and `inspect.mjs` read the viewport and colour scheme from the environment, so
-the route arguments stay routes (an `--width`-looking string would be indistinguishable
-from a path):
+`shoot.mjs` and `inspect.mjs` read the viewport from the environment, so the route arguments
+stay routes (an `--width`-looking string would be indistinguishable from a path). Equita is
+light-mode only; the paper palette is fixed before first paint:
 
 ```bash
 # mobile
 EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher /today /projects
 EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots /today
 
-# the darker scheme
-EQUITA_SCHEME=ink MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher /today
-
-# both at once, which is the case most likely to break
-EQUITA_WIDTH=390 EQUITA_SCHEME=ink MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher /today
 ```
 
-Screenshots are suffixed `-ink` and/or `-390` so a mobile or dark capture never silently
-overwrites the desktop one. The audit row now also reports `viewport` and `scheme`.
+Screenshots are suffixed `-390` so a mobile capture never silently overwrites the desktop
+one. The audit row reports the viewport and fixed paper scheme.
 
 ## Reading the output
 
@@ -85,7 +80,7 @@ npx tsc --noEmit
 # 2. after every screen
 MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots <route>
 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
-EQUITA_WIDTH=390 EQUITA_SCHEME=ink MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
+EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
 
 # 3. before you believe a screen works at all
 node scripts/smoke.mjs          # then: click the write path by hand (below)

@@ -624,9 +624,6 @@
   user-select: none;
   border: 1px solid hsl(var(--member-hue, 0) 30% 78%);
 }
-[data-scheme="ink"] .avatar {
-  border-color: hsl(var(--member-hue, 0) 26% 34%);
-}
 .avatar--lg {
   width: 2.5rem;
   height: 2.5rem;
@@ -686,9 +683,6 @@
   transition: width 0.5s var(--ease-out-quint);
 }
 
-[data-scheme="ink"] .loadbar__fill {
-  background: hsl(var(--member-hue) 48% 56%);
-}
 
 /*
  * Colour in this interface means who, and nothing else. A bar that repaints
@@ -915,19 +909,6 @@
 .tx-ink {
   color: var(--color-ink);
 }
-[data-scheme="ink"] .tx-accent {
-  color: var(--color-accent-deep);
-}
-[data-scheme="ink"] .tx-over {
-  color: var(--color-over);
-}
-[data-scheme="ink"] .tx-risk {
-  color: var(--color-risk);
-}
-[data-scheme="ink"] .tx-quiet {
-  color: var(--color-quiet);
-}
-
 /*
  * Notes beneath a table: one short paragraph per column, laid out as columns so
  * the reader can line each note up under the column it is about. Prose in a

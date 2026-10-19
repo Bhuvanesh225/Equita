@@ -49,8 +49,8 @@ superseded by `docs/` wherever the two disagree. `docs/00-state.md` is the autho
 6. **No hard-coded numbers in JSX.** Every figure on screen is computed by an engine.
    House rule: *no invented proof.*
 7. **Radius 0 everywhere.** Circles only for avatars and the even-share tick.
-8. **Both schemes must work** (`data-scheme="paper"` and `"ink"`). Check ink on
-   every screen.
+8. **Light mode is the only supported visual scheme.** The paper palette is set
+   before first paint and is used on every screen.
 9. **Reuse the primitives.** See `docs/03-design-system.md`. `LoadBar` is the
    signature component and must look the same on every surface.
 10. **A stub is never acceptable in a delivery.** No route may render `<Pending>`.
@@ -60,7 +60,7 @@ superseded by `docs/` wherever the two disagree. `docs/00-state.md` is the autho
 - [ ] `npx tsc --noEmit` clean.
 - [ ] No route renders `<Pending>`; `src/routes/_pending.tsx` deleted.
 - [ ] `scripts/inspect.mjs` returns `problems: []` for every route, at 1440 **and** 390.
-- [ ] Both schemes checked on every screen.
+- [ ] Light mode checked on every screen at desktop and mobile widths.
 - [ ] Every screen updates live over `/events` (act in one browser, watch another).
 - [ ] Every number shown comes from an engine.
 - [ ] `README.md` exists and is accurate.
@@ -76,7 +76,7 @@ npx tsc --noEmit                               # after every file
 node scripts/smoke.mjs                         # every endpoint a screen needs
 MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots <route>
 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
-EQUITA_WIDTH=390 EQUITA_SCHEME=ink MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
+EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
 npm run build                                  # before a delivery
 node scripts/encscan.mjs                       # must print "clean"
 ```

@@ -3,14 +3,14 @@
  *
  * One keystroke to anywhere. It searches projects, tasks, classes and people
  * through the API, and offers the handful of commands that would otherwise be
- * buried — starting a project, joining a class, switching the scheme.
+ * buried — starting a project or joining a class.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../lib/live";
 import { useSession } from "../lib/session";
 import { qs } from "../lib/api";
-import { useUi, useScheme } from "./AppShell";
+import { useUi } from "./AppShell";
 import { Avatar, Kbd, Spinner } from "../components/ui";
 import {
   IconArrowRight,
@@ -39,7 +39,6 @@ interface Command {
 export function CommandPalette() {
   const { paletteOpen, closePalette, openCopilot } = useUi();
   const { signOut, memberships } = useSession();
-  const { scheme, setScheme } = useScheme();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
@@ -87,14 +86,6 @@ export function CommandPalette() {
           openCopilot();
         },
       },
-      {
-        id: "scheme",
-        title: scheme === "ink" ? "Switch to the light scheme" : "Switch to the dark scheme",
-        group: "Do",
-        icon: <IconSettings size={15} />,
-        run: () => setScheme(scheme === "ink" ? "paper" : "ink"),
-        keepOpen: true,
-      },
       { id: "signout", title: "Sign out", group: "Do", icon: <IconSettings size={15} />, run: () => void signOut() },
     ];
     for (const classroom of memberships) {
@@ -108,7 +99,7 @@ export function CommandPalette() {
       });
     }
     return list;
-  }, [navigate, closePalette, openCopilot, scheme, setScheme, signOut, memberships]);
+  }, [navigate, closePalette, openCopilot, signOut, memberships]);
 
   const matchedCommands = useMemo(() => {
     if (!trimmed) return commands.slice(0, 7);

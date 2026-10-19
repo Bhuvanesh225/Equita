@@ -130,7 +130,7 @@ commits the arrangement into real projects with real tasks and real allocations.
 
 ### P4 — Finish (half a day)
 
-Deliverable: no stub, no 404, no clipped text at 390px, both schemes checked, live updates
+Deliverable: no stub, no 404, no clipped text at 390px, light mode checked, live updates
 proven with two browsers, and a `README.md` a stranger can follow.
 
 ## Three small server changes worth folding in as you pass
@@ -151,7 +151,7 @@ decision in `docs/10-decisions.md`.
 
 Not a list of features — the checklist at the end of `AGENTS.md`. In prose: every route is
 real, every link resolves, every number is computed, every screen survives a 390px viewport in
-both schemes, and two browsers kept open side by side never disagree.
+light mode, and two browsers kept open side by side never disagree.
 
 ## Risks, honestly
 

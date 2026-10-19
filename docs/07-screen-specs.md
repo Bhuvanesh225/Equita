@@ -49,7 +49,7 @@ that the brief is what Equita plans from. One `Panel` (`recessed`) holding a sin
 **Number rule.** No invented figures anywhere on this page. A hint is prose, not a claim.
 
 **Acceptance.**
-- [ ] `tsc` clean; `shoot` clean at 1440 and 390; `inspect` `problems: []` (all five arrays empty, `hOverflow: 0`) in both schemes.
+- [ ] `tsc` clean; `shoot` clean at 1440 and 390; `inspect` `problems: []` (all five arrays empty, `hOverflow: 0`) in light mode.
 - [ ] `POST` verified live (create a project, see it appear in `/projects`).
 - [ ] The created project is **not** empty: it has exactly one member (the creator) and shows
       the brief back on the workspace.
@@ -263,7 +263,7 @@ the class or to `/today`. Never render a blank page. Loading → `Spinner`.
 - [ ] Verified as `teacher` (a real record), as the student themselves
       (`/classrooms/:id/students/<your own id>`), and as a classmate (a clean `403`).
 - [ ] `totals.owed` sign and wording match `LoadBar`'s caption convention (behind vs ahead).
-- [ ] `inspect` clean at 1440 and 390, both schemes.
+- [ ] `inspect` clean at 1440 and 390 in light mode.
 - [ ] Every number on the page comes from the payload; no arithmetic in JSX beyond formatting.
 
 ---
@@ -307,6 +307,6 @@ classes" on a student's screen is noise.
 - [ ] The page is readable in one screenful of sections — it must not become a dashboard of
       dashboards. Cap it at the six sections above.
 - [ ] Every `Meter` value is a real `parts` value; the labels match `ProjectWorkspace`'s exactly.
-- [ ] `inspect` clean at 1440 and 390, both schemes.
+- [ ] `inspect` clean at 1440 and 390 in light mode.
 - [ ] Teacher and student each verified (their payloads differ: `trend`, `classes`).
 - [ ] No number appears that is not in a payload.

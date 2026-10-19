@@ -134,7 +134,7 @@ node scripts/smoke.mjs teacher                                       # every end
 
 `MSYS_NO_PATHCONV=1` is required on Windows/Git Bash, or the leading `/` in a route is rewritten
 into a filesystem path. Widths and schemes come from the environment:
-`EQUITA_WIDTH=390 EQUITA_SCHEME=ink`. See `docs/05-verification.md`.
+`EQUITA_WIDTH=390`. Equita is intentionally light-mode only; see `docs/05-verification.md`.
 
 ## Working on it
 

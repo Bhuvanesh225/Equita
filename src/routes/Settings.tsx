@@ -17,9 +17,9 @@
  *     and the server refuses the one case that would strand a class: an account
  *     that owns one cannot stop being a teacher.
  *
- * Appearance is the one control that must not be reimplemented: `useScheme` owns
- * the pre-paint read in `index.html`, so the switch here is the same switch the
- * rail's moon button uses.
+ * Equita is intentionally light-mode only. The paper palette is part of the
+ * product's working metaphor and keeps the fairness ledger legible in a class,
+ * in a review, and in a printed hand-in.
  */
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -31,14 +31,10 @@ import { hours, plural } from "../lib/format";
 import { EmptyState, Field, Panel, Segmented, Spinner } from "../components/ui";
 import { JoinCode, PageHead, Quiet } from "../components/blocks";
 import { Confirm } from "../components/overlays";
-import { useScheme } from "../shell/AppShell";
 import type { Classroom } from "../lib/types";
-
-type Scheme = "paper" | "ink";
 
 export default function Settings() {
   const { user, memberships, loading, saveProfile, refresh, signOut } = useSession();
-  const { scheme, setScheme } = useScheme();
   const { push } = useToast();
   const navigate = useNavigate();
 
@@ -205,20 +201,12 @@ export default function Settings() {
         </Panel>
 
         <div className="stack stack--loose">
-          <Panel title="Appearance" hint="applies before the page paints, and is remembered">
+          <Panel title="Appearance" hint="the paper palette is used throughout Equita">
             <div className="stack stack--tight">
-              <Segmented<Scheme>
-                ariaLabel="Colour scheme"
-                value={scheme === "ink" ? "ink" : "paper"}
-                onChange={(next) => setScheme(next)}
-                options={[
-                  { value: "paper", label: "Paper", title: "Dark text on a light ground" },
-                  { value: "ink", label: "Ink", title: "Light text on a dark ground" },
-                ]}
-              />
               <p className="card__meta" style={{ lineHeight: 1.55 }}>
-                Both schemes are drawn from the same tokens, so every figure, bar and signal colour means the same thing in either. Choose
-                whichever is kinder to the room you are in.
+                Equita stays light by design: dark ink on a warm paper ground, with color reserved for
+                fairness signals and the people in a project. The same palette is used across the brief,
+                the board, and the class console so the numbers stay easy to compare.
               </p>
             </div>
           </Panel>

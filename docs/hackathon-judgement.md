@@ -20,7 +20,7 @@ That should be said plainly in the presentation.
 | Technical execution | 20% | **18/20** | React/Vite + Express/SQLite, live SSE updates, explainable engines, Docker, lockfile, offline checks. |
 | Creativity | 15% | **14/15** | The even-share tick, people-based lanes, and brief-as-interface are memorable and coherent. |
 | Presentation & clarity | 10% | **9/10** | Strong visual language, reproducible dataset, and a one-link teacher demo path. |
-| Accessibility | 10% | **8/10** | Responsive paper/ink schemes, labelled fields, keyboard assignment path, and visible focus states; full automated contrast and tab-widget testing remain. |
+| Accessibility | 10% | **8/10** | Responsive light-mode paper palette, labelled fields, keyboard assignment path, and visible focus states; full automated contrast and tab-widget testing remain. |
 | **Total** | **100%** | **89/100** | **Finalist / prize contender** |
 
 ## The judge demo

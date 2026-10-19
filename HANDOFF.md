@@ -11,7 +11,7 @@
 > - `scripts/smoke.mjs` was added (28 endpoints, non-mutating) and `npm run selfcheck` now
 >   points at it.
 > - `scripts/shoot.mjs` and `scripts/inspect.mjs` accept `EQUITA_WIDTH` / `EQUITA_HEIGHT` /
->   `EQUITA_SCHEME`, so the mobile and ink-scheme passes are runnable.
+>   so the mobile light-mode pass is runnable.
 > - `AGENTS.md`, `README.md`, `TODO.md`, `ROADMAP.md` and the `docs/` set were written. Start
 >   at `AGENTS.md`.
 >
@@ -215,8 +215,8 @@ These cost real time. They are fixed; keep them fixed.
   the insights screen so the product has one mark, not four.
 - House rule: **no invented proof.** Claims print numbers the engine computed, or they do not
   appear.
-- The darker scheme (`data-scheme="ink"`) is set before first paint in `index.html`. New
-  components must work in both schemes — check the ink scheme on every screen.
+- The light paper scheme (`data-scheme="paper"`) is set before first paint in `index.html`.
+  New components should preserve the paper-first visual language on every screen.
 
 ### Client conventions
 
@@ -245,7 +245,7 @@ These cost real time. They are fixed; keep them fixed.
 7. **`/insights`** — fairness across projects and classes.
 8. **`/profile`**, **`/people`**, **`/notifications`**, **`/settings`** — the smaller screens.
 9. Delete `src/routes/_pending.tsx`.
-10. Mobile pass (390px) over every screen, then the ink scheme, then
+10. Mobile pass (390px) over every screen, then a light-mode contrast pass, then
     `node scripts/inspect.mjs <account> <every route…>` until `problems` is empty everywhere.
 
 ### Definition of done

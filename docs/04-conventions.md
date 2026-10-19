@@ -122,8 +122,8 @@ refresh, signIn, signUp, enterDemo, signOut, saveProfile, saveSkills, joinClass}
   them rather than calling the API directly, so the shell's copy stays in step.
 - `counts` drives the rail badges. Anything that changes unread/projects should not need
   to update it — the session refetches on live events.
-- Schemes: `useScheme()` (in `AppShell.tsx`) → `{scheme, toggle}`. The UI shell state
-  (command palette open, nav) is `useUi()`.
+- Appearance: the light paper palette is fixed before first paint in `index.html`. The UI shell
+  state (command palette open, nav) is `useUi()`.
 
 ## Routing
 

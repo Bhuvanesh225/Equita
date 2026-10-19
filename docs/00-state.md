@@ -59,7 +59,7 @@ Legend: **built** = real screen · **stub** = renders `<Pending>` from
 | `*` | `NotFound` | built | 63 | — |
 
 All four tabs of `/classrooms/:id` render from the single `GET /api/classrooms/:id` call.
-Verified clean by `scripts/inspect.mjs` at 1440 and 390, in both schemes, for `teacher`
+Verified clean by `scripts/inspect.mjs` at 1440 and 390 in light mode, for `teacher`
 and for `student`.
 
 
