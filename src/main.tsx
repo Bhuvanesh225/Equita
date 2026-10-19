@@ -14,6 +14,7 @@ import "./styles/app.css";
 import "./styles/surfaces.css";
 import "./styles/auth.css";
 import "./styles/landing.css";
+import "./styles/overhaul.css";
 
 import { App } from "./App";
 
