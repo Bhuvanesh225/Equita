@@ -575,7 +575,7 @@ export interface GroupTeam {
      * Their level in each cluster. The group builder reads this to recompute a
      * group's coverage after somebody is dragged between groups — the preview
      * endpoint takes no "pin this person" input, so the arithmetic has to happen
-     * in the browser (see `src/routes/groupbuilder/Lanes.tsx`).
+     * in the browser (see the local team helpers in `src/routes/GroupBuilder.tsx`).
      */
     clusters?: Array<{ cluster: string; name: string; level: number }>;
   }>;
