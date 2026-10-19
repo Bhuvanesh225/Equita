@@ -140,6 +140,7 @@ function Bridge() {
   return (
     <LiveProvider enabled={!!user}>
       <UiProvider>
+        <div className="demo-notice" role="note">Demo data · seeded examples, not real users</div>
         <RouterProvider router={router} />
       </UiProvider>
     </LiveProvider>
