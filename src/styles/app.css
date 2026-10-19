@@ -542,6 +542,23 @@
   border-radius: 0;
 }
 
+/*
+ * A colour swatch on the profile. Square, like everything else — the only round
+ * things in this product are avatars and the even-share tick.
+ */
+.swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.swatch[aria-pressed="true"] {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
 /* ---------- tags -------------------------------------------------------- */
 
 .tag {

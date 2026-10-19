@@ -167,9 +167,20 @@ authRouter.patch("/me", requireAuth, (req, res) => {
       school: z.string().trim().max(120).optional(),
       capacity: z.coerce.number().min(0.5).max(60).optional(),
       hue: z.coerce.number().min(0).max(359).optional(),
+      /*
+       * A person who teaches and signed up as a student is a real case, and
+       * `POST /api/classrooms` already tells them to come here to switch. The
+       * one guard that matters: an account that owns a class cannot stop being
+       * a teacher, because then nobody could hand the class on.
+       */
+      role: z.enum(["student", "teacher"]).optional(),
     }),
     req.body,
   );
+  if (body.role && body.role !== req.user.role) {
+    const owned = get(`SELECT COUNT(*) AS n FROM classrooms WHERE owner_id = ? AND archived_at IS NULL`, req.user.id)?.n ?? 0;
+    if (owned) deny("You own a class, so you cannot stop being a teacher. Archive the class first.");
+  }
   const patch = [];
   const values = [];
   for (const [key, value] of Object.entries(body)) {

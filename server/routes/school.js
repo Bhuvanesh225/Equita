@@ -198,8 +198,17 @@ schoolRouter.post("/:id/students", (req, res) => {
 });
 
 schoolRouter.delete("/:id/students/:userId", (req, res) => {
-  const { row } = classroomAccess(req, req.params.id);
-  if (req.params.userId === row.owner_id) bad("The class owner cannot be removed from it.");
+  /*
+   * A teacher removes somebody else; a student may remove themselves. Leaving
+   * has to be possible from /settings, and the alternative — a person stuck in a
+   * class they can see but cannot leave — is the kind of control a product is
+   * right to offer. The owner is still refused, because a class without its
+   * owner has nobody who can hand it on.
+   */
+  const { row, teaching } = classroomAccess(req, req.params.id, { needTeach: false });
+  const self = req.params.userId === req.user.id;
+  if (!teaching && !self) deny("Only a teacher of this class can remove somebody else.");
+  if (req.params.userId === row.owner_id) bad("The class owner cannot leave it — archive the class instead.");
   tx(() => {
     // Leaving a class takes the student out of its groups, but their work stays
     // on the record and their tasks are released rather than deleted.
@@ -211,7 +220,12 @@ schoolRouter.delete("/:id/students/:userId", (req, res) => {
     run(`DELETE FROM enrollments WHERE classroom_id = ? AND user_id = ?`, row.id, req.params.userId);
   });
   const name = get(`SELECT name FROM users WHERE id = ?`, req.params.userId)?.name ?? "A student";
-  record({ verb: "class.removed", subject: `${req.user.name} removed ${name} from ${row.name}`, classroomId: row.id, actorId: req.user.id });
+  record({
+    verb: self ? "class.left" : "class.removed",
+    subject: self ? `${req.user.name} left ${row.name}` : `${req.user.name} removed ${name} from ${row.name}`,
+    classroomId: row.id,
+    actorId: req.user.id,
+  });
   res.json({ ok: true });
 });
 

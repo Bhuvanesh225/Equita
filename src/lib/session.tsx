@@ -24,7 +24,7 @@ interface SessionShape {
   signUp: (input: { name: string; email: string; password: string; role: "student" | "teacher"; school?: string; joinCode?: string }) => Promise<{ user: User; joined: { id: string; name: string } | null }>;
   enterDemo: (email: string) => Promise<User>;
   signOut: () => Promise<void>;
-  saveProfile: (input: Partial<Pick<User, "name" | "headline" | "school" | "capacity" | "hue">>) => Promise<void>;
+  saveProfile: (input: Partial<Pick<User, "name" | "headline" | "school" | "capacity" | "hue" | "role">>) => Promise<void>;
   saveSkills: (skills: Array<{ slug: string; level: number; appetite: number }>) => Promise<void>;
   joinClass: (code: string) => Promise<{ id: string; name: string }>;
 }
@@ -70,7 +70,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const saveProfile = useCallback(
-    async (input: Partial<Pick<User, "name" | "headline" | "school" | "capacity" | "hue">>) => {
+    async (input: Partial<Pick<User, "name" | "headline" | "school" | "capacity" | "hue" | "role">>) => {
       await patch("/api/auth/me", input);
       await refresh();
     },

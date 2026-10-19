@@ -571,7 +571,14 @@ export function buildProject(people, classroom, rawStory, { planSummary } = {}) 
     behind: ["slower than I wanted, but nothing is stopping me", "lost a couple of evenings, catching up", "running late on my part, will have it by the weekend"],
     stuck: ["waiting on something before I can carry on", "need someone to look at this with me"],
   };
-  const blockerNotes = ["nothing", "nothing blocking me", "waiting on the shared folder", "need a decision on scope", "nothing right now"];
+  /*
+   * An empty string means "nothing is blocking me", and the screens render no
+   * blocker line at all for it. This list used to be all sentences, including
+   * "nothing blocking me", which the record screen dutifully printed as
+   * "Blocker: nothing blocking me" (T31). A field whose absence means "none"
+   * should be absent.
+   */
+  const blockerNotes = ["", "waiting on the shared folder", "need a decision on scope", "waiting for the other person's part", ""];
   const weeks = story.checkinWeeks ?? 3;
   for (let w = 0; w < weeks; w++) {
     const at = iso(Date.now() - w * 7 * DAY - rand() * 36 * HOUR);

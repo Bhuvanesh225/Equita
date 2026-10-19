@@ -691,7 +691,7 @@ export interface StudentRecord {
   top: Array<{ slug: string; name: string; cluster: string; level: number; appetite: number }>;
   growth: Array<{ slug: string; name: string; level: number; appetite: number }>;
   clusters: Array<{ cluster: string; name: string; level: number; skills: Array<{ slug: string; level: number }> }>;
-  totals: { credited: number; committed: number; even: number; done: number; late: number; open: number; owed: number };
+  totals: { credited: number; committed: number; even: number; evenCommitted?: number; done: number; late: number; open: number; owed: number };
   projects: Array<{
     id: string;
     name: string;

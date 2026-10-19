@@ -284,12 +284,20 @@ export function studentRecord(classroomId, userId, now = Date.now()) {
     (acc, entry) => ({
       credited: round(acc.credited + (entry.member?.credited ?? 0), 2),
       committed: round(acc.committed + (entry.member?.committed ?? 0), 2),
-      even: round(acc.even + (entry.member?.even.committed ?? 0), 2),
+      /*
+       * The even share of *delivered* work, because `owed` below is
+       * `even − credited` and every load bar on the record draws those two
+       * numbers together. It used to sum `even.committed`, which made the
+       * reading paragraph print "4h delivered against an even share of 15.3h"
+       * and then, two sentences later, quote a different gap entirely (T24).
+       */
+      even: round(acc.even + (entry.member?.even.credited ?? 0), 2),
+      evenCommitted: round(acc.evenCommitted + (entry.member?.even.committed ?? 0), 2),
       done: acc.done + entry.tasks.filter((t) => t.status === "done").length,
       late: acc.late + entry.tasks.filter((t) => t.late).length,
       open: acc.open + entry.tasks.filter((t) => t.status !== "done").length,
     }),
-    { credited: 0, committed: 0, even: 0, done: 0, late: 0, open: 0 },
+    { credited: 0, committed: 0, even: 0, evenCommitted: 0, done: 0, late: 0, open: 0 },
   );
 
   const profile = { id: user.id, name: user.name, skills: new Map(topSkills({ skills: all(`SELECT skill_id, level, appetite FROM user_skills WHERE user_id = ?`, userId).map((r) => ({ slug: String(r.skill_id).replace(/^skl_/, ""), level: r.level, appetite: r.appetite })) }, 99).map((s) => [s.slug, s])) };
@@ -309,7 +317,15 @@ export function studentRecord(classroomId, userId, now = Date.now()) {
     clusters: clusterStrength(profile),
     totals: { ...totals, owed: round(totals.even - totals.credited, 2) },
     projects: detail,
-    reading: reading(totals, detail),
+    /*
+     * `owed` is added below, so it has to be passed in explicitly rather than
+     * read off a reduce result that does not carry it yet. Until this was
+     * fixed, `reading()` compared `undefined` against 2 twice and always
+     * concluded "That is level with an even share" — the two branches that
+     * say how far short somebody is were dead code, on the one paragraph a
+     * teacher reads before deciding whether to intervene (T30).
+     */
+    reading: reading({ ...totals, owed: round(totals.even - totals.credited, 2) }, detail),
   };
 }
 

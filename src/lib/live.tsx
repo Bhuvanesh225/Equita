@@ -105,6 +105,15 @@ export const useLive = () => useContext(LiveContext);
 export interface Resource<T> {
   data: T | null;
   error: string | null;
+  /**
+   * The HTTP status of the failure, when there was one.
+   *
+   * Screens that must tell a refusal apart from a breakage need it: a student
+   * opening a classmate's record gets a 403 that deserves a plain sentence
+   * rather than a retry button, and the message alone cannot be matched on
+   * reliably.
+   */
+  status: number | null;
   /** True only for the first load, so a refetch never blanks the screen. */
   loading: boolean;
   /** True while a background refresh is in flight. */
@@ -123,6 +132,7 @@ export function useApi<T>(path: string | null, opts: { live?: boolean; poll?: nu
   const { version } = useLive();
   const [data, setData] = useState<T | null>(opts.initial ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<number | null>(null);
   const [loading, setLoading] = useState(!!path && opts.initial === undefined);
   const [refreshing, setRefreshing] = useState(false);
   const abort = useRef<AbortController | null>(null);
@@ -140,9 +150,11 @@ export function useApi<T>(path: string | null, opts: { live?: boolean; poll?: nu
         const next = await api<T>(path, { signal: controller.signal });
         setData(next);
         setError(null);
+        setStatus(null);
       } catch (cause) {
         if ((cause as Error)?.name === "AbortError") return;
         setError(cause instanceof ApiError ? cause.message : "Something went wrong loading this.");
+        setStatus(cause instanceof ApiError ? cause.status : null);
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -157,6 +169,7 @@ export function useApi<T>(path: string | null, opts: { live?: boolean; poll?: nu
     if (!path) {
       setData(null);
       setError(null);
+      setStatus(null);
       setLoading(false);
       return;
     }
@@ -182,7 +195,7 @@ export function useApi<T>(path: string | null, opts: { live?: boolean; poll?: nu
 
   const refresh = useCallback(() => load(true), [load]);
 
-  return { data, error, loading, refreshing, refresh, setData };
+  return { data, error, status, loading, refreshing, refresh, setData };
 }
 
 /** Fire-and-refresh: for the many one-off writes that just need to land. */

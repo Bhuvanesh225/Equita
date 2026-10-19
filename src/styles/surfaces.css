@@ -492,6 +492,62 @@
   color: var(--color-risk);
 }
 
+/* ---------- notifications ------------------------------------------------ */
+
+/*
+ * A notice is a sentence, not a table cell, so its prose has to wrap — which is
+ * the opposite of `.rowitem__title`'s ellipsis. The read state is carried by a
+ * word (`read`) as well as by the tone, never by colour alone, and the two
+ * columns collapse to one on a phone so the action does not squeeze the prose.
+ */
+/*
+ * `.rowitem` lays out three columns (dot, body, actions); a notice has two, so
+ * the grid template is set here. It must live in CSS, not an inline style: an
+ * inline `gridTemplateColumns` would beat the one-column media query below and
+ * squeeze the prose to a sliver on a phone.
+ */
+.notif {
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.notif--read {
+  opacity: 0.72;
+}
+
+.notif__link {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  min-width: 0;
+  color: inherit;
+}
+
+.notif__link .dot {
+  margin-top: 0.45rem;
+}
+
+.notif__prose {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.notif__read {
+  white-space: nowrap;
+}
+
+@media (max-width: 34rem) {
+  .notif {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .notif > .row {
+    justify-self: start;
+  }
+}
+
 .table {
   font-size: var(--text-sm);
 }

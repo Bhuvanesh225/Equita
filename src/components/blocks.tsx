@@ -13,6 +13,7 @@ import { post } from "../lib/api";
 import { useAction, useToast } from "../lib/live";
 import { ApiError } from "../lib/api";
 import {
+  MOOD_NAMES,
   PHASE_NAMES,
   STATUS_NAMES,
   dateLabel,
@@ -25,6 +26,7 @@ import {
   severityTone,
   toneTextClass,
   toneVar,
+  type Tone,
 } from "../lib/format";
 import { Avatar, MemberDot, Panel, StateChip, Tag } from "./ui";
 import { Confirm } from "./overlays";
@@ -78,6 +80,24 @@ export function StatusTag({ status, title }: { status: TaskStatus; title?: strin
   return (
     <Tag tone={tone === "line" ? undefined : tone} edge={tone === "line"} dot={status === "blocked" || status === "doing"} title={title}>
       {STATUS_NAMES[status] ?? status}
+    </Tag>
+  );
+}
+
+/**
+ * A check-in mood, worded as the person themselves said it.
+ *
+ * `stuck` and `behind` are the two a group needs to see, so they carry the
+ * alarm colours; `ahead` and `steady` are the same good news and share one.
+ * This lived inline in two screens with identical ternaries before it moved
+ * here — a mood that reads as amber on one screen and plain on another is a
+ * contradiction nobody would notice for weeks.
+ */
+export function MoodTag({ mood, title }: { mood: string; title?: string }) {
+  const tone: Tone = mood === "stuck" ? "risk" : mood === "behind" ? "over" : "accent";
+  return (
+    <Tag tone={tone} dot title={title}>
+      {MOOD_NAMES[mood] ?? mood}
     </Tag>
   );
 }

@@ -17,7 +17,7 @@ import { ApiError } from "../lib/api";
 import { useApi, useToast } from "../lib/live";
 import { hours, plural } from "../lib/format";
 import { Avatar, EmptyState, LoadBar, Meter, Panel, Spinner, Stat, StateChip, Tag } from "../components/ui";
-import { ActivityFeed, Nudges, PageHead, Quiet, ScoreMark, useTaskMoves } from "../components/blocks";
+import { ActivityFeed, MoodTag, Nudges, PageHead, Quiet, ScoreMark, useTaskMoves } from "../components/blocks";
 import { Menu } from "../components/overlays";
 import { IconArrowRight, IconPlus, IconSparkle, IconWand } from "../components/icons";
 import { TaskFormDialog } from "./project/TaskForm";
@@ -517,9 +517,7 @@ function ActivityTab({ workspace }: { workspace: Workspace }) {
                 <span className="row" style={{ gap: "0.4rem" }}>
                   <Avatar name={checkin.name} hue={checkin.hue ?? 0} size="sm" />
                   <span style={{ fontWeight: 600, fontSize: "var(--text-sm)" }}>{checkin.name}</span>
-                  <Tag tone={checkin.mood === "stuck" ? "risk" : checkin.mood === "behind" ? "over" : "accent"} dot>
-                    {checkin.mood}
-                  </Tag>
+                  <MoodTag mood={checkin.mood} />
                 </span>
                 {checkin.note ? (
                   <p className="card__meta" style={{ marginLeft: "1.9rem", lineHeight: 1.45 }}>
