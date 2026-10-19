@@ -211,3 +211,26 @@ the project fixed the targets: `.tap` (above), the board card's title button, an
 weight labels on the equity meter, which were clipping ("Engagement 15% weight" is 150px of
 type in a 120px column). **Do not add an exemption to `inspect.mjs` to make a screen pass.**
 Either the target grows or the layout around it changes.
+
+### T30 — `publish()` was called with the wrong argument shape
+
+The live stream's `publish` function takes one event object (`{ type, payload, to,
+classrooms }`). `events.js` passed the type as the first argument and the payload as the
+second, which meant the server built a frame from `event.payload` on a string and every
+connected browser silently missed the update. Read-only endpoints and screenshots still
+passed, so this only appeared in a two-browser write test.
+
+**Fixed:** `server/events.js` now passes the documented event object. `scripts/write-path.mjs`
+keeps a student SSE connection open while a teacher writes a comment and asserts that the
+addressed `comment` frame arrives.
+
+### T31 — raw task rows and hydrated task shapes use different dependency keys
+
+`taskAccess()` returns the SQLite row with `depends_on`; the engine's hydrated task shape calls
+the same field `dependsOn`. The status route used the latter on the raw row, so closing a newly
+created task crashed with a 500 before it could return a dependency refusal or complete the
+ledger write.
+
+**Fixed:** `server/routes/tasks.js` parses `task.depends_on` before checking blocked dependencies.
+The disposable write-path test now creates, assigns, starts, closes, reads back, and deletes a
+task, including the completion contribution.

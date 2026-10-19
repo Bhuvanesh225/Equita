@@ -34,7 +34,7 @@ npm start             # serve the built app and API on :8787
 npm run typecheck    # tsc --noEmit
 npm run seed         # wipe and reseed the demo dataset
 npm run smoke        # hit every endpoint the screens need and assert a status
-npm test              # offline integration test: fresh DB, real server, both demo roles
+npm test              # offline API + write-path test: fresh DB, real server, both demo roles, SSE
 ```
 
 The same checks are available as `make test`. It starts its own local API and SQLite database,

@@ -21,6 +21,7 @@ against the repository and, where possible, against the running servers — not 
 | `README.md` | written; keep it accurate as screens land |
 | `npm test` | **clean** — fresh disposable SQLite database, real server, smoke as teacher and student |
 | Docker/runtime | `.nvmrc`, `Dockerfile`, `Makefile`, and `scripts/test.mjs` present |
+| Write-path test | **clean** — plan/apply, task lifecycle + ledger, assignment, profile, classes, groups, notifications, deletion, and SSE |
 
 Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes ·
 6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins ·
@@ -122,6 +123,8 @@ under typecheck only, and this was the second bug of that class found. Use
 | F4 | **`even` meant two different measures.** The roster said "11.3h behind an even share" above the equity flag that said "4.7h behind". | `server/engines/classroom.js` (T24) |
 | F5 | **The page scrolled sideways at 390px on three built screens.** Three separate causes: a grid with no explicit column template, an unwrapping segmented control, and `text-overflow: ellipsis` on inline spans that therefore never truncated. | `src/styles/app.css`, `src/styles/surfaces.css` (T25–T27) |
 | F6 | **Inline text links were 19–20px tall**, under the 24px floor `inspect.mjs` enforces. `.tap` added, card titles grown, the equity meter's clipped weight labels shortened. | `src/styles/app.css`, `src/components/blocks.tsx`, `src/routes/Projects.tsx`, `src/routes/project/Equity.tsx`, `src/routes/ProjectWorkspace.tsx` (T28–T29) |
+| F7 | **Live events never reached clients.** `events.js` called `publish()` with two arguments although the bus accepts one event object, so writes appeared in the database but open browsers did not refetch. | `server/events.js`, covered by `scripts/write-path.mjs` and the SSE assertion in T30 |
+| F8 | **Closing a newly-created task could 500.** The status route read `task.dependsOn` from a raw SQLite row instead of parsing `task.depends_on`, so the dependency check called `.map` on `undefined`. | `server/routes/tasks.js`, covered by the task lifecycle write-path test and T31 |
 
 `inspect.mjs` now returns `problems: []`-equivalent output at 1440 **and** 390, in **paper
 and ink**, for `teacher` and for `student`, on every built route.

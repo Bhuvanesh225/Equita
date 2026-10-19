@@ -65,6 +65,8 @@ Every one of these is a live 404 today. Best-effort fix is aliasing in the route
 ### P0-5 · Verification tooling
 - [x] `scripts/smoke.mjs` written: 28 endpoints, non-mutating, passes for `teacher` and
       `student` (403s accepted where a role denial is correct).
+- [x] `scripts/write-path.mjs` added: disposable real-server coverage for planning, task lifecycle,
+      assignment, ledger, classes, groups, notifications, deletion, and an addressed SSE event.
 - [x] `EQUITA_WIDTH` / `EQUITA_HEIGHT` / `EQUITA_SCHEME` added to `scripts/shoot.mjs` and
       `scripts/inspect.mjs`, with `viewport`/`scheme` in the inspector's output.
 - [ ] Add a `--follow-links` mode (or a small addition to `scripts/smoke.mjs`) that reads the
