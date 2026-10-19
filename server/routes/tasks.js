@@ -282,7 +282,11 @@ tasksRouter.post("/tasks/:id/status", (req, res) => {
   }
 
   const effort = body.actualEffort ?? task.effort;
-  const blockedBy = task.dependsOn
+  // `task` here is the raw SQLite row from `taskAccess`, so the JSON column is
+  // still named `depends_on`. The hydrated engine shape uses `dependsOn`; using
+  // that client-side name here made closing any newly-created task crash the
+  // server instead of returning the intended dependency refusal.
+  const blockedBy = json(task.depends_on, [])
     .map((depId) => ctx.tasks.find((t) => t.id === depId))
     .filter((t) => t && t.status !== "done");
   if (body.status === "done" && blockedBy.length && !body.force) {

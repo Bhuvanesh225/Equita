@@ -15,7 +15,7 @@
     "seed": "node server/seed.js --reset",
     "smoke": "node scripts/smoke.mjs",
     "selfcheck": "node scripts/smoke.mjs",
-    "test": "node scripts/test.mjs"
+    "test": "node scripts/test.mjs && node scripts/write-path.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

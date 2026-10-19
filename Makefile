@@ -15,6 +15,7 @@ test:
 	npm run typecheck
 	npm run build
 	node scripts/test.mjs
+	node scripts/write-path.mjs
 	node scripts/encscan.mjs
 
 smoke:
