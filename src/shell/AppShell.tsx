@@ -42,13 +42,18 @@ interface UiShape {
   copilot: { open: boolean; projectId?: string | null; classroomId?: string | null; question?: string };
   openCopilot: (scope?: { projectId?: string | null; classroomId?: string | null; question?: string }) => void;
   closeCopilot: () => void;
+  scheme: Scheme;
+  setScheme: (next: Scheme) => void;
 }
 
 const UiContext = createContext<UiShape | null>(null);
 
+export type Scheme = "paper" | "ink";
+
 export function UiProvider({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [copilot, setCopilot] = useState<UiShape["copilot"]>({ open: false });
+  const [scheme, setSchemeState] = useState<Scheme>(() => (document.documentElement.dataset.scheme === "ink" ? "ink" : "paper"));
 
   const openPalette = useCallback(() => setPaletteOpen(true), []);
   const closePalette = useCallback(() => setPaletteOpen(false), []);
@@ -56,6 +61,15 @@ export function UiProvider({ children }: { children: ReactNode }) {
     setCopilot({ open: true, projectId: scope?.projectId ?? null, classroomId: scope?.classroomId ?? null, question: scope?.question });
   }, []);
   const closeCopilot = useCallback(() => setCopilot((c) => ({ ...c, open: false })), []);
+  const setScheme = useCallback((next: Scheme) => {
+    document.documentElement.dataset.scheme = next;
+    try {
+      localStorage.setItem("equita.scheme", next);
+    } catch {
+      /* private browsing; the choice simply does not persist */
+    }
+    setSchemeState(next);
+  }, []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -74,8 +88,8 @@ export function UiProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<UiShape>(
-    () => ({ paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot }),
-    [paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot],
+    () => ({ paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot, scheme, setScheme }),
+    [paletteOpen, openPalette, closePalette, copilot, openCopilot, closeCopilot, scheme, setScheme],
   );
 
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>;
@@ -90,17 +104,8 @@ export function useUi(): UiShape {
 /* ---------- the scheme -------------------------------------------------- */
 
 export function useScheme() {
-  const [scheme, setScheme] = useState<string>(() => document.documentElement.dataset.scheme ?? "paper");
-  const apply = useCallback((next: string) => {
-    document.documentElement.dataset.scheme = next;
-    try {
-      localStorage.setItem("equita.scheme", next);
-    } catch {
-      /* private browsing; the choice simply does not persist */
-    }
-    setScheme(next);
-  }, []);
-  return { scheme, setScheme: apply };
+  const { scheme, setScheme } = useUi();
+  return { scheme, setScheme };
 }
 
 /* ---------- notifications ----------------------------------------------- */

@@ -20,9 +20,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { useApi, useToast } from "../lib/live";
 import { useSession } from "../lib/session";
-import { fullDate, hours, pct, plural, relativeTime } from "../lib/format";
+import { decimal, hours, pct, plural, relativeTime } from "../lib/format";
 import { EmptyState, LoadBar, Panel, Spinner, Stat, StateChip, Tag } from "../components/ui";
-import { MoodTag, PageHead, Quiet, ScoreMark, StatusTag } from "../components/blocks";
+import { DueMark, MoodTag, PageHead, Quiet, ScoreMark, StatusTag } from "../components/blocks";
 import { Sparkline } from "../components/charts";
 import { Menu } from "../components/overlays";
 import type { EquityMember, StudentRecord as StudentRecordShape } from "../lib/types";
@@ -154,6 +154,7 @@ export default function StudentRecord() {
           note={`against an even share of ${hours(totals.even)}`}
         />
         <Stat value={hours(totals.committed)} label="Taken on" note={totals.evenCommitted ? `an even share of the work is ${hours(totals.evenCommitted)}` : "everything they agreed to hold"} />
+        <Stat value={hours(totals.even)} label="Even delivered share" note="the comparison used by the load bars" />
         <Stat
           value={Math.abs(totals.owed) < 0.3 ? "level" : `${hours(Math.abs(totals.owed))} ${totals.owed > 0 ? "behind" : "ahead"}`}
           label="Against an even share"
@@ -161,6 +162,7 @@ export default function StudentRecord() {
           note="of the work that has actually landed"
         />
         <Stat value={hours(totals.open)} label="Still open" note={plural(totals.done, "task") + " closed"} />
+        <Stat value={totals.done} label="Closed" note={totals.done ? "tasks they have finished" : "nothing closed yet"} />
         <Stat
           value={totals.late}
           label="Closed late"
@@ -185,11 +187,11 @@ export default function StudentRecord() {
                     <span
                       className="meter__track"
                       style={{ width: "3.5rem" }}
-                      title={`Self-reported strength ${cluster.level.toFixed(1)} of 5 across ${plural(cluster.skills.length, "skill")} in ${cluster.name}`}
+                       title={`Self-reported strength ${decimal(cluster.level)} of 5 across ${plural(cluster.skills.length, "skill")} in ${cluster.name}`}
                     >
                       <span className="meter__fill meter--accent" style={{ width: pct(cluster.level / 5) }} />
                     </span>
-                    <span className="tnum card__meta nowrap">{cluster.level.toFixed(1)}/5</span>
+                     <span className="tnum card__meta nowrap">{decimal(cluster.level)}/5</span>
                   </span>
                 </div>
               ))}
@@ -288,7 +290,7 @@ function ProjectBlock({
 }) {
   const member: EquityMember | null = project.member;
   const open = project.tasks.filter((task) => task.status !== "done");
-  const credited = project.history.map((point) => point.credited ?? 0);
+  const credited = project.history.filter((point) => point.credited !== null && point.credited !== undefined).map((point) => point.credited ?? 0);
   const hasLedger = project.contributions.length > 0;
 
   return (
@@ -353,9 +355,9 @@ function ProjectBlock({
                   <span style={{ minWidth: 0 }}>
                     <span className="rowitem__title">{task.title}</span>
                     <span className="rowitem__sub">
-                      {hours(task.effort)}
-                      {task.completedAt ? ` · closed ${fullDate(task.completedAt)}` : task.dueAt ? ` · due ${fullDate(task.dueAt)}` : " · no date"}
-                      {task.late ? " · late" : ""}
+                       <span>{hours(task.effort)}</span>
+                       <DueMark dueAt={task.completedAt ?? task.dueAt} done={task.status === "done"} />
+                       {task.late ? <Tag tone="risk" dot>late</Tag> : null}
                     </span>
                   </span>
                   <span className="row" style={{ gap: "0.4rem" }}>
@@ -424,5 +426,5 @@ function ProjectBlock({
 
 /** A sparkline needs two points to draw a line; one snapshot is not a trend. */
 function historyLength(values: number[]): boolean {
-  return values.filter((value) => value > 0).length >= 2;
+  return values.length >= 2;
 }

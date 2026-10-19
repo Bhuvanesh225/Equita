@@ -22,6 +22,12 @@ export function hoursValue(n: number | null | undefined, places = 1): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(places);
 }
 
+/** A small decimal without leaking formatting decisions into JSX. */
+export function decimal(n: number | null | undefined, places = 1): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return n.toFixed(places);
+}
+
 export const pct = (n: number, places = 0) => `${(n * 100).toFixed(places)}%`;
 export const pctOf = (part: number, whole: number) => (whole > 0 ? part / whole : 0);
 
