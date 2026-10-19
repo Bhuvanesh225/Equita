@@ -148,8 +148,8 @@ export function Hero({ story, signedIn }: { story: Story | null; signedIn: boole
             Every figure on this page is real computation over a seeded demonstration dataset — {totals?.students ?? 18} invented
             students in {totals?.classes ?? 2} classes, {totals?.projects ?? 6} groups. No mock-ups, no invented percentages, nobody
             who exists.{" "}
-            <Link to="/login" className="land__link">
-              Open the demo
+            <Link to="/login?demo=teacher" className="land__link">
+              Open the teacher demo
             </Link>
           </p>
         </div>

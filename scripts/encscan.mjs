@@ -5,7 +5,11 @@
  */
 import { DatabaseSync } from "node:sqlite";
 
-const db = new DatabaseSync("data/equita.db", { readOnly: true });
+// The verification suite creates a disposable seeded database. Prefer it when
+// the Makefile supplies EQUITA_DB so the scan proves the same artifact the
+// offline tests exercised rather than depending on a developer's live DB.
+const dbPath = process.env.EQUITA_DB || "data/equita.db";
+const db = new DatabaseSync(dbPath, { readOnly: true });
 const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all();
 const suspect = /[\u00c2\u00c3\u00e2][\u0080-\u00bf]/;
 let hits = 0;

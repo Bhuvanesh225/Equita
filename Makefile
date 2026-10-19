@@ -16,7 +16,7 @@ test:
 	npm run build
 	node scripts/test.mjs
 	node scripts/write-path.mjs
-	node scripts/encscan.mjs
+	EQUITA_DB=data/equita-test.db node scripts/encscan.mjs
 
 smoke:
 	npm run smoke

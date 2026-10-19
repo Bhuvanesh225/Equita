@@ -29,7 +29,7 @@ import {
   type Tone,
 } from "../lib/format";
 import { Avatar, MemberDot, Panel, StateChip, Tag } from "./ui";
-import { Confirm } from "./overlays";
+import { Confirm, Menu } from "./overlays";
 import { IconAlert, IconArrowRight, IconBlocked, IconClock, IconCopy, IconInfo, IconLink } from "./icons";
 import type { ActivityEntry, EquityFlag, Nudge, Task, TaskStatus } from "../lib/types";
 
@@ -434,15 +434,35 @@ export function TaskCard({
   dragging,
   handleProps,
   onOpen,
+  assignees,
+  onAssign,
 }: {
   task: Task;
   href?: string;
   dragging?: boolean;
   handleProps?: Record<string, unknown>;
   onOpen?: () => void;
+  assignees?: Array<{ id: string; name: string }>;
+  onAssign?: (memberId: string | null, label: string) => void;
 }) {
   const stateClass =
     task.status === "done" ? " card--done" : task.status === "blocked" ? " card--blocked" : task.status === "review" ? " card--review" : dragging ? " card--picked" : "";
+  const assignmentItems = onAssign && assignees
+    ? [
+        ...assignees.map((member) => ({
+          label: member.name,
+          hint: member.id === task.assigneeId ? "current" : "assign",
+          disabled: member.id === task.assigneeId,
+          onSelect: () => onAssign(member.id, member.name),
+        })),
+        {
+          label: "Nobody",
+          hint: task.assigneeId ? "release it" : "current",
+          disabled: task.assigneeId === null,
+          onSelect: () => onAssign(null, "nobody"),
+        },
+      ]
+    : null;
 
   return (
     <article className={`card${stateClass}`} style={hueStyle(task.assigneeHue)} {...(handleProps ?? {})}>
@@ -480,7 +500,17 @@ export function TaskCard({
             nobody yet
           </span>
         )}
-        <span className="card__hours">{hours(task.effort)}</span>
+        <span className="row" style={{ gap: "0.4rem" }}>
+          <span className="card__hours">{hours(task.effort)}</span>
+          {assignmentItems ? (
+            <Menu
+              label="Assign"
+              ariaLabel={`Assign “${task.title}”`}
+              items={assignmentItems}
+              className="card__assignment"
+            />
+          ) : null}
+        </span>
       </div>
       <DueMark dueAt={task.dueAt} done={task.status === "done"} />
       {href ? (

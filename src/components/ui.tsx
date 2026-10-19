@@ -10,7 +10,7 @@
  * They are built once and used everywhere, so a discrepancy between two screens
  * is impossible rather than merely unlikely.
  */
-import type { CSSProperties, ReactNode } from "react";
+import { Children, cloneElement, isValidElement, useId, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import { hours, hueStyle, initials, pct, stateTone, STATE_NAMES, toneClass, type Tone } from "../lib/format";
 
 /* ---------- identity ---------------------------------------------------- */
@@ -172,6 +172,57 @@ export function Stat({
   );
 }
 
+const FIELD_CONTROL_TAGS = new Set(["input", "select", "textarea"]);
+
+function firstFieldControlId(children: ReactNode): string | undefined {
+  let found: string | undefined;
+  Children.forEach(children, (child) => {
+    if (found || !isValidElement(child)) return;
+    const props = child.props as { id?: unknown; children?: ReactNode };
+    if (typeof child.type === "string" && FIELD_CONTROL_TAGS.has(child.type) && typeof props.id === "string" && props.id) {
+      found = props.id;
+      return;
+    }
+    found = firstFieldControlId(props.children);
+  });
+  return found;
+}
+
+function connectFieldControl(
+  children: ReactNode,
+  controlId: string,
+  describedBy: string | undefined,
+  invalid: boolean,
+  required: boolean,
+): ReactNode {
+  let connected = false;
+
+  const visit = (child: ReactNode): ReactNode => {
+    if (!isValidElement(child)) return child;
+    const props = child.props as Record<string, unknown> & { children?: ReactNode };
+
+    if (!connected && typeof child.type === "string" && FIELD_CONTROL_TAGS.has(child.type)) {
+      connected = true;
+      const existingDescription = typeof props["aria-describedby"] === "string" ? props["aria-describedby"] : undefined;
+      const nextDescription = [existingDescription, describedBy].filter(Boolean).join(" ") || undefined;
+      return cloneElement(child as ReactElement<Record<string, unknown>>, {
+        id: typeof props.id === "string" && props.id ? props.id : controlId,
+        "aria-describedby": nextDescription,
+        "aria-invalid": invalid ? true : props["aria-invalid"],
+        "aria-required": required ? true : props["aria-required"],
+      });
+    }
+
+    if (!connected && props.children !== undefined) {
+      return cloneElement(child as ReactElement<Record<string, unknown>>, {}, Children.map(props.children, visit));
+    }
+
+    return child;
+  };
+
+  return Children.map(children, visit);
+}
+
 export function Field({
   label,
   hint,
@@ -187,19 +238,24 @@ export function Field({
   children: ReactNode;
   required?: boolean;
 }) {
+  const generatedId = `field-${useId().replace(/:/g, "")}`;
+  const controlId = htmlFor ?? firstFieldControlId(children) ?? generatedId;
+  const descriptionId = error ? `${controlId}-error` : hint ? `${controlId}-hint` : undefined;
+  const connectedChildren = connectFieldControl(children, controlId, descriptionId, !!error, !!required);
+
   return (
     <div className="field">
-      <label className="field__label" htmlFor={htmlFor}>
+      <label className="field__label" htmlFor={controlId}>
         {label}
         {required ? <span aria-hidden="true"> *</span> : null}
       </label>
-      {children}
+      {connectedChildren}
       {error ? (
-        <p className="field__error" role="alert">
+        <p className="field__error" id={descriptionId} role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p className="field__hint">{hint}</p>
+        <p className="field__hint" id={descriptionId}>{hint}</p>
       ) : null}
     </div>
   );

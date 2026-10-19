@@ -17,7 +17,31 @@ import { LoadBar, Meter, Panel, ScoreDial, ShareBar, Stat, StateChip, Tag } from
 import { FlagList, PhaseTag, Quiet } from "../../components/blocks";
 import { LineChart } from "../../components/charts";
 import { IconCheck, IconShuffle } from "../../components/icons";
-import type { Equity, HistoryPoint, RebalanceSuggestion } from "../../lib/types";
+import type { Equity, HistoryPoint, RebalanceSuggestion, Task } from "../../lib/types";
+
+type RebalanceApplyResponse = {
+  task: Task;
+  equity: Equity;
+  expectedImprovement: number | null;
+};
+
+type RebalanceReceipt = {
+  beforeScore: number;
+  afterScore: number;
+  scoreDelta: number | null;
+  taskTitle: string;
+  fromName: string;
+  toName: string;
+  expectedImprovement: number | null;
+};
+
+function scoreValue(score: number): string {
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+function signedScore(score: number): string {
+  return `${score > 0 ? "+" : ""}${scoreValue(score)}`;
+}
 
 /**
  * The five parts of the fairness score, which are also printed on `/insights`.
@@ -253,17 +277,12 @@ export function EquityPanel({
 
 export function RebalancePanel({ projectId, equity, onApplied }: { projectId: string; equity: Equity; onApplied: () => void }) {
   const suggestions = equity.suggestions;
+  const [receipt, setReceipt] = useState<RebalanceReceipt | null>(null);
 
-  if (!suggestions.length) {
-    return (
-      <Panel title="Evening it out" hint="nothing to move">
-        <Quiet>
-          The engine has no move worth making: no task sits so badly with its owner that handing it on would help. This panel fills in when it
-          does — usually when one person is carrying, or when a task has nobody on it.
-        </Quiet>
-      </Panel>
-    );
-  }
+  const handleApplied = (nextReceipt: RebalanceReceipt) => {
+    setReceipt(nextReceipt);
+    onApplied();
+  };
 
   return (
     <Panel
@@ -271,54 +290,130 @@ export function RebalancePanel({ projectId, equity, onApplied }: { projectId: st
       hint={`${suggestions.length} ${suggestions.length === 1 ? "move" : "moves"} the engine would make`}
     >
       <div className="stack stack--tight">
-        {suggestions.map((suggestion) => (
-          <div key={`${suggestion.taskId}-${suggestion.toId}`} className="callout callout--accent">
-            <div className="row row--between row--wrap" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
-              <div className="stack" style={{ gap: "0.25rem", minWidth: 0, flex: "1 1 18rem" }}>
-                <span style={{ fontWeight: 600, fontSize: "var(--text-sm)" }}>{suggestion.taskTitle}</span>
-                <span className="card__meta" style={{ lineHeight: 1.45 }}>
-                  {suggestion.kind === "fill"
-                    ? `Nobody has this. ${suggestion.reason}`
-                    : `${suggestion.fromName ?? "Unassigned"} → ${suggestion.toName}. ${suggestion.reason}`}
-                </span>
-                <span className="row row--wrap" style={{ gap: "0.75rem" }}>
-                  <span className="label tnum">{hours(suggestion.taskEffort)} of work</span>
-                  {suggestion.fitScore !== null ? <span className="label tnum">fit {Math.round(suggestion.fitScore)}</span> : null}
-                  <span className="label tnum" style={{ color: "var(--color-accent-deep)" }}>
-                    fairness +{suggestion.improvement}
+        {receipt ? <InterventionReceipt receipt={receipt} /> : null}
+
+        {suggestions.length ? (
+          suggestions.map((suggestion) => (
+            <div key={`${suggestion.taskId}-${suggestion.toId}`} className="callout callout--accent">
+              <div className="row row--between row--wrap" style={{ gap: "0.5rem", alignItems: "flex-start" }}>
+                <div className="stack" style={{ gap: "0.25rem", minWidth: 0, flex: "1 1 18rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "var(--text-sm)" }}>{suggestion.taskTitle}</span>
+                  <span className="card__meta" style={{ lineHeight: 1.45 }}>
+                    {suggestion.kind === "fill"
+                      ? `Nobody has this. ${suggestion.reason}`
+                      : `${suggestion.fromName ?? "Unassigned"} → ${suggestion.toName}. ${suggestion.reason}`}
                   </span>
-                  <span className="label tnum">
-                    {suggestion.toName} would hold {hours(suggestion.toAfterHours)} against an even {hours(suggestion.evenHours)}
+                  <span className="row row--wrap" style={{ gap: "0.75rem" }}>
+                    <span className="label tnum">{hours(suggestion.taskEffort)} of work</span>
+                    {suggestion.fitScore !== null ? <span className="label tnum">fit {Math.round(suggestion.fitScore)}</span> : null}
+                    <span className="label tnum" style={{ color: "var(--color-accent-deep)" }}>
+                      fairness +{suggestion.improvement}
+                    </span>
+                    <span className="label tnum">
+                      {suggestion.toName} would hold {hours(suggestion.toAfterHours)} against an even {hours(suggestion.evenHours)}
+                    </span>
                   </span>
-                </span>
+                </div>
+                <MoveButton
+                  projectId={projectId}
+                  suggestion={suggestion}
+                  beforeScore={equity.score}
+                  onApplied={handleApplied}
+                />
               </div>
-              <MoveButton projectId={projectId} suggestion={suggestion} onApplied={onApplied} />
             </div>
-          </div>
-        ))}
-        <p className="card__meta" style={{ lineHeight: 1.45 }}>
-          Applying a move writes an assignment entry with the expected improvement attached, so in three weeks the group can see not just that
-          a task moved but what it was meant to fix.
-        </p>
+          ))
+        ) : (
+          <Quiet>
+            The engine has no move worth making: no task sits so badly with its owner that handing it on would help. This panel fills in when it
+            does — usually when one person is carrying, or when a task has nobody on it.
+          </Quiet>
+        )}
+        {suggestions.length ? (
+          <p className="card__meta" style={{ lineHeight: 1.45 }}>
+            Applying a move writes an assignment entry with the expected improvement attached, so in three weeks the group can see not just that
+            a task moved but what it was meant to fix.
+          </p>
+        ) : null}
       </div>
     </Panel>
   );
 }
 
-function MoveButton({ projectId, suggestion, onApplied }: { projectId: string; suggestion: RebalanceSuggestion; onApplied: () => void }) {
+function InterventionReceipt({ receipt }: { receipt: RebalanceReceipt }) {
+  return (
+    <div className="callout callout--accent" role="status" aria-live="polite">
+      <div className="row row--between row--wrap" style={{ gap: "0.5rem" }}>
+        <strong>Intervention receipt</strong>
+        <Tag tone="accent" dot>Applied</Tag>
+      </div>
+
+      <div className="grid--stats">
+        <Stat size="sm" value={scoreValue(receipt.beforeScore)} label="Fairness before" note="the score before this move" />
+        <Stat size="sm" value={scoreValue(receipt.afterScore)} label="Fairness after" tone="accent" note="fresh score from the API" />
+        {receipt.scoreDelta !== null ? (
+          <Stat
+            size="sm"
+            value={signedScore(receipt.scoreDelta)}
+            label="Score delta"
+            tone={receipt.scoreDelta >= 0 ? "accent" : "over"}
+            note="after minus before"
+          />
+        ) : null}
+      </div>
+
+      <p style={{ lineHeight: 1.45 }}>
+        <strong>Task moved:</strong> {receipt.taskTitle} · {receipt.fromName} → {receipt.toName}
+      </p>
+      {receipt.expectedImprovement !== null ? (
+        <p className="card__meta" style={{ lineHeight: 1.45 }}>
+          <strong>Expected improvement:</strong> {signedScore(receipt.expectedImprovement)} fairness points (engine projection)
+        </p>
+      ) : null}
+      <p className="card__meta" style={{ lineHeight: 1.45 }}>
+        The expected improvement is an engine projection. The new fairness score is the actual refreshed state returned after this move.
+      </p>
+    </div>
+  );
+}
+
+function MoveButton({
+  projectId,
+  suggestion,
+  beforeScore,
+  onApplied,
+}: {
+  projectId: string;
+  suggestion: RebalanceSuggestion;
+  beforeScore: number;
+  onApplied: (receipt: RebalanceReceipt) => void;
+}) {
   const { push } = useToast();
   const [busy, setBusy] = useState(false);
 
   const move = async () => {
     setBusy(true);
     try {
-      await post(`/api/projects/${projectId}/rebalance/apply`, { taskId: suggestion.taskId, toId: suggestion.toId, note: "" });
+      const result = await post<RebalanceApplyResponse>(`/api/projects/${projectId}/rebalance/apply`, {
+        taskId: suggestion.taskId,
+        toId: suggestion.toId,
+        note: "",
+      });
+      const scoreDelta = Number.isFinite(beforeScore) && Number.isFinite(result.equity.score) ? result.equity.score - beforeScore : null;
       push({
         title: suggestion.kind === "fill" ? `Handed to ${suggestion.toName}` : `Moved to ${suggestion.toName}`,
-        detail: `Expected fairness +${suggestion.improvement}`,
+        detail: result.expectedImprovement === null ? "Move applied" : `Expected fairness ${signedScore(result.expectedImprovement)}`,
         tone: "good",
       });
-      onApplied();
+      onApplied({
+        beforeScore,
+        afterScore: result.equity.score,
+        scoreDelta,
+        taskTitle: result.task.title,
+        fromName: suggestion.fromName ?? "Unassigned",
+        toName: result.task.assigneeName ?? suggestion.toName,
+        expectedImprovement: result.expectedImprovement,
+      });
     } catch (cause) {
       push({ title: "That move did not land", detail: cause instanceof ApiError ? cause.message : undefined, tone: "bad" });
     } finally {
@@ -333,4 +428,3 @@ function MoveButton({ projectId, suggestion, onApplied }: { projectId: string; s
     </button>
   );
 }
-

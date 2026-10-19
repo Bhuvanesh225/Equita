@@ -5,7 +5,7 @@
  * because the only convincing thing about this product is what it says about a
  * group, and the fastest route to that is one click.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useSession } from "../lib/session";
@@ -24,8 +24,10 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const demoStarted = useRef(false);
 
   const comeFrom = (location.state as { from?: string } | null)?.from ?? "/today";
+  const requestedDemo = new URLSearchParams(location.search).get("demo");
 
   const land = (name: string, to = comeFrom) => {
     push({ title: `Signed in as ${name}`, tone: "good" });
@@ -57,10 +59,30 @@ export default function Login() {
     }
   };
 
+  /*
+   * The landing page is also the judge's front door. A query-string shortcut
+   * keeps the honest demo account flow (the same real `/api/auth/demo` call as
+   * the button below) but removes a dead-end click when somebody is reviewing
+   * the project under time pressure. The ref guard keeps React StrictMode from
+   * opening two sessions during development.
+   */
+  useEffect(() => {
+    if (requestedDemo !== "teacher" || demoStarted.current) return;
+    demoStarted.current = true;
+    void demo("amara@equita.demo");
+    // `demo` is stable for the lifetime of this screen; the URL is the only
+    // input that should start the shortcut.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedDemo]);
+
   return (
     <AuthLayout>
       <h1 className="auth__title">Sign in</h1>
-      <p className="auth__sub">Your groups, the hours everybody has put in, and what to do next.</p>
+      <p className="auth__sub">
+        {requestedDemo === "teacher" && busy === "amara@equita.demo"
+          ? "Opening the teacher demo — one class, four groups, and the intervention path judges need to see."
+          : "Your groups, the hours everybody has put in, and what to do next."}
+      </p>
 
       {error ? (
         <div className="flag flag--critical" role="alert" style={{ marginBottom: "1rem" }}>

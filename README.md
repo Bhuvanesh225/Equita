@@ -11,7 +11,24 @@ The short version of the thesis: *a checklist records work; it never distributes
 whole subject is the distribution — each person's hours against an even share, and the gap
 between what was promised and what actually landed.
 
-![The landing page](landing-hero.png)
+![The landing page](public/landing-hero.png)
+
+## Hackathon judge path
+
+For the fastest honest demo, open <http://localhost:5173/login?demo=teacher>. It signs in through
+the same demo endpoint as the visible account buttons and opens Amara's teacher workspace. Show the
+story in this order:
+
+1. **Today** — the teacher sees class attention rather than a fake personal task list.
+2. **Class console → Attention** — open the student who is carrying or falling behind.
+3. **The project → Fairness** — show the even-share tick, the five weighted measures, and the
+   explainable move Equita proposes.
+4. **Apply one move** — the intervention receipt shows the fairness score before, the fresh score
+   after, the task moved, and which number was an engine projection rather than an outcome.
+
+This is the core claim of the project: **visible imbalance → explainable recommendation → human-approved
+intervention → a refreshed, measurable result.** The dataset is invented but seeded, so every figure
+can be reproduced with `npm run seed`.
 
 ## Run it
 
@@ -90,6 +107,9 @@ opened with one click from the sign-in screen (no password). Start with:
 
 Read `docs/01-architecture.md` for the map, `DESIGN.md` for why it looks like this, and
 `docs/02-api.md` for every endpoint and its exact response shape.
+
+The hackathon-specific judgement, score breakdown and recommended presentation are in
+[`docs/hackathon-judgement.md`](docs/hackathon-judgement.md).
 
 ## The demo dataset is a set of situations
 

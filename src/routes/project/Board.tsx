@@ -58,6 +58,10 @@ export function TaskBoard({
     void moves.assign(taskId, target?.id ?? null, target?.name ?? "nobody");
   };
 
+  const onAssign = (taskId: string, memberId: string | null, label: string) => {
+    void moves.assign(taskId, memberId, label);
+  };
+
   const shown = onlyUnassigned ? lanes.nobody : null;
 
   return (
@@ -67,14 +71,30 @@ export function TaskBoard({
           {shown
             ? null
             : lanes.byMember.map((lane) => (
-                <Lane key={lane.id} id={lane.id} member={lane.member} load={lane.load} tasks={lane.tasks} onOpenTask={onOpenTask} />
+                <Lane
+                  key={lane.id}
+                  id={lane.id}
+                  member={lane.member}
+                  load={lane.load}
+                  tasks={lane.tasks}
+                  members={workspace.members}
+                  onOpenTask={onOpenTask}
+                  onAssign={onAssign}
+                />
               ))}
-          <Lane id="nobody" tasks={onlyUnassigned ? shown ?? [] : lanes.nobody} onOpenTask={onOpenTask} nobody />
+          <Lane
+            id="nobody"
+            tasks={onlyUnassigned ? shown ?? [] : lanes.nobody}
+            members={workspace.members}
+            onOpenTask={onOpenTask}
+            onAssign={onAssign}
+            nobody
+          />
         </div>
       </DndContext>
       <p className="card__meta" style={{ lineHeight: 1.45 }}>
-        Drag a card onto a person to hand the work over. The bar at the top of each lane is that person's delivered hours against an even share —
-        the same mark used on every other screen.
+        Drag a card onto a person to hand the work over, or use its Assign menu to choose somebody without dragging. The bar at the top of each
+        lane is that person's delivered hours against an even share — the same mark used on every other screen.
       </p>
     </div>
   );
@@ -85,14 +105,18 @@ function Lane({
   member,
   load,
   tasks,
+  members,
   onOpenTask,
+  onAssign,
   nobody,
 }: {
   id: string;
   member?: ProjectWorkspace["members"][number];
   load?: ProjectWorkspace["equity"]["members"][number];
   tasks: Task[];
+  members: ProjectWorkspace["members"];
   onOpenTask: (id: string) => void;
+  onAssign: (taskId: string, memberId: string | null, label: string) => void;
   nobody?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -143,7 +167,13 @@ function Lane({
       </header>
       <div className="lane__body">
         {tasks.map((task) => (
-          <DraggableCard key={task.id} task={task} onOpen={() => onOpenTask(task.id)} />
+          <DraggableCard
+            key={task.id}
+            task={task}
+            members={members}
+            onOpen={() => onOpenTask(task.id)}
+            onAssign={onAssign}
+          />
         ))}
         {!tasks.length ? <p className="lane__empty">{nobody ? "every task has an owner" : "nothing on them"}</p> : null}
       </div>
@@ -156,25 +186,36 @@ function Lane({
   );
 }
 
-function DraggableCard({ task, onOpen }: { task: Task; onOpen: () => void }) {
+function DraggableCard({
+  task,
+  members,
+  onOpen,
+  onAssign,
+}: {
+  task: Task;
+  members: ProjectWorkspace["members"];
+  onOpen: () => void;
+  onAssign: (taskId: string, memberId: string | null, label: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
 
   return (
-    <div ref={setNodeRef} style={{ opacity: isDragging ? 0.4 : 1 }}>
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      title={`Drag to hand “${task.title}” to somebody else`}
+      style={{
+        opacity: isDragging ? 0.4 : 1,
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+      }}
+    >
       <TaskCard
         task={task}
         dragging={isDragging}
         onOpen={onOpen}
-        handleProps={{
-          ...listeners,
-          ...attributes,
-          style: {
-            ...hueStyle(task.assigneeHue),
-            transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-            cursor: "grab",
-          },
-          title: `Drag to hand “${task.title}” to somebody else`,
-        }}
+        assignees={members}
+        onAssign={(memberId, label) => onAssign(task.id, memberId, label)}
       />
     </div>
   );

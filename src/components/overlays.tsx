@@ -188,7 +188,7 @@ export interface MenuItem {
 }
 
 /** A small anchored menu. Closes on Escape, on an outside click, and on select. */
-export function Menu({ label, items, align = "right", icon, className }: { label: ReactNode; items: MenuItem[]; align?: "left" | "right"; icon?: ReactNode; className?: string }) {
+export function Menu({ label, items, align = "right", icon, className, ariaLabel }: { label: ReactNode; items: MenuItem[]; align?: "left" | "right"; icon?: ReactNode; className?: string; ariaLabel?: string }) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -212,7 +212,7 @@ export function Menu({ label, items, align = "right", icon, className }: { label
 
   return (
     <div className={`tip${className ? ` ${className}` : ""}`} ref={wrap} style={{ position: "relative" }}>
-      <button type="button" className="btn btn--ghost btn--sm" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+      <button type="button" className="btn btn--ghost btn--sm" aria-label={ariaLabel} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         {icon}
         {label}
       </button>

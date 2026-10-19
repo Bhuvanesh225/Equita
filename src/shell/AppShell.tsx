@@ -397,6 +397,7 @@ function TopBar({ counts }: { counts: { unread: number; openTasks: number } }) {
                 align="right"
                 className="tip"
                 label={<Avatar name={user.name} hue={user.hue} size="sm" />}
+                ariaLabel="Account menu"
                 items={[
                   { label: "Your strengths", onSelect: () => navigate("/profile"), hint: `${user.capacity}h/week` },
                   { label: "Settings", onSelect: () => navigate("/settings") },
