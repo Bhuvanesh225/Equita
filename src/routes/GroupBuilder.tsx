@@ -400,9 +400,9 @@ function CommitDialog({
           <span><strong>Plan the tasks from the brief</strong><span className="rowitem__sub">Create the planner's first proposal on each board.</span></span>
           <input type="checkbox" checked={autoPlan} onChange={(event) => { setAutoPlan(event.target.checked); if (!event.target.checked) setAutoAssign(false); }} aria-label="Plan the tasks from the brief" />
         </label>
-        <label className="row row--between" style={{ gap: "1rem", alignItems: "flex-start", opacity: autoPlan ? 1 : 0.55 }}>
+        <label className="row row--between" style={{ gap: "1rem", alignItems: "flex-start", opacity: autoPlan && brief.trim() ? 1 : 0.55 }}>
           <span><strong>Place the work with the allocator</strong><span className="rowitem__sub">Only available when there is a brief to plan from.</span></span>
-          <input type="checkbox" checked={autoAssign} disabled={!autoPlan} onChange={(event) => setAutoAssign(event.target.checked)} aria-label="Place the work with the allocator" />
+          <input type="checkbox" checked={autoAssign} disabled={!autoPlan || !brief.trim()} onChange={(event) => setAutoAssign(event.target.checked)} aria-label="Place the work with the allocator" />
         </label>
       </div>
     </Dialog>
