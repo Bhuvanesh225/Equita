@@ -15,6 +15,7 @@ import "./styles/surfaces.css";
 import "./styles/auth.css";
 import "./styles/landing.css";
 import "./styles/overhaul.css";
+import "./styles/landing-redesign.css";
 
 import { App } from "./App";
 
