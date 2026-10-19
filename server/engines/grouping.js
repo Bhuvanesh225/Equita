@@ -199,6 +199,15 @@ function decorate(member) {
       .sort((a, b) => b[1].level - a[1].level)
       .slice(0, 4)
       .map(([slug, s]) => ({ slug, level: s.level })),
+    /*
+     * Their level in every cluster, which is what `teamStats()` reads to build a
+     * group's coverage. The group builder lets a teacher drag somebody between
+     * groups, and the preview endpoint has no way to be told "keep this person
+     * here" — so the screen has to recompute one group's coverage itself. Sending
+     * the levels is what lets it do that with the engine's own numbers instead
+     * of a second, nearly-identical formula.
+     */
+    clusters: clusterStrength(member).map((entry) => ({ cluster: entry.cluster, name: entry.name, level: entry.level })),
   };
 }
 

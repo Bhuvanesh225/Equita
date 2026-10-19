@@ -93,6 +93,8 @@ export interface ProjectSummary {
   equity: {
     score: number;
     parts: EquityParts;
+    /** What each part is worth in the score — printed beside it on `/insights`. */
+    weights?: EquityParts;
     gini: number;
     headline: string;
     daysLeft: number | null;
@@ -539,7 +541,12 @@ export interface Dashboard {
     attention: Array<{ kind: string; studentId: string; name: string; hue: number; detail: string; severity: Severity }>;
   }>;
   activity: ActivityEntry[];
-  trend: Array<{ week: string; takenAt: string; credited: number; committed: number }>;
+  /**
+   * The viewer's own line against an even share, week by week, summed over
+   * every project they are on. `even` is the mean of the members the snapshot
+   * recorded, so the rule line drawn from it is the same measure the bars use.
+   */
+  trend: Array<{ week: string; takenAt: string; credited: number; committed: number; even: number }>;
   summary: {
     projects: number;
     openHours: number;
@@ -564,6 +571,13 @@ export interface GroupTeam {
     strength: number;
     dominant: string;
     topSkills: Array<{ slug: string; level: number }>;
+    /**
+     * Their level in each cluster. The group builder reads this to recompute a
+     * group's coverage after somebody is dragged between groups — the preview
+     * endpoint takes no "pin this person" input, so the arithmetic has to happen
+     * in the browser (see `src/routes/groupbuilder/Lanes.tsx`).
+     */
+    clusters?: Array<{ cluster: string; name: string; level: number }>;
   }>;
   size?: number;
   coverage: Record<string, number>;
@@ -684,6 +698,43 @@ export interface ClassroomOverview {
   attention: Array<{ kind: string; studentId: string; name: string; hue: number; detail: string; severity: Severity }>;
   viewer: { id: string; isTeacher: boolean; role: string };
   gaps: Array<{ cluster: string; name: string; strong: number; meanLevel: number; needed: boolean }>;
+}
+
+/**
+ * `GET /api/classrooms/:id/analytics` — the class console's numbers without the
+ * roster bodies. The fairness screen reads one of these per class the viewer
+ * teaches, which is why it carries slim students and projects.
+ */
+export interface ClassAnalytics {
+  analytics: ClassroomOverview["analytics"];
+  trend: ClassroomOverview["trend"];
+  coverage: ClassroomOverview["coverage"];
+  students: Array<{
+    id: string;
+    name: string;
+    hue: number;
+    state: MemberState;
+    groups: number;
+    credited: number;
+    committed: number;
+    even: number;
+    owed: number;
+    open: number;
+    capacity: number;
+    top: Array<{ slug: string; name: string; cluster: string; level: number; appetite: number }>;
+  }>;
+  projects: Array<{
+    id: string;
+    name: string;
+    score: number;
+    gini: number;
+    parts: EquityParts;
+    progress: number;
+    daysLeft: number | null;
+    open: number;
+    unassigned: number;
+    members: ClassProject["members"];
+  }>;
 }
 
 export interface StudentRecord {

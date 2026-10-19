@@ -62,6 +62,10 @@ export function projectCard(row, userId) {
     equity: {
       score: equity.score,
       parts: equity.parts,
+      /* The five parts are a weighted average, so the weights travel with them:
+       * a screen that prints "Balance 62" without saying it counts for 30% of
+       * the score is asking to be argued with. */
+      weights: equity.weights,
       gini: equity.distribution.gini,
       headline: equity.headline,
       daysLeft: equity.timeline.daysLeft,
@@ -128,10 +132,19 @@ insightsRouter.get("/dashboard", (req, res) => {
     for (const point of equityHistory(card.id)) {
       const mine = point.members?.find((m) => m.id === userId);
       if (!mine) continue;
+      /*
+       * The even share of that week, read out of the same snapshot: the
+       * snapshot stores what each member held, so the even share is the mean of
+       * the members who were on the project when it was taken. It used to be a
+       * literal `+= 0`, which drew a rule line at zero and claimed a person was
+       * infinitely ahead of everybody. See docs/06-traps.md T30.
+       */
+      const members = point.members ?? [];
+      const even = members.length ? members.reduce((a, m) => a + (m.credited ?? 0), 0) / members.length : 0;
       const entry = trendMap.get(point.week) || { week: point.week, takenAt: point.takenAt, credited: 0, committed: 0, even: 0 };
       entry.credited += mine.credited;
       entry.committed += mine.committed;
-      entry.even += 0;
+      entry.even += even;
       trendMap.set(point.week, entry);
     }
   }
@@ -204,7 +217,9 @@ insightsRouter.get("/dashboard", (req, res) => {
       ...shapeActivity(a, Object.fromEntries(Object.entries(names).map(([id, v]) => [id, v.name]))),
       actorHue: names[a.actor_id]?.hue ?? null,
     })),
-    trend: [...trendMap.values()].sort((a, b) => a.takenAt.localeCompare(b.takenAt)).map((t) => ({ ...t, credited: round(t.credited, 2), committed: round(t.committed, 2) })),
+    trend: [...trendMap.values()]
+      .sort((a, b) => a.takenAt.localeCompare(b.takenAt))
+      .map((t) => ({ ...t, credited: round(t.credited, 2), committed: round(t.committed, 2), even: round(t.even, 2) })),
     summary: {
       projects: cards.length,
       openHours: round(totalOpen, 1),

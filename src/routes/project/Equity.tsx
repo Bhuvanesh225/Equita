@@ -19,7 +19,14 @@ import { LineChart } from "../../components/charts";
 import { IconCheck, IconShuffle } from "../../components/icons";
 import type { Equity, HistoryPoint, RebalanceSuggestion } from "../../lib/types";
 
-const PART_LABELS: Array<{ key: keyof Equity["parts"]; label: string; blurb: string }> = [
+/**
+ * The five parts of the fairness score, which are also printed on `/insights`.
+ *
+ * Exported rather than copied because two screens describe the same five
+ * numbers, and a wording that drifts between them is how a product ends up with
+ * two vocabularies for one idea.
+ */
+export const PART_LABELS: Array<{ key: keyof Equity["parts"]; label: string; blurb: string }> = [
   { key: "balance", label: "Balance", blurb: "how even the delivered hours are across the group" },
   { key: "delivery", label: "Delivery", blurb: "how much of the work has actually landed" },
   { key: "spread", label: "Spread", blurb: "how far the busiest person sits from the quietest" },

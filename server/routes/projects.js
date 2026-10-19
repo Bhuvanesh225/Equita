@@ -104,7 +104,16 @@ projectsRouter.get("/", (req, res) => {
       myOpen: mine.length,
       myNextDue: nextDue,
       equity: equity
-        ? { score: equity.score, gini: equity.distribution.gini, parts: equity.parts, headline: equity.headline, daysLeft: equity.timeline.daysLeft }
+        ? {
+            score: equity.score,
+            gini: equity.distribution.gini,
+            parts: equity.parts,
+            /* The weights are what turn the five parts into the score. The
+             * fairness screen prints them beside each part. */
+            weights: equity.weights,
+            headline: equity.headline,
+            daysLeft: equity.timeline.daysLeft,
+          }
         : null,
       myShare: me ? { committed: me.committed, credited: me.credited, even: me.even.committed, state: me.state } : null,
       unassigned: equity?.totals.unassigned ?? 0,

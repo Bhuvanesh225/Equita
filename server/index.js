@@ -100,7 +100,11 @@ const start = () => {
   // work somebody has done.
   try {
     const seeded = seedIfEmpty();
-    if (seeded) console.log(`  seeded       a demonstration dataset was created (${seeded.accounts?.length ?? "?"} people, ${seeded.projects?.length ?? "?"} projects)`);
+    // `seedIfEmpty` answers `{ skipped: true }` on a database that already has
+    // people in it, so the message has to be able to say nothing at all. It used
+    // to log "a demonstration dataset was created (? people, ? projects)" on every
+    // single boot, which reads exactly like the seed had just wiped the database.
+    if (seeded && !seeded.skipped) console.log(`  seeded       a demonstration dataset was created (${seeded.accounts?.length ?? "?"} people, ${seeded.projects?.length ?? "?"} projects)`);
   } catch (error) {
     console.error("  warning      could not seed the demonstration dataset:", error.message);
   }
