@@ -4,7 +4,7 @@ dist/
 
 # the database, its write-ahead log and its shared memory
 # (the seed recreates it; never commit a live SQLite file)
-data/
+/data/
 *.db
 *.db-wal
 *.db-shm
