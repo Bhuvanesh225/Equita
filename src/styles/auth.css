@@ -224,6 +224,8 @@
 .auth__role span {
   display: block;
   font-size: var(--text-xs);
-  opacity: 0.75;
+  /* 0.75 put this caption at 4.21:1 on surface, under AA. 0.9 clears it while
+     still reading as a step below the strong. */
+  opacity: 0.9;
   line-height: 1.35;
 }

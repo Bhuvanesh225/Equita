@@ -129,6 +129,46 @@ under typecheck only, and this was the second bug of that class found. Use
 `inspect.mjs` now returns `problems: []`-equivalent output at 1440 **and** 390, in **paper
 and ink**, for `teacher` and for `student`, on every built route.
 
+## Spacing pass (2026-10-20) — systemic rhythm, no route behaviour touched
+
+A layout-harmony pass over the shared CSS only. Verified with `scripts/inspect.mjs` at
+1440 **and** 390 (all app routes, `teacher` and `student`, `problems: []`), `npx tsc --noEmit`
+and `npm run build`.
+
+| # | Defect | Fix |
+| --- | --- | --- |
+| S1 | **Panel headers alternated 54/60/70px.** A head holding a small action button outgrew one without it, and a wrapping title outgrew both — so the header band and the body under it started on different lines down a column. | `.panel__head` now has one `min-height` (3.75rem; 4.4rem under `pointer: coarse`), in `overhaul.css`. |
+| S2 | **Header, body and footer broke on three different left edges** (1.1rem vs 1.15rem inline padding). | Inline padding unified to 1.15rem across `.panel__head` / `.panel__body` / `.panel__foot`. |
+| S3 | **`grid--halves` cards ended at ragged heights**, leaving a step-shaped notch down the middle of a row. | `.grid--halves` stretches again; `.panel__body` (`flex: 1 1 auto`) absorbs the slack so footers line up on the row baseline. |
+| S4 | **The figure strip was lopsided** — ink divider on the final cell but an open left edge, and on two columns the first row kept its right divider. | The last cell (and each row's last cell at ≤40rem) drops its right divider; both ends now sit flush with the page content. |
+| S5 | **The landing console score clipped** (`60.9` needed 40px in a 2.4rem column). | Number column widened to 3rem, `landing-redesign.css`. |
+
+Known remaining, **intentional**: the `grid--split` rail is shorter than its main column on
+`/today` and `/profile`, so the area beside the lower main panels is empty. That is content
+balance, not a spacing bug; rebalance the panels themselves if it should close.
+
+## Landing figures + one measure across the workspace (2026-10-20, second pass)
+
+The landing console printed numbers it had not computed, and the desktop shell drew the page
+header and the page body on two different left edges. Verified in the browser at 1920, 1440
+and 390; `npx tsc --noEmit` and `npm run build` clean, `scripts/inspect.mjs` empty on every
+route at all three widths.
+
+| # | Defect | Fix |
+| --- | --- | --- |
+| L1 | **Hero read "even share 0.3h".** The label formatted `distribution.evenShare`, which is the *fraction* `1/n` (0.25 for four people), as if it were hours. | Label uses `situation.hours.even`. Now "6.7h" (group) and "5h" (teacher), matching the delivered total over the member count. `src/routes/Landing.tsx`. |
+| L2 | **Bars plotted a different quantity than the axis.** They drew `member.share * total`, where `share` is the engine's *scoring* share (`credited`/`committed` per `equity.measure`) and `total` is delivered hours — so the teacher console showed Maya at 11.2h when she had delivered 14h. | Bars plot `member.delivered`; width is `delivered / scale`. Group: 19.5 / 7.3 / 0 / 0 = 26.8. Teacher: 14 / 4 / 2 / 0 = 20. |
+| L3 | **The even-share tick and its label could disagree.** CSS pinned `.eq-bars__even-label` at `left: 25%`, which is only right for a four-person group; five members put the tick at 20%. | Label is positioned inline at `${evenShare * 100}%`, with `evenShare` the fraction. |
+| L4 | **A member with zero hours still drew a 4px bar** (`.eq-bar__track span` carried `min-width: 0.25rem`), so "has done nothing" looked like "has done a little". | Zero hours renders width `0%` with `minWidth: 0`. |
+| L5 | **"After the suggested move" could overflow its own axis.** A `fill` move (no `from` member) adds hours the delivered total does not include, so the projected bar passed the axis end. | The projection shifts delivered hours by `move.effort` and raises the scale by the same amount when `move.from` is null; values clamp to the scale. |
+| L6 | **"…% of the delivered work" on the landing story** was computed from the scoring share. | `landing/Sections.tsx` divides `member.delivered` by `drift.hours.delivered`. |
+| W1 | **Desktop pages had two empty bands down the sides.** `main.shell` took `padding-inline: clamp(2rem, 4vw, 4.5rem)` at ≥64rem while `.topbar__inner` kept 1.25rem, so the body sat 72px inside its own header and the header's borders stopped short of the content. | `overhaul.css` sets `--workspace-pad` on `.app` (1.25rem; 2.5rem ≥60rem; 1rem ≤40rem) and `.app .shell { padding-inline: var(--workspace-pad) }`, so header and body share one inset. Measured: at 1440 topbar/main `240..1440`, page `280..1400`; at 1920 page `280..1880`. |
+| W2 | **The shell had no upper measure**, so on a 1920 display it stretched to 1680px of body. | `.app .shell { max-width: 108rem }` at ≥60rem. |
+| L7 | **The landing frame stopped growing at 1312px** on any desktop wider than 1440 (`--eq-max: 82rem`), leaving 300px of dead margin at 1920. | `@media (min-width: 96rem) { .equita-landing { --eq-max: 100rem } }` — frame is 1600px at 1920, unchanged at 1440. |
+
+Related trap: `T32` in `docs/06-traps.md` (a payload's `share` is a measure, not a fraction of
+hours; `evenShare` is a fraction).
+
 ## Known smaller defects
 
 | # | Defect | Where |

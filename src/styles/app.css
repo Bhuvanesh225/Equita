@@ -93,7 +93,13 @@
   }
   .grid--halves {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    /*
+     * Deliberately stretched, not `start`: two cards side by side that end at
+     * different heights leave a ragged notch down the middle of the row. With
+     * the default stretch the pair share one baseline grid, and `.panel__body`
+     * (flex: 1) absorbs the difference so footers line up across the row.
+     */
+    align-items: stretch;
   }
   .grid--thirds {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -300,7 +306,9 @@
 .btn[disabled],
 .btn[aria-disabled="true"] {
   --btn-bg: var(--color-paper-3);
-  --btn-fg: var(--color-ink-3);
+  /* ink-2 rather than ink-3: on paper-3 the muted ink measured 4.06:1, under
+     AA. A disabled control is still text a reader has to be able to read. */
+  --btn-fg: var(--color-ink-2);
   --btn-edge: var(--color-line);
   opacity: 1;
   cursor: not-allowed;

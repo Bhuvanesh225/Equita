@@ -537,8 +537,11 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+/* The read state is also carried by the "read" word, so the dim is decorative;
+   but 0.72 dropped the prose to 3.17:1 on surface, under AA for a whole card of
+   text. 0.92 keeps the read/unread distinction and clears the floor. */
 .notif--read {
-  opacity: 0.72;
+  opacity: 0.92;
 }
 
 .notif__link {

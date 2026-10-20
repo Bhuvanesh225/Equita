@@ -152,7 +152,7 @@ export function Capabilities({ situations, shareSegments }: { situations: StoryS
                   <span className="frag__why">
                     {member.silentFor !== null && member.silentFor > (drift?.policy.silenceDays ?? 7)
                       ? `Last signal ${member.silentFor} days ago, so their capacity is unknown and they rank lower.`
-                      : `${hours(member.open)} still open · ${Math.round(member.share * 100)}% of the delivered work`}
+                      : `${hours(member.open)} still open · ${drift && drift.hours.delivered > 0 ? Math.round((member.delivered / drift.hours.delivered) * 100) : 0}% of the delivered work`}
                   </span>
                 </div>
               ))}

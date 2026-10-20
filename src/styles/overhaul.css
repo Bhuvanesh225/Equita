@@ -134,6 +134,27 @@
   background: var(--color-surface);
 }
 
+/*
+ * The strip is a ledger: a heavy rule above, ink dividers between cells, a rule
+ * below, and both ends open so it starts and stops flush with the page content.
+ * The divider on the final cell used to stay, closing only the right end and
+ * leaving the figure row visibly lopsided against the left edge below it.
+ */
+.grid--stats > *:last-child {
+  border-right: 0;
+}
+
+/*
+ * On two columns the cell that ends each row drops its divider too, so both
+ * rows of the strip stay open on the right — the earlier mobile rule lost to
+ * the per-cell border above.
+ */
+@media (max-width: 40rem) {
+  .grid--stats > *:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
 .stat {
   gap: 0.4rem;
 }
@@ -182,9 +203,23 @@
   background: var(--color-accent-soft);
 }
 
+/*
+ * One header height for every panel.
+ *
+ * The band used to size itself from its contents, so a head holding a small
+ * action button stood at 60px while one without stood at 54px — the two
+ * alternated down a column, and their body text started on different lines.
+ * `3.75rem` clears the tallest common head (a `.btn--sm` in 0.9rem of padding)
+ * so a header is the same band whether or not it carries an action.
+ */
 .panel__head {
-  min-height: 3.35rem;
-  padding: 0.9rem 1.1rem;
+  min-height: 3.75rem;
+  /*
+   * Inline padding matches `.panel__body` (1.15rem) so the header title, the
+   * body text below it and the footer all break on the same vertical — the one
+   * edge a reader's eye tracks down a column.
+   */
+  padding: 0.9rem 1.15rem;
   background: color-mix(in srgb, var(--color-paper-2) 46%, var(--color-surface));
   border-bottom: 1px solid var(--color-line);
 }
@@ -198,12 +233,18 @@
   color: var(--color-ink-3);
 }
 
+/*
+ * The body takes the slack when a panel is stretched to match a taller
+ * neighbour in its row, so a footer (or the last line of a list) sits on the
+ * row's shared baseline rather than floating mid-panel.
+ */
 .panel__body {
+  flex: 1 1 auto;
   padding: 1.15rem;
 }
 
 .panel__foot {
-  padding: 0.85rem 1.1rem;
+  padding: 0.85rem 1.15rem;
   background: var(--color-paper-2);
 }
 
@@ -267,6 +308,15 @@
 
   .btn--icon.btn--sm {
     width: 2.5rem;
+  }
+
+  /*
+   * A coarse pointer grows `.btn--sm` to 2.5rem, so a header holding one would
+   * outgrow a header without one again. The band is raised past the taller of
+   * the two so the touch layout keeps the same single header height.
+   */
+  .panel__head {
+    min-height: 4.4rem;
   }
 }
 
@@ -402,31 +452,14 @@
 }
 
 .rail__mark {
-  width: 1.9rem;
-  height: 1.9rem;
-}
-
-.rail__mark rect:first-child {
-  fill: var(--color-brand-active);
-}
-
-.rail__mark rect:not(:first-child) {
-  fill: var(--color-brand-active-ink);
-}
-
-.rail__mark rect:nth-child(2),
-.rail__mark rect:nth-child(3),
-.rail__mark rect:nth-child(4) {
-  fill: var(--color-brand-text);
-}
-
-.rail__mark rect:nth-child(5) {
-  fill: var(--color-brand-active-ink);
+  width: 2rem;
+  height: 2rem;
 }
 
 .rail__wordmark {
-  font-size: 1.2rem;
-  letter-spacing: -0.045em;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.05em;
 }
 
 .rail__label {
@@ -487,7 +520,7 @@
 }
 
 .topbar__search {
-  max-width: 34rem;
+  max-width: 44rem;
 }
 
 .topbar__search .input {
@@ -1046,10 +1079,29 @@
 
 /* ---------- responsive composition -------------------------------------- */
 
-@media (min-width: 64rem) {
-  .app > div > main.shell {
-    padding-inline: clamp(2rem, 4vw, 4.5rem);
+/*
+ * The topbar and the page must share one measure. `main.shell` used to take an
+ * extra clamp(2rem, 4vw, 4.5rem) inset that the bar above it did not, so on a
+ * desktop the content sat 72px inside the topbar's rule — two empty strips
+ * down the screen. One workspace pad now drives both, and the shell is allowed
+ * to grow past 92rem on large monitors so the columns use the room they have.
+ */
+.app {
+  --workspace-pad: 1.25rem;
+}
+
+@media (min-width: 60rem) {
+  .app {
+    --workspace-pad: 2.5rem;
   }
+
+  .app .shell {
+    max-width: 108rem;
+  }
+}
+
+.app .shell {
+  padding-inline: var(--workspace-pad);
 }
 
 @media (max-width: 62rem) {
@@ -1064,6 +1116,10 @@
 }
 
 @media (max-width: 40rem) {
+  .app {
+    --workspace-pad: 1rem;
+  }
+
   .shell {
     padding-inline: 1rem;
   }

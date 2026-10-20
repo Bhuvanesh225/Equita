@@ -42,10 +42,10 @@ function logo() {
   return (
     <svg className="eq-logo" viewBox="0 0 32 32" aria-hidden="true">
       <rect width="32" height="32" fill="currentColor" />
-      <rect x="5" y="13" width="5" height="14" fill="var(--eq-paper)" />
-      <rect x="11" y="9" width="5" height="18" fill="var(--eq-paper)" />
-      <rect x="17" y="13" width="5" height="14" fill="var(--eq-paper)" />
-      <rect x="23" y="13" width="5" height="14" fill="var(--eq-acid)" />
+      <rect x="7" y="14" width="4.5" height="10" fill="var(--eq-paper)" />
+      <rect x="13.75" y="14" width="4.5" height="10" fill="var(--eq-paper)" />
+      <rect x="20.5" y="14" width="4.5" height="10" fill="var(--eq-paper)" />
+      <rect x="5.5" y="12" width="21" height="2" fill="var(--eq-acid)" />
     </svg>
   );
 }
@@ -62,6 +62,7 @@ function cta(audience: Audience, signedIn: boolean) {
 }
 
 function Header({ audience, setAudience, signedIn }: { audience: Audience; setAudience: (next: Audience) => void; signedIn: boolean }) {
+  const action = cta(audience, signedIn);
   return (
     <header className="eq-header">
       <div className="eq-frame eq-header__inner">
@@ -69,6 +70,8 @@ function Header({ audience, setAudience, signedIn }: { audience: Audience; setAu
         <nav className="eq-nav" aria-label="Landing page">
            <a href="#story">The story</a>
            <a href="#signals">The signals</a>
+           <a href="#journey">The journey</a>
+           <a href="#class-list">The class list</a>
            <a href="#classroom">Classrooms</a>
         </nav>
         <div className="eq-header__right">
@@ -77,6 +80,7 @@ function Header({ audience, setAudience, signedIn }: { audience: Audience; setAu
             <button type="button" aria-pressed={audience === "teacher"} onClick={() => setAudience("teacher")}>Teacher</button>
           </div>
           <Link className="eq-header__link" to={signedIn ? "/today" : "/login"}>{signedIn ? "Workspace" : "Sign in"}</Link>
+          <Link className="eq-button eq-button--dark eq-header__cta" to={action.href}>{action.label}</Link>
         </div>
       </div>
     </header>
@@ -86,23 +90,41 @@ function Header({ audience, setAudience, signedIn }: { audience: Audience; setAu
 function BalanceBars({ situation, after = false }: { situation?: StorySituation; after?: boolean }) {
   const total = situation?.hours.delivered || 1;
   const move = situation?.move;
-  const shareAfter = (name: string, value: number) => {
-    if (!after || !move) return value;
-    const amount = move.effort / total;
-    const from = move.from && name.toLowerCase().includes(move.from.toLowerCase().split(" ")[0]);
-    const to = move.to && name.toLowerCase().includes(move.to.toLowerCase().split(" ")[0]);
-    return Math.max(0, Math.min(1, value + (to ? amount : from ? -amount : 0)));
-  };
   const even = situation?.distribution.evenShare ?? 0.25;
+  /*
+   * A "fill" move takes work nobody had picked up (`from` is null), so the
+   * projection's pool grows by that effort; a move between people leaves the
+   * pool where it was. The axis and the even line follow the projected pool,
+   * so an added task cannot push a bar past the end of the scale.
+   */
+  const projectedTotal = after && move && !move.from ? total + move.effort : total;
+  const scale = after ? projectedTotal : total;
+  const evenHours = after ? projectedTotal * even : situation?.hours.even ?? 0;
+  /*
+   * Bars are delivered hours. `member.share` is the engine's *scoring* share —
+   * credited once delivery is meaningful, committed while it is still too
+   * thin to judge — so multiplying it by the delivered total printed hours
+   * nobody had delivered (Maya read 11.2h having delivered 14h). The headline
+   * above the bars quotes delivered hours, so the bars use the same measure.
+   */
+  const deliveredAfter = (member: StorySituation["members"][number]) => {
+    if (!after || !move) return member.delivered;
+    const first = (name: string | null) => (name ? name.toLowerCase().split(" ")[0] : "");
+    const isFrom = first(move.from) !== "" && member.fullName.toLowerCase().includes(first(move.from));
+    const isTo = first(move.to) !== "" && member.fullName.toLowerCase().includes(first(move.to));
+    const shifted = member.delivered + (isTo ? move.effort : isFrom ? -move.effort : 0);
+    return Math.max(0, Math.min(scale, shifted));
+  };
   return (
     <div className="eq-bars" aria-label={after ? "Projected balance after the suggested move" : "Current balance against the even share"}>
-      <div className="eq-bars__scale"><span>0</span><span className="eq-bars__even-label">even share <b>{hours(even)}</b></span><span>{hours(total)}</span></div>
+      <div className="eq-bars__scale"><span>0</span><span className="eq-bars__even-label" style={{ left: `${even * 100}%` }}>even share <b>{situation ? hours(evenHours) : "—"}</b></span><span>{hours(scale)}</span></div>
       {(situation?.members ?? []).map((member) => {
-        const share = shareAfter(member.fullName, member.share);
+        const delivered = deliveredAfter(member);
+        const share = delivered / scale;
         return (
           <div className="eq-bar" key={member.fullName}>
-            <div className="eq-bar__label"><span><MemberDot hue={member.hue} />{member.name}</span><strong>{hours(share * total)}</strong></div>
-            <div className="eq-bar__track"><span style={{ width: `${Math.max(2, share * 100)}%`, ...hue(member.hue) }} /><i style={{ left: `${even * 100}%` }} /></div>
+            <div className="eq-bar__label"><span><MemberDot hue={member.hue} />{member.name}</span><strong>{hours(delivered)}</strong></div>
+            <div className="eq-bar__track"><span style={{ width: `${share > 0 ? Math.max(2, share * 100) : 0}%`, minWidth: share > 0 ? undefined : 0, ...hue(member.hue) }} /><i style={{ left: `${even * 100}%` }} /></div>
           </div>
         );
       })}
@@ -202,7 +224,7 @@ function JourneySection() {
       <div className="eq-frame">
         <div className="eq-section__intro"><p className="eq-kicker">The project, in order</p><h2>From an empty page to a hand-in.</h2><p>The same brief stays visible from the first meeting to the final record. Nothing disappears into a private checklist.</p></div>
         <div className="eq-moments" data-reveal>
-          {MOMENTS.map((moment) => <article className="eq-moment" key={moment.title}><h3>{moment.title}</h3><p>{moment.body}</p>{moment.plate ? <figure><img src={moment.plate.src} alt={moment.plate.alt} decoding="async" /><figcaption>{moment.plate.caption}</figcaption></figure> : <div className="eq-moment__mark" aria-hidden="true"><span /><span /><span /></div>}</article>)}
+          {MOMENTS.map((moment) => <article className="eq-moment" key={moment.title}><h3>{moment.title}</h3><p>{moment.body}</p></article>)}
         </div>
       </div>
     </section>
@@ -212,20 +234,36 @@ function JourneySection() {
 function RollSection({ story }: { story: Story | null }) {
   const classroom = story?.classroom;
   const students = classroom?.students ?? [];
-  const carrying = students.filter((student) => student.state === "carrying").length;
-  const behind = students.filter((student) => student.state === "behind").length;
-  const quiet = students.filter((student) => student.state === "quiet").length;
+  const states = ["on-track", "carrying", "behind", "quiet", "light"];
+  const countOf = (state: string) => students.filter((student) => student.state === state).length;
+  const carrying = countOf("carrying");
+  const behind = countOf("behind");
+  const quiet = countOf("quiet");
+  const watch = students
+    .filter((student) => student.state === "carrying" || student.state === "behind" || student.state === "quiet")
+    .sort((a, b) => b.owed - a.owed)
+    .slice(0, 4);
   return (
     <section className="eq-section eq-section--roll" id="class-list">
       <div className="eq-frame">
         <div className="eq-section__intro"><p className="eq-kicker">The class list, printed</p><h2>A record that can answer for the work.</h2><p>Equita gives the teacher the same picture the group is working from: every person, every project, and the state that the numbers explain.</p></div>
         <div className="eq-roll" data-reveal>
-          <div className="eq-roll__head"><span>{classroom?.name ?? "The demonstration class"}{classroom ? ` · ${classroom.subject}` : ""}</span><span>{students.length ? `${students.length} students on the roll` : "Reading the class"}</span></div>
-          <p className="eq-roll__names">{students.map((student, index) => <span key={student.fullName}><b className={toneTextClass(stateTone(student.state))}>{student.name}</b>{index < students.length - 1 ? " · " : ""}</span>)}</p>
-          <div className="eq-roll__key">{Object.entries(STATE_LABELS).map(([state, label]) => <span key={state}><i className={`eq-state-dot eq-state-dot--${state}`} />{label}</span>)}</div>
-          <div className="eq-roll__table-wrap"><table><thead><tr><th>Student</th><th>Groups</th><th>Committed</th><th>Delivered</th><th>Still open</th><th>State</th></tr></thead><tbody>{students.map((student) => <tr key={student.fullName}><td><span className="eq-person"><MemberDot hue={student.hue} />{student.fullName}</span></td><td>{student.groups}</td><td>{hours(student.committed)}</td><td>{hours(student.delivered)}</td><td>{hours(student.open)}</td><td className={toneTextClass(stateTone(student.state))}>{STATE_LABELS[student.state] ?? student.state}</td></tr>)}</tbody></table></div>
+          <div className="eq-roll__head"><div className="eq-roll__title"><h3>{classroom?.name ?? "The demonstration class"}</h3><span>{classroom?.subject ?? "Class list"}</span></div><span className="eq-roll__count">{students.length ? `${students.length} students on the roll` : "Reading the class"}</span></div>
+          <div className="eq-roll__states">
+            {states.map((state) => <div className="eq-roll__state" key={state}><strong>{countOf(state)}</strong><span><i className={`eq-state-dot eq-state-dot--${state}`} />{STATE_LABELS[state] ?? state}</span></div>)}
+          </div>
+          <div className="eq-roll__watch">
+            <span className="eq-micro">Worth a conversation this week</span>
+            {watch.length ? watch.map((student) => (
+              <div className="eq-roll__row" key={student.fullName}>
+                <span className="eq-person"><MemberDot hue={student.hue} />{student.fullName}</span>
+                <span className={toneTextClass(stateTone(student.state))}>{STATE_LABELS[student.state] ?? student.state}</span>
+                <span className="eq-roll__hours">{hours(student.delivered)}<i>/</i>{hours(student.committed)}</span>
+              </div>
+            )) : <p className="eq-roll__empty">Nobody is over their share. Every group is holding.</p>}
+          </div>
         </div>
-        <div className="eq-roll__note"><img src="/archive/creston-national-fish-hatchey-outdoor-classroom-project.jpg" alt="Young people standing beside the outdoor classroom they built together." decoding="async" /><p><strong>{behind} behind, {carrying} carrying, {quiet} quiet.</strong> Those are not impressions. They are the conversations the record makes possible before the marking.</p></div>
+        <div className="eq-roll__note"><p><strong>{behind} behind, {carrying} carrying, {quiet} quiet.</strong> Those are not impressions. They are the conversations the record makes possible before the marking.</p></div>
       </div>
     </section>
   );

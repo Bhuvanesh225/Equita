@@ -109,7 +109,7 @@ function NotificationBell() {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <IconBell size={17} />
+        <IconBell size={20} />
         {unread > 0 ? (
           <span
             aria-hidden="true"
@@ -250,12 +250,11 @@ function Brand() {
   return (
     <NavLink to="/" className="rail__brand" aria-label="Equita home">
       <svg className="rail__mark" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" fill="var(--color-ink)" />
-        {/* the product's own mark: four equal shares, one held */}
-        <rect x="5" y="13" width="5" height="14" fill="var(--color-paper)" />
-        <rect x="11" y="9" width="5" height="18" fill="var(--color-paper)" />
-        <rect x="17" y="13" width="5" height="14" fill="var(--color-paper)" />
-        <rect x="23" y="13" width="5" height="14" fill="var(--color-accent)" />
+        {/* the product's own mark: three even shares under the even-share line */}
+        <rect x="5.2" y="11.5" width="5.4" height="12" fill="currentColor" />
+        <rect x="13.3" y="11.5" width="5.4" height="12" fill="currentColor" />
+        <rect x="21.4" y="11.5" width="5.4" height="12" fill="currentColor" />
+        <rect x="4" y="8.5" width="24" height="2.4" fill="var(--color-brand-active)" />
       </svg>
       <span className="rail__wordmark">Equita</span>
     </NavLink>
@@ -325,12 +324,12 @@ function TopBar({ counts }: { counts: { unread: number; openTasks: number } }) {
       <header className="topbar">
         <div className="shell topbar__inner">
           <button type="button" className="btn btn--ghost btn--icon topbar__burger" aria-label="Open navigation" onClick={() => setMobileNav(true)}>
-            <IconMenu size={18} />
+            <IconMenu size={20} />
           </button>
 
           <button type="button" className="topbar__search search" onClick={openPalette} aria-label="Search everything">
             <span className="search__icon" aria-hidden="true">
-              <IconSearch size={15} />
+              <IconSearch size={19} />
             </span>
             <span className="input" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", textAlign: "left" }}>
               <span className="search__label" style={{ color: "var(--color-ink-3)" }}>Search projects, tasks, people...</span>
@@ -350,7 +349,7 @@ function TopBar({ counts }: { counts: { unread: number; openTasks: number } }) {
               onClick={() => openCopilot()}
               title="Ask about any project or class. Every answer is computed from the real numbers."
             >
-              <IconSparkle size={14} />
+              <IconSparkle size={17} />
               Ask
             </button>
 

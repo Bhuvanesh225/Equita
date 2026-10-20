@@ -234,3 +234,22 @@ ledger write.
 **Fixed:** `server/routes/tasks.js` parses `task.depends_on` before checking blocked dependencies.
 The disposable write-path test now creates, assigns, starts, closes, reads back, and deletes a
 task, including the completion contribution.
+
+### T32 — `share` and `evenShare` are two different kinds of number
+
+The public story payload carries `members[].share` and `distribution.evenShare`, and the
+landing console formatted both as hours. They are neither of them hours:
+
+- `distribution.evenShare` is the **fraction** `1/n` (0.25 for four members). It exists to
+  place the tick on a 0–100% axis. As hours it printed "even share 0.3h".
+- `members[].share` is the engine's **scoring** share — `shares[equity.measure]`, i.e.
+  `credited` once delivery is meaningful and `committed` before that. Multiplying it by the
+  delivered total produces a third number that matches neither measure, so a student who
+  delivered 14h was drawn at 11.2h.
+
+Hours live in `hours.even` and `members[].delivered`. **Rule:** before formatting a payload
+field, name its unit out loud. A field called `share` is a ratio of *something* — find the
+denominator before you put "h" after it. Load bars draw delivered hours against
+`hours.even`; scoring appears only as equity flags and scores.
+
+**Fixed:** `src/routes/Landing.tsx` (`BalanceBars`) and `src/routes/landing/Sections.tsx`.
