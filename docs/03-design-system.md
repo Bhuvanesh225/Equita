@@ -1,25 +1,18 @@
-# 03 — Design system
+# 03 — Design System
 
-`DESIGN.md` is the pre-build record and wins on direction. This file is the **inventory
-of what already exists** — use it instead of inventing a new primitive, a new colour, or
-a new class name.
+`DESIGN.md` is the pre-build record and wins on direction. This file is the **inventory of what already exists** — use it instead of inventing a new primitive, a new colour, or a new class name.
 
-## Direction, in one line
+## Direction, in One Line
 
-**`page-is-the-object`**: the marketing page *is* the project brief handed out in class;
-the allocation table is its centrepiece. Seed 68106341. In the app, the equivalent is
-that a project workspace *is* the brief — the board replaces the task table.
+**`page-is-the-object`**: the marketing page *is* the project brief handed out in class; the allocation table is its centrepiece. Seed 68106341. In the app, the equivalent is that a project workspace *is* the brief — the board replaces the task table.
 
-## Rules that are never negotiated
+## Rules That Are Never Negotiated
 
-- **Radius 0 everywhere.** Panels, cards, buttons, inputs. Circles only for avatars and
-  the even-share tick (`--radius-full`).
-- **No shadows** except overlays (menu, dialog, drawer, palette). Surfaces step in
-  **tone**, never in lines.
+- **Radius 0 everywhere.** Panels, cards, buttons, inputs. Circles only for avatars and the even-share tick (`--radius-full`).
+- **No shadows** except overlays (menu, dialog, drawer, palette). Surfaces step in **tone**, never in lines.
 - **Colour carries meaning only.** The signal colours are not decoration.
 - **The load bar is the signature.** One mark, everywhere, identical.
-- **Light-only scheme.** `<html data-scheme="paper">` is set before paint in `index.html`.
-  The paper palette is the product language and is used everywhere.
+- **Light-only scheme.** `<html data-scheme="paper">` is set before paint in `index.html`. The paper palette is the product language and is used everywhere.
 - **Tabular figures for numbers** (`.tnum`), always, so columns line up.
 
 ## Tokens (`src/styles/theme.css`)
@@ -44,15 +37,11 @@ that a project workspace *is* the brief — the board replaces the task table.
 | `--color-quiet` | `#4a5560` | `#a8b1b6` |
 | `--color-quiet-soft` | `#e8eaec` | `#262d31` |
 
-Always reference `var(--color-…)`. **Never** a hex value in a component, except inside
-the landing page's artwork where a photograph needs a fixed overlay.
+Always reference `var(--color-…)`. **Never** a hex value in a component, except inside the landing page's artwork where a photograph needs a fixed overlay.
 
-Type: `--font-display` (Bricolage Grotesque) for headings and figures of speech;
-`--font-sans` (Inter) for UI. App scale: `--text-xs .75` · `--text-sm .8125` ·
-`--text-base .9375` · `--text-md 1` · `--text-lg 1.25` · `--text-xl 1.5` · `--text-2xl 1.875`.
+Type: `--font-display` (Bricolage Grotesque) for headings and figures of speech; `--font-sans` (Inter) for UI. App scale: `--text-xs .75` · `--text-sm .8125` · `--text-base .9375` · `--text-md 1` · `--text-lg 1.25` · `--text-xl 1.5` · `--text-2xl 1.875`.
 
-`DESIGN.md` says the floor is 13px and 12px is for labels only, non-essential. Respect it:
-`inspect.mjs` flags anything smaller.
+`DESIGN.md` says the floor is 13px and 12px is for labels only, non-essential. Respect it: `inspect.mjs` flags anything smaller.
 
 ## Primitives (`src/components/ui.tsx`)
 
@@ -124,46 +113,27 @@ Every chart takes `ariaLabel` and is `role="img"`. Pass a real sentence.
 
 **Overlays position themselves.** Do not add shadows, radii, or z-indexes of your own.
 
-## Furniture classes (use these before writing styles)
+## Furniture Classes (Use These Before Writing Styles)
 
-`src/styles/app.css` (layout + form + charts): `.page`, `.shell`, `.grid`, `.grid--stats`,
-`.grid--split`, `.stack`, `.stack--loose`, `.stack--tight`, `.row`, `.row--between`,
-`.row--wrap`, `.spacer`, `.panel*`, `.stat*`, `.tag*`, `.btn` (+ `--primary --outline
---ghost --ink --danger --icon --sm --lg`), `.btn-group`, `.field*`, `.input`, `.select`,
-`.textarea`, `.range`, `.switch`, `.search`, `.avatar*`, `.loadbar*`, `.sharebar*`,
-`.meter*`, `.week*`, `.page-head*`, `.tabs`/`.tab`, `.section-title`, `.checkin-mood*`,
-`.tx-{accent,ink,over,risk,quiet}`, `.label` (the small caps label), `.tnum`, `.truncate`,
-`.clamp-2`, `.clamp-3`, `.nowrap`, `.visually-hidden`, `.scroll-x`, `.skip-link`.
+`src/styles/app.css` (layout + form + charts): `.page`, `.shell`, `.grid`, `.grid--stats`, `.grid--split`, `.stack`, `.stack--loose`, `.stack--tight`, `.row`, `.row--between`, `.row--wrap`, `.spacer`, `.panel*`, `.stat*`, `.tag*`, `.btn` (+ `--primary --outline --ghost --ink --danger --icon --sm --lg`), `.btn-group`, `.field*`, `.input`, `.select`, `.textarea`, `.range`, `.switch`, `.search`, `.avatar*`, `.loadbar*`, `.sharebar*`, `.meter*`, `.week*`, `.page-head*`, `.tabs`/`.tab`, `.section-title`, `.checkin-mood*`, `.tx-{accent,ink,over,risk,quiet}`, `.label` (the small caps label), `.tnum`, `.truncate`, `.clamp-2`, `.clamp-3`, `.nowrap`, `.visually-hidden`, `.scroll-x`, `.skip-link`.
 
-`src/styles/surfaces.css` (surfaces + overlays): `.app`, `.board`, `.lane*` (`.lane--active
---over --nobody`), `.card*` (`.card--blocked --done --ghost --picked --review`),
-`.rowitem*` (`.rowitem--overdue --compact`), `.rows`, `.table`, `.table--num`, `.table-wrap`,
-`.chip`/`.chip--accent`, `.callout`/`.callout--{accent,over,risk}`, `.flag*`, `.empty*`,
-`.donut*`, `.progress-line*`, `.chart*`, `.live*`, `.palette*`, `.copilot*`, `.rail*`,
-`.topbar*`, `.mobile-nav*`, `.toast*`, `.menu*`, `.dialog*`, `.drawer*`, `.scrim*`,
-`.tip`, `.kbd`, `.dot*`, `.seg*`, `.scoremark`, `.drag-overlay`.
+`src/styles/surfaces.css` (surfaces + overlays): `.app`, `.board`, `.lane*` (`.lane--active --over --nobody`), `.card*` (`.card--blocked --done --ghost --picked --review`), `.rowitem*` (`.rowitem--overdue --compact`), `.rows`, `.table`, `.table--num`, `.table-wrap`, `.chip`/`.chip--accent`, `.callout`/`.callout--{accent,over,risk}`, `.flag*`, `.empty*`, `.donut*`, `.progress-line*`, `.chart*`, `.live*`, `.palette*`, `.copilot*`, `.rail*`, `.topbar*`, `.mobile-nav*`, `.toast*`, `.menu*`, `.dialog*`, `.drawer*`, `.scrim*`, `.tip`, `.kbd`, `.dot*`, `.seg*`, `.scoremark`, `.drag-overlay`.
 
 `src/styles/theme.css` defines the tokens and the Tailwind `@theme` bridge.
-`src/styles/landing.css` and `auth.css` are scoped to `/` and the auth screens — do not
-reach into them from app screens.
+`src/styles/landing.css` and `auth.css` are scoped to `/` and the auth screens — do not reach into them from app screens.
 
-## Formatting helpers (`src/lib/format.ts`)
+## Formatting Helpers (`src/lib/format.ts`)
 
 Use these and nothing else for text that shows a number or a date.
 
-`hours(n)` → `"3.5h"` · `hoursValue(n)` · `pct(n)` → `"62%"` · `pctOf(part, whole)` ·
-`round1` · `plural(n, one, many?)` · `listJoin(items, conjunction?)` · `dateLabel` ·
-`fullDate` · `dateInput` (for `<input type="date">`) · `daysUntil` · `dueLabel` ·
-`relativeTime` · `clockTime` · `initials` · `hueStyle(hue)` · `shareSentence(name, hoursOn,
-evenShare)` · `describeGini(gini)`.
+`hours(n)` → `"3.5h"` · `hoursValue(n)` · `pct(n)` → `"62%"` · `pctOf(part, whole)` · `round1` · `plural(n, one, many?)` · `listJoin(items, conjunction?)` · `dateLabel` · `fullDate` · `dateInput` (for `<input type="date">`) · `daysUntil` · `dueLabel` · `relativeTime` · `clockTime` · `initials` · `hueStyle(hue)` · `shareSentence(name, hoursOn, evenShare)` · `describeGini(gini)`.
 
 Maps: `PHASE_NAMES`, `STATUS_NAMES`, `STATE_NAMES`, `MOOD_NAMES`.
-Tone helpers: `stateTone(state)`, `scoreTone(score)`, `severityTone(severity)`,
-`toneClass(tone)`, `toneTextClass(tone)`, `toneVar(tone)`.
+Tone helpers: `stateTone(state)`, `scoreTone(score)`, `severityTone(severity)`, `toneClass(tone)`, `toneTextClass(tone)`, `toneVar(tone)`.
 
 `Tone = "accent" | "over" | "risk" | "quiet" | "ink"`.
 
-## The two marks, drawn correctly
+## The Two Marks, Drawn Correctly
 
 ```tsx
 // one person against the even share
@@ -176,10 +146,9 @@ Tone helpers: `stateTone(state)`, `scoreTone(score)`, `severityTone(severity)`,
           unassigned={equity.totals.unassigned} showLegend />
 ```
 
-## Screen composition recipe
+## Screen Composition Recipe
 
-Every app screen follows the same skeleton — copy it from an existing screen
-(`src/routes/Projects.tsx` is the shortest complete example, `Dashboard.tsx` the richest):
+Every app screen follows the same skeleton — copy it from an existing screen (`src/routes/Projects.tsx` is the shortest complete example, `Dashboard.tsx` the richest):
 
 1. `useApi<T>("/api/…")`.
 2. `if (loading && !data)` → `.page` + `Spinner label="…"`.

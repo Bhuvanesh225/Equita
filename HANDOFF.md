@@ -1,28 +1,21 @@
 > **Superseded in parts — read `docs/00-state.md` for current state.**
 >
-> This file is the handoff written at the end of the **first** session. Everything it says
-> about the engines, the design contract, the seed's stories and the environment is still
-> true. Its *status table and next-steps list are out of date*, because a second and third
-> sitting have happened since:
+> This file is the handoff written at the end of the **first** session. Everything it says about the engines, the design contract, the seed's stories and the environment is still true. Its *status table and next-steps list are out of date*, because three subsequent sittings have happened since:
 >
 > - `/projects` and the whole project workspace (`src/routes/project/*`) are built.
-> - `planningRouter` was mounted at the wrong prefix, so every plan / allocation / rebalance
->   endpoint was a 404 from the browser. **Fixed** (`server/index.js`).
-> - `scripts/smoke.mjs` was added (28 endpoints, non-mutating) and `npm run selfcheck` now
->   points at it.
-> - `scripts/shoot.mjs` and `scripts/inspect.mjs` accept `EQUITA_WIDTH` / `EQUITA_HEIGHT` /
->   so the mobile light-mode pass is runnable.
-> - `AGENTS.md`, `README.md`, `TODO.md`, `ROADMAP.md` and the `docs/` set were written. Start
->   at `AGENTS.md`.
+> - `planningRouter` was mounted at the wrong prefix, so every plan / allocation / rebalance endpoint was a 404 from the browser. **Fixed** (`server/index.js`).
+> - `scripts/smoke.mjs` was added (28 endpoints, non-mutating) and `npm run selfcheck` now points at it.
+> - `scripts/shoot.mjs` and `scripts/inspect.mjs` accept `EQUITA_WIDTH` / `EQUITA_HEIGHT` so the mobile light-mode pass is runnable.
+> - `AGENTS.md`, `README.md`, `TODO.md`, `ROADMAP.md` and the `docs/` set were written. Start at `AGENTS.md`.
+> - All 18 application routes are now built and verified.
 >
 > Everything below is kept as the record of the first session's reasoning.
 
 ---
 
-# Equita — handoff
+# Equita — Handoff
 
-A form to be read by whoever (or whatever) picks this up next. Fill nothing in by hand;
-every field below is already true of the repository as it stands.
+A form to be read by whoever (or whatever) picks this up next. Fill nothing in by hand; every field below is already true of the repository as it stands.
 
 ---
 
@@ -44,25 +37,20 @@ every field below is already true of the repository as it stands.
 
 ---
 
-## 2. What "the whole app" means here
+## 2. What "the Whole App" Means Here
 
-The session brief was: build the entire product, cut no corners, use the MCPs and skills
-available, and keep it visible in the browser as it goes.
+The session brief was: build the entire product, cut no corners, use the MCPs and skills available, and keep it visible in the browser as it goes.
 
 Read that against the current state:
 
-- The **intelligence layer is finished and live.** 5,414 lines of engines and routes:
-  skill matching, project context, the equity engine (5 weighted parts), the planner,
-  the allocator, classroom grouping, nudges, and the copilot. Every number on the marketing
-  page is computed by these engines from the seed dataset, not written by hand.
+- The **intelligence layer is finished and live.** 2,652 lines of engines and routes: skill matching, project context, the equity engine (5 weighted parts), the planner, the allocator, classroom grouping, nudges, and the copilot. Every number on the marketing page is computed by these engines from the seed dataset, not written by hand.
 - The **front end is built for six surfaces and stubbed for twelve.** This is the gap.
 
-Do not re-derive the engines. Do not touch the seed's *story*. The remaining work is
-UI that renders data which already exists and already has types.
+Do not re-derive the engines. Do not touch the seed's *story*. The remaining work is UI that renders data which already exists and already has types.
 
 ---
 
-## 3. State of every screen
+## 3. State of Every Screen (as of Session 1)
 
 Legend: **built** = real screen · **stub** = renders `<Pending>` from `src/routes/_pending.tsx`.
 
@@ -87,12 +75,11 @@ Legend: **built** = real screen · **stub** = renders `<Pending>` from `src/rout
 | `/notifications` | `Notifications` | **stub** | 5 | `GET /api/insights/notifications`, `POST /api/insights/notifications/read` |
 | `/settings` | `Settings` | **stub** | 5 | `PATCH /api/auth/me` |
 
-`src/routes/_pending.tsx` says it should be deleted when the last stub is replaced.
-That is the finish line marker.
+`src/routes/_pending.tsx` says it should be deleted when the last stub is replaced. That is the finish line marker.
 
 ---
 
-## 4. How to run it
+## 4. How to Run It
 
 ```bash
 cd "E:/Hackathons/Neighborhood Hacks/equita"
@@ -113,36 +100,30 @@ npm run seed         # node server/seed.js --reset   (wipes and reseeds)
 npm run selfcheck    # ⚠ BROKEN — server/selfcheck.js does not exist
 ```
 
-### Demo accounts
+### Demo Accounts
 
 All seeded accounts share the password **`equita2026`**.
 
-| Role | Email | Use it for |
+| Role | Email | Use It For |
 | --- | --- | --- |
 | Teacher (primary) | `amara@equita.demo` | every teacher surface, class console |
 | Teacher (second) | `tobias@equita.demo` | a second class, comparison |
 | Student (primary) | `maya@equita.demo` | member view, "carrying" state |
 | Student (free) | `june@equita.demo` | a student in no class |
 
-`POST /api/auth/login { email, password }` · `POST /api/auth/demo { email }` skips the password
-for any `*@equita.demo` address.
+`POST /api/auth/login { email, password }` · `POST /api/auth/demo { email }` skips the password for any `*@equita.demo` address.
 
-### Seed contents
+### Seed Contents
 
-20 people · 2 classrooms · 6 projects · 93 tasks · 51 assignments · 127 contributions ·
-65 check-ins · 44 reviews · 21 notifications · 130 activity rows.
+20 people · 2 classrooms · 6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins · 44 reviews · 21 notifications · 130 activity rows.
 
-The dataset is **deliberately shaped** so each screen has a story to tell: one badly
-overloaded group, one quiet group, one healthy group. `server/seed-stories.js` owns those
-arcs. If you change the seed, verify the stories still read true.
+The dataset is **deliberately shaped** so each screen has a story to tell: one badly overloaded group, one quiet group, one healthy group. `server/seed-stories.js` owns those arcs. If you change the seed, verify the stories still read true.
 
 ---
 
-## 5. Verification tooling (use it, don't eyeball)
+## 5. Verification Tooling (Use It, Don't Eyeball)
 
-Four scripts already exist in `scripts/`. They sign in through the real API and drive a
-local Playwright Chromium — deliberate, so nothing depends on a browser tab you happen to
-have open.
+Four scripts already exist in `scripts/`. They sign in through the real API and drive a local Playwright Chromium — deliberate, so nothing depends on a browser tab you happen to have open.
 
 ```bash
 # Screenshots, one PNG per route, into .shots/
@@ -159,96 +140,65 @@ node scripts/shapes.mjs student    # student
 MSYS_NO_PATHCONV=1 node scripts/probe.mjs teacher /today
 ```
 
-`MSYS_NO_PATHCONV=1` is **required** for `inspect.mjs` and `probe.mjs` on Windows/Git Bash,
-otherwise the leading `/` in the route is rewritten into a filesystem path.
+`MSYS_NO_PATHCONV=1` is **required** for `inspect.mjs` and `probe.mjs` on Windows/Git Bash, otherwise the leading `/` in the route is rewritten into a filesystem path.
 
-`inspect.mjs` writes `.shots/report.json`. Read the `problems` array — it is the mechanical
-substitute for "looks fine to me". Run it after every screen.
+`inspect.mjs` writes `.shots/report.json`. Read the `problems` array — it is the mechanical substitute for "looks fine to me". Run it after every screen.
 
 ---
 
-## 6. Traps found this session — do not rediscover them
+## 6. Traps Found This Session — Do Not Rediscover Them
 
 These cost real time. They are fixed; keep them fixed.
 
-1. **SQLite WAL retriggered the dev server forever.** `data/equita.db-wal` is touched on every
-   write, and Vite's watcher counted it as a source change → every open page reloaded ~every
-   2s, which read as "the site won't stay still". Fixed in `vite.config.ts` by ignoring
-   `**/data/**` (plus `.shots`, logs).
-2. **Global `scroll-behavior: smooth`** made every programmatic scroll animate indefinitely,
-   fighting scroll restoration. Removed.
-3. **`signIn` did not await the session refresh**, so the route guard redirected before the
-   user landed. Fixed at the source in `src/lib/session.tsx`.
-4. **`Dashboard.tsx` renders `null` when the dashboard payload errored** — this masked a live
-   crash as a blank page during development. Prefer a visible error state.
-5. **Stale server holding port 8787** silently serves pre-edit code. If a fix appears to have
-   no effect, kill by port and restart before debugging.
-6. **The Playwright MCP extension tab freezes when backgrounded** — `page.goto` inside a
-   `browser_run_code` call never wakes it. Either bring the tab forward through the tool-level
-   navigation, or use `scripts/shoot.mjs` (the local-CHROMIUM harness) instead.
-7. **Component tree cannot be rewritten wholesale** — the write tool drops `path` on very large
-   payloads, and a truncated write once deleted `index.html`. Write large files in chunks.
-8. **Double-encoded UTF-8 in the seed** (a name like `Diego Marín` had arrived as
-   `Diego Marín`). Found and fixed; `scripts/encscan.mjs` scans the whole database for the
-   signature. Re-run it after any seed edit.
-9. **Random allocation made the demo contradict its own story.** Allocation is now
-   target-driven so the "carrying" group actually shows someone carrying.
-10. **Prose that overstates is a bug here.** Some suggestion kinds have no `from` member
-    ("work nobody took on"), so reason strings must handle `from === null`.
+1. **SQLite WAL retriggered the dev server forever.** `data/equita.db-wal` is touched on every write, and Vite's watcher counted it as a source change → every open page reloaded ~every 2s, which read as "the site won't stay still". Fixed in `vite.config.ts` by ignoring `**/data/**` (plus `.shots`, logs).
+2. **Global `scroll-behavior: smooth`** made every programmatic scroll animate indefinitely, fighting scroll restoration. Removed.
+3. **`signIn` did not await the session refresh**, so the route guard redirected before the user landed. Fixed at the source in `src/lib/session.tsx`.
+4. **`Dashboard.tsx` renders `null` when the dashboard payload errored** — this masked a live crash as a blank page during development. Prefer a visible error state.
+5. **Stale server holding port 8787** silently serves pre-edit code. If a fix appears to have no effect, kill by port and restart before debugging.
+6. **The Playwright MCP extension tab freezes when backgrounded** — `page.goto` inside a `browser_run_code` call never wakes it. Either bring the tab forward through the tool-level navigation, or use `scripts/shoot.mjs` (the local-CHROMIUM harness) instead.
+7. **Component tree cannot be rewritten wholesale** — the write tool drops `path` on very large payloads, and a truncated write once deleted `index.html`. Write large files in chunks.
+8. **Double-encoded UTF-8 in the seed** (a name like `Diego Marín` had arrived as `Diego Marín`). Found and fixed; `scripts/encscan.mjs` scans the whole database for the signature. Re-run it after any seed edit.
+9. **Random allocation made the demo contradict its own story.** Allocation is now target-driven so the "carrying" group actually shows someone carrying.
+10. **Prose that overstates is a bug here.** Some suggestion kinds have no `from` member ("work nobody took on"), so reason strings must handle `from === null`.
 
 ---
 
-## 7. Design contract (already decided — extend, don't relitigate)
+## 7. Design Contract (Already Decided — Extend, Don't Relitigate)
 
 `DESIGN.md` is the record, written before the build. The binding parts:
 
-- Direction: **`page-is-the-object`** — the marketing page *is* the project brief handed out in
-  class; the allocation table is its centrepiece. Seed 68106341.
-- **Radius 0 everywhere.** Panels, cards, buttons, inputs. Circles only for avatars and the
-  even-share marker.
+- Direction: **`page-is-the-object`** — the marketing page *is* the project brief handed out in class; the allocation table is its centrepiece. Seed 68106341.
+- **Radius 0 everywhere.** Panels, cards, buttons, inputs. Circles only for avatars and the even-share marker.
 - No shadows except overlays. Surfaces step in **tone**, never in lines.
-- Tokens: ground `--paper #FBFAF8` · ink `#14171A` · accent `--accent #0B7A63`;
-  signals `--ok` / `--over #9A5A08` / `--risk #AD2418`, used for meaning only.
+- Tokens: ground `--paper #FBFAF8` · ink `#14171A` · accent `--accent #0B7A63`; signals `--ok` / `--over #9A5A08` / `--risk #AD2418`, used for meaning only.
 - Type: **Bricolage Grotesque** (display) + **Inter** (UI, tabular figures). App scale 12→30.
-- The **signature component is the load bar**: a member's effort share against the even share,
-  with a tick at the even position. It must appear in the project panel, the class console and
-  the insights screen so the product has one mark, not four.
-- House rule: **no invented proof.** Claims print numbers the engine computed, or they do not
-  appear.
-- The light paper scheme (`data-scheme="paper"`) is set before first paint in `index.html`.
-  New components should preserve the paper-first visual language on every screen.
+- The **signature component is the load bar**: a member's effort share against the even share, with a tick at the even position. It must appear in the project panel, the class console and the insights screen so the product has one mark, not four.
+- House rule: **no invented proof.** Claims print numbers the engine computed, or they do not appear.
+- The light paper scheme (`data-scheme="paper"`) is set before first paint in `index.html`. New components should preserve the paper-first visual language on every screen.
 
-### Client conventions
+### Client Conventions
 
-- Server state goes through `useApi` / `get` / `post` / `patch` / `put` / `del` from
-  `src/lib/api.ts`. `useApi` is live: it refreshes off the `/events` SSE channel.
-- Types for **every** screen already exist in `src/lib/types.ts` (724 lines). Build against
-  them; don't invent parallel shapes.
-- Shared blocks: `src/components/ui.tsx` (primitives, `Panel`, `Spinner`, load bar),
-  `blocks.tsx`, `charts.tsx`, `overlays.tsx`, `icons.tsx` (hand-drawn, no icon dependency).
-- Screens are `lazy()`-loaded per route in `src/App.tsx`; the shell and the two overlays
-  (command palette, copilot) live under the router so they can navigate.
+- Server state goes through `useApi` / `get` / `post` / `patch` / `put` / `del` from `src/lib/api.ts`. `useApi` is live: it refreshes off the `/events` SSE channel.
+- Types for **every** screen already exist in `src/lib/types.ts` (724 lines). Build against them; don't invent parallel shapes.
+- Shared blocks: `src/components/ui.tsx` (primitives, `Panel`, `Spinner`, load bar), `blocks.tsx`, `charts.tsx`, `overlays.tsx`, `icons.tsx` (hand-drawn, no icon dependency).
+- Screens are `lazy()`-loaded per route in `src/App.tsx`; the shell and the two overlays (command palette, copilot) live under the router so they can navigate.
 
 ---
 
-## 8. Next steps, in order
+## 8. Next Steps, in Order (from Session 1 — now outdated)
 
 1. **`/projects`** — the list. Cards with the load bar, filters by status, empty state.
-2. **`/projects/:projectId`** — the workspace and the centrepiece: task table, the plan
-   proposal → apply flow, auto-assign, rebalance suggestions, equity panel, activity, reviews.
-   This is the highest-value screen in the product.
+2. **`/projects/:projectId`** — the workspace and the centrepiece: task table, the plan proposal → apply flow, auto-assign, rebalance suggestions, equity panel, activity, reviews. This is the highest-value screen in the product.
 3. **`/projects/new`** — brief-style creation form (course code, deadline, tasks, members).
 4. **`/classrooms`** and **`/classrooms/:id`** — the console: roster, coverage, analytics.
-5. **`/classrooms/:id/groups`** — the group builder (draggable; `@dnd-kit` is installed and
-   unused so far).
+5. **`/classrooms/:id/groups`** — the group builder (draggable; `@dnd-kit` is installed and unused so far).
 6. **`/classrooms/:id/students/:studentId`** — student record.
 7. **`/insights`** — fairness across projects and classes.
 8. **`/profile`**, **`/people`**, **`/notifications`**, **`/settings`** — the smaller screens.
 9. Delete `src/routes/_pending.tsx`.
-10. Mobile pass (390px) over every screen, then a light-mode contrast pass, then
-    `node scripts/inspect.mjs <account> <every route…>` until `problems` is empty everywhere.
+10. Mobile pass (390px) over every screen, then a light-mode contrast pass, then `node scripts/inspect.mjs <account> <every route…>` until `problems` is empty everywhere.
 
-### Definition of done
+### Definition of Done (from Session 1)
 
 - [ ] `npx tsc --noEmit` clean.
 - [ ] No route renders `<Pending>`; `_pending.tsx` deleted.
@@ -260,7 +210,7 @@ These cost real time. They are fixed; keep them fixed.
 
 ---
 
-## 9. Open items and known gaps
+## 9. Open Items and Known Gaps
 
 | Item | Detail |
 | --- | --- |
@@ -274,7 +224,7 @@ These cost real time. They are fixed; keep them fixed.
 
 ---
 
-## 10. Where the session's evidence lives
+## 10. Where the Session's Evidence Lives
 
 | Artefact | Path |
 | --- | --- |

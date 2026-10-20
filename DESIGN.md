@@ -1,41 +1,33 @@
-# Equita — design record
+# Equita — Design Record
 
 Written before building. Everything downstream references these decisions.
 
-## The subject
+## The Subject
 
-Equita is a project coordination platform for students and schools. Its whole reason to exist is
-**evenness**: work split so nobody carries the group, and a teacher able to see it.
+Equita is a project coordination platform for students and schools. Its whole reason to exist is **evenness**: work split so nobody carries the group, and a teacher able to see it.
 
 Inventory of what only this subject has:
 
 - its name: *equity* — fairness expressed as a number, a share, a remainder
 - the numbers it produces: effort points, each person's share, the even share, the gap
-- the artefact every student has actually held: **the group project brief** — a sheet with a course
-  code, a deadline, a task table, a rubric and a signature line
+- the artefact every student has actually held: **the group project brief** — a sheet with a course code, a deadline, a task table, a rubric and a signature line
 - the other artefact every teacher has held: **the class list** — names in a column, a mark beside each
 - the constraint it lives with: a term is fixed, a deadline does not move, a grade is shared
 - its rituals: the first meeting where nobody volunteers, the night before, the peer review
 - its materials: paper, graph paper, the timetable, the rubric, the allocation table
 - its opposite: the passive checklist (Trello, Docs) that records work but never distributes it
 
-## Direction (taste-skill `draw.mjs`, seed 68106341)
+## Direction
 
-**`page-is-the-object`** for the marketing page. The page is the brief: paper on a contrasting
-ground, print-like alignment, filled shapes with real edges, the allocation table as the centrepiece,
-the footer as the back of the card.
+**`page-is-the-object`** for the marketing page. The page is the brief: paper on a contrasting ground, print-like alignment, filled shapes with real edges, the allocation table as the centrepiece, the footer as the back of the card.
 
-**Idea sentence.** On this page, **the project brief handed out in class** becomes **the page itself** —
-and the row of equal segments it carries (the *share bar*) becomes the mark of the whole product.
+**Idea sentence.** On this page, **the project brief handed out in class** becomes **the page itself** — and the row of equal segments it carries (the *share bar*) becomes the mark of the whole product.
 
-Competitor test: put Trello in the sentence and it breaks — Trello has no brief, no class list, no
-share. It is Equita's.
+Competitor test: put Trello in the sentence and it breaks — Trello has no brief, no class list, no share. It is Equita's.
 
-**Live thing.** The allocator, embedded where the brief's task table belongs: enter a few classmates
-and their strengths, add tasks, and watch the allocation even itself out. Real content, real maths,
-works with a thumb, plain fallback.
+**Live thing.** The allocator, embedded where the brief's task table belongs: enter a few classmates and their strengths, add tasks, and watch the allocation even itself out. Real content, real maths, works with a thumb, plain fallback.
 
-### Redraws and adaptations, with reasons
+### Redraws and Adaptations, with Reasons
 
 | Slot | Change | Reason |
 | --- | --- | --- |
@@ -55,19 +47,16 @@ One ground, one ink, one accent, three signal colours, one member palette (funct
 - accent `--accent #0B7A63` (brand green→teal, deepened for 4.5:1 on paper)
 - signals `--ok` accent · `--over #9A5A08` · `--risk #AD2418` (meaning, never decoration)
 - member palette: eight desaturated hues, each ≥3:1 against both grounds
-- **radius 0 everywhere.** Panels, cards, buttons, inputs. Circles only for avatars and the
-  even-share marker. Decided once, applied once.
+- **radius 0 everywhere.** Panels, cards, buttons, inputs. Circles only for avatars and the even-share marker. Decided once, applied once.
 - no shadows except overlays (menu, dialog, command palette). Surfaces step in tone, never in lines.
 - type: **Bricolage Grotesque** (display) + **Inter** (UI text, tabular figures). Two families.
 - five steps on the marketing page, an app scale (13→30) inside the product, where density is the point.
 
-## The signature component
+## The Signature Component
 
-The **load bar**: a member's effort share drawn against the even share, with a tick at the even
-position. Repeated in the dashboard, the project panel, the class console and the landing page, so
-the product has one mark instead of many.
+The **load bar**: a member's effort share drawn against the even share, with a tick at the even position. Repeated in the dashboard, the project panel, the class console and the landing page, so the product has one mark instead of many.
 
-## Type scale
+## Type Scale
 
 | Step | Marketing | App |
 | --- | --- | --- |

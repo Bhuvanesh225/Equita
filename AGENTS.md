@@ -1,21 +1,15 @@
-# Equita — agent contract
+# Equita — Agent Contract
 
-Read this file first. It is written for the next agent, not for a human reader.
-Everything else lives in [`docs/`](docs/) and the two trackers. Do not rely on memory
-or on any handoff written before this file: verify against the repository.
+Read this file first. It is written for the next agent, not for a human reader. Everything else lives in [`docs/`](docs/) and the two trackers. Do not rely on memory or on any handoff written before this file: verify against the repository.
 
-## What this project is
+## What This Project Is
 
-**Equita** — project coordination that keeps group work even. A student team (or a
-teacher with a class) plans work in hours, the allocator places each task with a
-person whose skills and bandwidth match, and the product shows the group as numbers
-when the split has tipped.
+**Equita** — project coordination that keeps group work even. A student team (or a teacher with a class) plans work in hours, the allocator places each task with a person whose skills and bandwidth match, and the product shows the group as numbers when the split has tipped.
 
 Repository root: `E:/Hackathons/Neighborhood Hacks/equita`
-Stack: React 19 + Vite 8 + TypeScript 5.9 + Tailwind v4 (client) · Express 5 +
-`node:sqlite` (server). Node 22.5+ is required (no native build step).
+Stack: React 19 + Vite 8 + TypeScript 5.9 + Tailwind v4 (client) · Express 5 + `node:sqlite` (server). Node 22.5+ is required (no native build step).
 
-## Read in this order
+## Read in This Order
 
 | # | File | Why |
 | --- | --- | --- |
@@ -33,29 +27,22 @@ Stack: React 19 + Vite 8 + TypeScript 5.9 + Tailwind v4 (client) · Express 5 +
 | 12 | `docs/10-decisions.md` | Locked decisions, and the open ones you may need to make. |
 
 `DESIGN.md` is the pre-build design record — a contract, not a suggestion.
-`HANDOFF.md` is the first session's handoff: still true about the engines and the design, but
-superseded by `docs/` wherever the two disagree. `docs/00-state.md` is the authority on state.
+`HANDOFF.md` is the first session's handoff: still true about the engines and the design, but superseded by `docs/` wherever the two disagree. `docs/00-state.md` is the authority on state.
 
-## Non-negotiables
+## Non-Negotiables
 
-1. **Do not re-derive the engines.** `server/engines/*` (5,414 lines) are finished
-   and correct. Do not touch `server/seed-stories.js` — it owns the demo's arcs.
-2. **Build against `src/lib/types.ts`.** Every shape a screen needs already has a
-   type there (724 lines). Never invent a parallel shape.
-3. **The two-step rule.** `POST /plan` and `POST /assign/auto` write nothing until a
-   second explicit apply call. Any UI that breaks this is a bug.
+1. **Do not re-derive the engines.** `server/engines/*` (2,652 lines) are finished and correct. Do not touch `server/seed-stories.js` — it owns the demo's arcs.
+2. **Build against `src/lib/types.ts`.** Every shape a screen needs already has a type there (724 lines). Never invent a parallel shape.
+3. **The two-step rule.** `POST /plan` and `POST /assign/auto` write nothing until a second explicit apply call. Any UI that breaks this is a bug.
 4. **Reviews go to the teacher, not the reviewee.** That is a design decision.
 5. **Board lanes are people, not statuses.** Status lives on the card.
-6. **No hard-coded numbers in JSX.** Every figure on screen is computed by an engine.
-   House rule: *no invented proof.*
+6. **No hard-coded numbers in JSX.** Every figure on screen is computed by an engine. House rule: *no invented proof.*
 7. **Radius 0 everywhere.** Circles only for avatars and the even-share tick.
-8. **Light mode is the only supported visual scheme.** The paper palette is set
-   before first paint and is used on every screen.
-9. **Reuse the primitives.** See `docs/03-design-system.md`. `LoadBar` is the
-   signature component and must look the same on every surface.
+8. **Light mode is the only supported visual scheme.** The paper palette is set before first paint and is used on every screen.
+9. **Reuse the primitives.** See `docs/03-design-system.md`. `LoadBar` is the signature component and must look the same on every surface.
 10. **A stub is never acceptable in a delivery.** No route may render `<Pending>`.
 
-## Definition of done (the finish line)
+## Definition of Done (the Finish Line)
 
 - [ ] `npx tsc --noEmit` clean.
 - [ ] No route renders `<Pending>`; `src/routes/_pending.tsx` deleted.
@@ -65,9 +52,7 @@ superseded by `docs/` wherever the two disagree. `docs/00-state.md` is the autho
 - [ ] Every number shown comes from an engine.
 - [ ] `README.md` exists and is accurate.
 
-## Working rules that save time
-
-## Working rules that save time
+## Working Rules That Save Time
 
 ```bash
 cd "E:/Hackathons/Neighborhood Hacks/equita"
@@ -81,21 +66,14 @@ npm run build                                  # before a delivery
 node scripts/encscan.mjs                       # must print "clean"
 ```
 
-- Run `MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots <route>` after every
-  screen. **The `MSYS_NO_PATHCONV=1` prefix is mandatory** on Windows/Git Bash or the
-  leading `/` is rewritten into a filesystem path.
-- Read `.shots/report.json` → `problems`. It is the mechanical substitute for
-  "looks fine to me".
-- Kill any process on port 8787 before you debug an unchanged screen. A stale server
-  silently serves pre-edit code.
-- Sometimes a component `return`s `null` while a request fails; that hides a crash as
-  a blank page. Render a visible error state instead (see `docs/06-traps.md`).
-- Write large files in chunks. The `write` tool can drop `path` on very large payloads,
-  and a truncated write once deleted `index.html`.
-- `git` was never initialised. **Run `git init` and commit before a large refactor**
-  (see `TODO.md` → P0-1).
+- Run `MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots <route>` after every screen. **The `MSYS_NO_PATHCONV=1` prefix is mandatory** on Windows/Git Bash or the leading `/` is rewritten into a filesystem path.
+- Read `.shots/report.json` → `problems`. It is the mechanical substitute for "looks fine to me".
+- Kill any process on port 8787 before you debug an unchanged screen. A stale server silently serves pre-edit code.
+- Sometimes a component `return`s `null` while a request fails; that hides a crash as a blank page. Render a visible error state instead (see `docs/06-traps.md`).
+- Write large files in chunks. The `write` tool can drop `path` on very large payloads, and a truncated write once deleted `index.html`.
+- `git` was never initialised. **Run `git init` and commit before a large refactor** (see `TODO.md` → P0-1).
 
-## Update the docs as you go
+## Update the Docs as You Go
 
 The point of this doc system is that no agent has to reconstruct state twice.
 

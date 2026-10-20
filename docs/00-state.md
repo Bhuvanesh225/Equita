@@ -1,39 +1,32 @@
-# 00 — State of the build (verified)
+# 00 — State of the Build (Verified)
 
-Snapshot taken **2026-10-19, after the continued build pass**. Every claim below was checked
-against the repository and, where possible, against the running servers — not from memory.
+Snapshot taken **2026-10-20, after the spacing pass**. Every claim below was checked against the repository and, where possible, against the running servers — not from memory.
 
-> If you are reading this later: re-verify before trusting it. Run the commands in
-> `docs/05-verification.md` and update this file. A state file that is wrong is worse
-> than no state file.
+> If you are reading this later: re-verify before trusting it. Run the commands in `docs/05-verification.md` and update this file. A state file that is wrong is worse than no state file.
 
 ## Health
 
 | Check | Result |
 | --- | --- |
 | `npx tsc --noEmit` | **clean** (0 errors) |
-| `npm run build` | clean at the third sitting; re-run before a delivery |
+| `npm run build` | clean; re-run before a delivery |
 | `npm run dev` | API `127.0.0.1:8787` + Vite `localhost:5173`, both up |
 | `GET /api/health` | `{"ok":true,...}` |
 | `node scripts/smoke.mjs` | 28/28 for `teacher` and for `student` |
 | `node scripts/encscan.mjs` | `clean` |
-| Version control | **yes** — continued commits through group builder, privacy fixes, and reproducible test setup |
+| Version control | **yes** — commits through group builder, privacy fixes, reproducible test setup |
 | `README.md` | written; keep it accurate as screens land |
-| `npm test` | **clean** — fresh disposable SQLite database, real server, smoke as teacher and student |
+| `npm test` | **clean** — fresh disposable SQLite database, real server, smoke as teacher and student, SSE |
 | Docker/runtime | `.nvmrc`, `Dockerfile`, `Makefile`, and `scripts/test.mjs` present |
 | Write-path test | **clean** — plan/apply, task lifecycle + ledger, assignment, profile, classes, groups, notifications, deletion, and SSE |
 
-Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes ·
-6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins ·
-44 reviews · 21 notifications · 130 activity rows.
+Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes · 6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins · 44 reviews · 21 notifications · 130 activity rows.
 
-**Every id in this file and in `docs/09-demo-data.md` changes on `npm run seed`.** Re-read
-ids with `node scripts/shapes.mjs teacher` after a reseed (T21).
+**Every id in this file and in `docs/09-demo-data.md` changes on `npm run seed`.** Re-read ids with `node scripts/shapes.mjs teacher` after a reseed (T21).
 
-## Screens — all 18 application routes are real
+## Screens — All 18 Application Routes Are Real
 
-Legend: **built** = real screen · **stub** = renders `<Pending>` from
-`src/routes/_pending.tsx` (5 lines each).
+Legend: **built** = real screen · **stub** = renders `<Pending>` from `src/routes/_pending.tsx` (5 lines each).
 
 | Route | Component | State | LOC | Backing API |
 | --- | --- | --- | --- | --- |
@@ -58,14 +51,11 @@ Legend: **built** = real screen · **stub** = renders `<Pending>` from
 | `/settings` | `Settings` | built | 344 | `PATCH /api/auth/me`, class leave, sign out |
 | `*` | `NotFound` | built | 63 | — |
 
-All four tabs of `/classrooms/:id` render from the single `GET /api/classrooms/:id` call.
-Verified clean by `scripts/inspect.mjs` at 1440 and 390 in light mode, for `teacher`
-and for `student`.
-
+All four tabs of `/classrooms/:id` render from the single `GET /api/classrooms/:id` call. Verified clean by `scripts/inspect.mjs` at 1440 and 390 in light mode, for `teacher` and for `student`.
 
 `ProjectWorkspace` panels (all built, in `src/routes/project/`):
 
-| File | LOC | What it is |
+| File | LOC | What It Is |
 | --- | --- | --- |
 | `Board.tsx` | 313 | `TaskBoard` (dnd-kit, one lane per member + "Nobody"), `TaskTable`, `ViewSwitch` |
 | `Equity.tsx` | 320 | `EquityPanel` (dial, 5 part meters, per-member `LoadBar`, flags, history chart), `RebalancePanel` |
@@ -74,7 +64,7 @@ and for `student`.
 | `TaskForm.tsx` | 259 | `SkillPicker` + `TaskFormDialog` (create/edit) |
 | `Reviews.tsx` | 216 | `ReviewsPanel`, `ReviewsList`, aggregated summary for teachers |
 
-## Built surface (counts)
+## Built Surface (Counts)
 
 | Layer | Lines |
 | --- | --- |
@@ -85,13 +75,11 @@ and for `student`.
 | `src/components/` (ui, blocks, charts, overlays, icons) | 2,023 |
 | built routes + panels | 5,466 |
 
-## Integration debt — remaining verification rather than missing screens (P0)
+## Integration Debt — Remaining Verification Rather Than Missing Screens (P0)
 
-The engine-generated links are now registered by the router. The remaining P0 work is
-verification: follow one generated link from each family in a browser and exercise every
-workspace write control rather than assuming a successful screenshot proves a POST exists.
+The engine-generated links are now registered by the router. The remaining P0 work is verification: follow one generated link from each family in a browser and exercise every workspace write control rather than assuming a successful screenshot proves a POST exists.
 
-| Emitted link | Where from | Correct app route today |
+| Emitted Link | Where From | Correct App Route Today |
 | --- | --- | --- |
 | `/projects/:id/board?task=:taskId` | nudges, tasks, planning, insights search, copilot | `/projects/:id?tab=board&task=:taskId` |
 | `/projects/:id?panel=equity` | nudges (`unassigned-work`, `share-gap`, `rebalance`) | `/projects/:id?tab=equity` |
@@ -100,21 +88,17 @@ workspace write control rather than assuming a successful screenshot proves a PO
 | `/classrooms/:classroomId/groups/:projectId` | nudges (`class-*`) | redirect to `/projects/:projectId` |
 | `/classrooms/:classroomId?panel=attention` | copilot | `/classrooms/:classroomId` (ignores the param) |
 
-The alias-in-the-router approach is implemented in `src/App.tsx`, preserving old notification
-rows without rewriting stored links.
+The alias-in-the-router approach is implemented in `src/App.tsx`, preserving old notification rows without rewriting stored links.
 
-## Fixed during this documentation pass (2026-10-18, third sitting)
+## Fixed During This Documentation Pass (2026-10-18, Third Sitting)
 
 | # | Defect | Fix |
 | --- | --- | --- |
 | F1 | **The whole intelligence write-path was 404 from the browser.** `planningRouter` declares full paths (`/projects/:id/plan`) but was mounted at `/api/projects`, so every endpoint was actually served at `/api/projects/projects/…`. `Plan from the brief`, `Place the unclaimed work`, `plan/apply`, `assign/auto`, `assign/:taskId`, `rebalance/apply` and `nudges` all 404'd, while the read endpoints beside them worked — which is why it survived a typecheck and a screenshot. | `server/index.js`: mount `planningRouter` at `/api`, like `tasksRouter`. Verified live: `POST /api/projects/:id/plan` → 200, `/assign/auto` → 200, `GET /api/projects/:id/nudges` → 200. |
 
-That fix means the workspace's three headline actions now work end-to-end. **Everything
-in the project workspace deserves a live click-through** — the previous session built it
-under typecheck only, and this was the second bug of that class found. Use
-`docs/05-verification.md` → "exercise the write path", not a screenshot.
+That fix means the workspace's three headline actions now work end-to-end. **Everything in the project workspace deserves a live click-through** — the previous session built it under typecheck only, and this was the second bug of that class found. Use `docs/05-verification.md` → "exercise the write path", not a screenshot.
 
-## Fixed during the fourth sitting (2026-10-19)
+## Fixed During the Fourth Sitting (2026-10-19)
 
 | # | Defect | Fix |
 | --- | --- | --- |
@@ -126,14 +110,11 @@ under typecheck only, and this was the second bug of that class found. Use
 | F7 | **Live events never reached clients.** `events.js` called `publish()` with two arguments although the bus accepts one event object, so writes appeared in the database but open browsers did not refetch. | `server/events.js`, covered by `scripts/write-path.mjs` and the SSE assertion in T30 |
 | F8 | **Closing a newly-created task could 500.** The status route read `task.dependsOn` from a raw SQLite row instead of parsing `task.depends_on`, so the dependency check called `.map` on `undefined`. | `server/routes/tasks.js`, covered by the task lifecycle write-path test and T31 |
 
-`inspect.mjs` now returns `problems: []`-equivalent output at 1440 **and** 390, in **paper
-and ink**, for `teacher` and for `student`, on every built route.
+`inspect.mjs` now returns `problems: []`-equivalent output at 1440 **and** 390, in **paper and ink**, for `teacher` and for `student`, on every built route.
 
-## Spacing pass (2026-10-20) — systemic rhythm, no route behaviour touched
+## Spacing Pass (2026-10-20) — Systemic Rhythm, No Route Behaviour Touched
 
-A layout-harmony pass over the shared CSS only. Verified with `scripts/inspect.mjs` at
-1440 **and** 390 (all app routes, `teacher` and `student`, `problems: []`), `npx tsc --noEmit`
-and `npm run build`.
+A layout-harmony pass over the shared CSS only. Verified with `scripts/inspect.mjs` at 1440 **and** 390 (all app routes, `teacher` and `student`, `problems: []`), `npx tsc --noEmit` and `npm run build`.
 
 | # | Defect | Fix |
 | --- | --- | --- |
@@ -143,16 +124,11 @@ and `npm run build`.
 | S4 | **The figure strip was lopsided** — ink divider on the final cell but an open left edge, and on two columns the first row kept its right divider. | The last cell (and each row's last cell at ≤40rem) drops its right divider; both ends now sit flush with the page content. |
 | S5 | **The landing console score clipped** (`60.9` needed 40px in a 2.4rem column). | Number column widened to 3rem, `landing-redesign.css`. |
 
-Known remaining, **intentional**: the `grid--split` rail is shorter than its main column on
-`/today` and `/profile`, so the area beside the lower main panels is empty. That is content
-balance, not a spacing bug; rebalance the panels themselves if it should close.
+Known remaining, **intentional**: the `grid--split` rail is shorter than its main column on `/today` and `/profile`, so the area beside the lower main panels is empty. That is content balance, not a spacing bug; rebalance the panels themselves if it should close.
 
-## Landing figures + one measure across the workspace (2026-10-20, second pass)
+## Landing Figures + One Measure Across the Workspace (2026-10-20, Second Pass)
 
-The landing console printed numbers it had not computed, and the desktop shell drew the page
-header and the page body on two different left edges. Verified in the browser at 1920, 1440
-and 390; `npx tsc --noEmit` and `npm run build` clean, `scripts/inspect.mjs` empty on every
-route at all three widths.
+The landing console printed numbers it had not computed, and the desktop shell drew the page header and the page body on two different left edges. Verified in the browser at 1920, 1440 and 390; `npx tsc --noEmit` and `npm run build` clean, `scripts/inspect.mjs` empty on every route at all three widths.
 
 | # | Defect | Fix |
 | --- | --- | --- |
@@ -166,10 +142,9 @@ route at all three widths.
 | W2 | **The shell had no upper measure**, so on a 1920 display it stretched to 1680px of body. | `.app .shell { max-width: 108rem }` at ≥60rem. |
 | L7 | **The landing frame stopped growing at 1312px** on any desktop wider than 1440 (`--eq-max: 82rem`), leaving 300px of dead margin at 1920. | `@media (min-width: 96rem) { .equita-landing { --eq-max: 100rem } }` — frame is 1600px at 1920, unchanged at 1440. |
 
-Related trap: `T32` in `docs/06-traps.md` (a payload's `share` is a measure, not a fraction of
-hours; `evenShare` is a fraction).
+Related trap: `T32` in `docs/06-traps.md` (a payload's `share` is a measure, not a fraction of hours; `evenShare` is a fraction).
 
-## Known smaller defects
+## Known Smaller Defects
 
 | # | Defect | Where |
 | --- | --- | --- |
@@ -178,22 +153,19 @@ hours; `evenShare` is a fraction).
 | D7 | hackathon root has 16 MB of throwaway screenshots (`.work/`) and a stray `landing-hero.png` | `../` |
 | D8 | `/api/projects/:id/reviews/summary` returns an empty `members: []` even for a teacher when no reviews exist yet — confirm it is intended and not an early return | `server/routes/projects.js:480` |
 
-## What the next session should do
+## What the Next Session Should Do
 
 In order. The checklist with acceptance tests is `TODO.md`; the reasoning is in `ROADMAP.md`.
 
-1. **P0-3** — click everything in the project workspace (the mount bug F1 is fixed, but the
-   screen has never been exercised end to end with a mouse).
+1. **P0-3** — click everything in the project workspace (the mount bug F1 is fixed, but the screen has never been exercised end to end with a mouse).
 2. **P1-4** — `/classrooms/:id/students/:studentId`.
 3. **P2** — `/insights`, `/people` (+`/people/:id`), `/profile`, `/notifications`, `/settings`.
-4. **P3** — the group builder (`@dnd-kit` is installed and used by the board; make it earn its
-   place here, with a keyboard path).
-5. **P4** — delete `_pending.tsx`, then a mobile + ink-scheme sweep over the routes that
-   exist, a liveness sweep with two browsers, and `README.md`.
+4. **P3** — the group builder (`@dnd-kit` is installed and used by the board; make it earn its place here, with a keyboard path).
+5. **P4** — delete `_pending.tsx`, then a mobile + ink-scheme sweep over the routes that exist, a liveness sweep with two browsers, and `README.md`.
 
-## The doc set
+## The Doc Set
 
-| File | Read it for |
+| File | Read It For |
 | --- | --- |
 | `AGENTS.md` | the contract: read order, non-negotiables, definition of done |
 | `TODO.md` | the live task list |

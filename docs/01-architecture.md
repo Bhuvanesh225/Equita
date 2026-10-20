@@ -25,59 +25,43 @@ browser (React 19 + Vite 8, TS, Tailwind v4)
                       data/equita.db         SQLite, WAL, seeded on first boot
 ```
 
-Everything runs in one Node process. `npm run dev` runs two: `node --watch
-server/index.js` (API on `:8787`) and `vite` (`:5173`, proxying `/api` and `/events`).
+Everything runs in one Node process. `npm run dev` runs two: `node --watch server/index.js` (API on `:8787`) and `vite` (`:5173`, proxying `/api` and `/events`).
 
-**No native build step.** `node:sqlite` is used directly, so Node 22.5+ is the only
-requirement. `DatabaseSync` is synchronous — that is why routes are written with plain
-`all`/`get`/`run` calls and no `await`.
+**No native build step.** `node:sqlite` is used directly, so Node 22.5+ is the only requirement. `DatabaseSync` is synchronous — that is why routes are written with plain `all`/`get`/`run` calls and no `await`.
 
-## The request lifecycle for a read
+## The Request Lifecycle for a Read
 
 1. Cookie `equita_session` → `currentUser(req)` in `server/auth.js`.
 2. `requireAuth` (mounted on every non-public router) rejects with `401`.
-3. The route builds identifiers, then asks an **engine** for the content:
-   `loadProject(id)` → `computeEquity(ctx)` → shapers (`shapeTask`, `shapeActivity`, …).
-4. The shape goes out. `GET /api/projects/:id` is deliberately **one call returning
-   everything the workspace renders**, so a page has a single definition of truth and the
-   live channel only needs to refetch that one URL.
+3. The route builds identifiers, then asks an **engine** for the content: `loadProject(id)` → `computeEquity(ctx)` → shapers (`shapeTask`, `shapeActivity`, …).
+4. The shape goes out. `GET /api/projects/:id` is deliberately **one call returning everything the workspace renders**, so a page has a single definition of truth and the live channel only needs to refetch that one URL.
 
-## The request lifecycle for a write
+## The Request Lifecycle for a Write
 
-1. Parse and validate the body with `zod` (`parse(Schema, req.body)` in `server/api.js`).
-   A failure becomes `400 {error}` written for a person.
-2. Authorise: `access()` (`server/routes/projects.js`) or `classroomAccess()`
-   (`server/routes/school.js`) return `{row, memberRole, teaching, owner}`.
+1. Parse and validate the body with `zod` (`parse(Schema, req.body)` in `server/api.js`). A failure becomes `400 {error}` written for a person.
+2. Authorise: `access()` (`server/routes/projects.js`) or `classroomAccess()` (`server/routes/school.js`) return `{row, memberRole, teaching, owner}`.
 3. Mutate inside `tx(() => { … })` when more than one row is involved.
-4. Call `record({verb, subject, projectId, actorId, meta, notify})` from `server/events.js`.
-   That single call writes the `activity` row, creates any `notifications`, and publishes
-   an event on `bus.js` to everyone in `projectAudience` / `classroomAudience`.
+4. Call `record({verb, subject, projectId, actorId, meta, notify})` from `server/events.js`. That single call writes the `activity` row, creates any `notifications`, and publishes an event on `bus.js` to everyone in `projectAudience` / `classroomAudience`.
 5. Respond with the shaped resource.
 
-**Step 4 is why the whole app is live.** If you add a write path and skip `record`, the
-screen will not update for anybody else — that is a bug, not an optimisation.
+**Step 4 is why the whole app is live.** If you add a write path and skip `record`, the screen will not update for anybody else — that is a bug, not an optimisation.
 
-## Auth and capability
+## Auth and Capability
 
-- Sessions are rows in `sessions`, keyed by a random id in an HttpOnly cookie.
-  `createSession` / `destroySession` / `setSessionCookie` live in `server/auth.js`.
-- `canTeach(userId, classroomId)` is the teacher capability; `memberships(userId)` lists a
-  person's classes with their role in each.
-- `POST /api/auth/demo {email}` signs in any `*@equita.demo` account with no password. It
-  refuses any other domain. It exists because the only convincing thing about this product
-  is what it says about a populated group.
+- Sessions are rows in `sessions`, keyed by a random id in an HttpOnly cookie. `createSession` / `destroySession` / `setSessionCookie` live in `server/auth.js`.
+- `canTeach(userId, classroomId)` is the teacher capability; `memberships(userId)` lists a person's classes with their role in each.
+- `POST /api/auth/demo {email}` signs in any `*@equita.demo` account with no password. It refuses any other domain. It exists because the only convincing thing about this product is what it says about a populated group.
 - Access rules that matter:
   - a project is visible to its members, its owner, and the teacher of its class;
   - a student may only open **their own** student record (`403` otherwise);
   - only the lead or a teacher may plan, auto-assign or rebalance;
   - the `code` on a classroom is the join code; `POST /api/classrooms/join` is idempotent.
 
-## The intelligence layer (`server/engines/`)
+## The Intelligence Layer (`server/engines/`)
 
-Do not re-derive these. Read the top-of-file comment before using one — each states what it
-does and, more usefully, what it refuses to do.
+Do not re-derive these. Read the top-of-file comment before using one — each states what it does and, more usefully, what it refuses to do.
 
-| Engine | Lines | Exports | What it is for |
+| Engine | Lines | Exports | What It Is For |
 | --- | --- | --- | --- |
 | `equity.js` | 566 | `memberLedgers`, `computeEquity`, `suggestRebalance`, `equityHistory`, `recordSnapshot`, `requiredSkillDemand`, `remainingWeeks`, `elapsedFraction` | the fairness score and everything behind it |
 | `allocator.js` | 298 | `rankCandidates`, `autoAssign`, `bestFor` | who a task should go to, with a reason and a warning list |
@@ -90,34 +74,22 @@ does and, more usefully, what it refuses to do.
 | `skills.js` | 150 | `fitSkills`, `describeFit`, `growthOpportunity`, `teamSkillProfile`, `singlePointsOfFailure` | skill matching and the "who would grow" signal |
 | `profiles.js` | 92 | `clusterStrength`, `topSkills`, `growthEdges`, `rosterCoverage`, `TRANSFER` | a person's profile reduced to clusters |
 
-### The equity engine's five parts
+### The Equity Engine's Five Parts
 
-`parts` is `{balance, delivery, spread, engagement, readiness}`, each 0–100, combined with
-`weights` (project config; a classroom policy can move them). Labels used in the UI:
-**Balance · Delivery · Spread · Engagement · Readiness**. `Meter` in `ui.tsx` picks its tone
-automatically by value; do not pass a tone.
+`parts` is `{balance, delivery, spread, engagement, readiness}`, each 0–100, combined with `weights` (project config; a classroom policy can move them). Labels used in the UI: **Balance · Delivery · Spread · Engagement · Readiness**. `Meter` in `ui.tsx` picks its tone automatically by value; do not pass a tone.
 
-Two deliberate decisions, quoted from the engine and worth repeating because they show up in
-the UI:
+Two deliberate decisions, quoted from the engine and worth repeating because they show up in the UI:
 
-> 1. Equity is judged on *delivered* work, not on promises. Both numbers are reported,
->    because the gap between them is the single most useful signal a group has.
-> 2. Nothing is a category. Every member gets a position on a continuous scale and a number
->    in hours.
+> 1. Equity is judged on *delivered* work, not on promises. Both numbers are reported, because the gap between them is the single most useful signal a group has.
+> 2. Nothing is a category. Every member gets a position on a continuous scale and a number in hours.
 
-So when you render a member, show **credited** against **even**, and **committed** as a
-second number — never only one of them.
+So when you render a member, show **credited** against **even**, and **committed** as a second number — never only one of them.
 
 ### Config
 
-`config = mergeConfig(defaults, project.config, classroomPolicy?)`, with three groups:
-`weights` (equity parts), `allocator` (skill/headroom/equity/deadline/continuity/growth) and
-`policy` (`autoAssign`, `allowStretch`, `enforceCapacity`, `requireReview`, `shareGapFlag`,
-`freeRiderShare`, `silenceDays`). A teacher's classroom defaults are more protective than a
-self-organised group's (see `server/seed-stories.js`). Screens that show numbers should be
-able to say which policy produced them.
+`config = mergeConfig(defaults, project.config, classroomPolicy?)`, with three groups: `weights` (equity parts), `allocator` (skill/headroom/equity/deadline/continuity/growth) and `policy` (`autoAssign`, `allowStretch`, `enforceCapacity`, `requireReview`, `shareGapFlag`, `freeRiderShare`, `silenceDays`). A teacher's classroom defaults are more protective than a self-organised group's (see `server/seed-stories.js`). Screens that show numbers should be able to say which policy produced them.
 
-## Database (`server/schema.sql`, 17 tables)
+## Database (`server/schema.sql`, 17 Tables)
 
 | Table | Holds |
 | --- | --- |
@@ -139,21 +111,16 @@ able to say which policy produced them.
 | `reviews` | peer reviews: `reliability`, `quality`, `teamwork`, `note` (go to the teacher) |
 | `equity_snapshots` | weekly frozen position, so the trend line exists without anyone recording it |
 
-`contributions` deserves emphasis: **closing a task writes an hours row with a real number,
-and it is never inferred later and never accepted from the client.** Every equity figure is
-built from that table.
+`contributions` deserves emphasis: **closing a task writes an hours row with a real number, and it is never inferred later and never accepted from the client.** Every equity figure is built from that table.
 
-## Live channel (`server/bus.js` + `server/events.js`)
+## Live Channel (`server/bus.js` + `server/events.js`)
 
 - One SSE stream per person at `GET /events`, filtered by `{userId, classroomIds}`.
-- `record()` publishes `{type, at, …meta}`; the client increments a version and every
-  `useApi` with `live: true` refetches after a 180 ms coalescing delay.
-- The client rebuilds the stream on error (2.5 s retry) and on window focus, because an
-  `EventSource` can sit dead after a server restart.
-- **The trade is deliberate:** refetch the whole resource rather than apply a diff in the
-  browser. Applying diffs is where live boards start disagreeing with the server.
+- `record()` publishes `{type, at, …meta}`; the client increments a version and every `useApi` with `live: true` refetches after a 180 ms coalescing delay.
+- The client rebuilds the stream on error (2.5 s retry) and on window focus, because an `EventSource` can sit dead after a server restart.
+- **The trade is deliberate:** refetch the whole resource rather than apply a diff in the browser. Applying diffs is where live boards start disagreeing with the server.
 
-## Client architecture
+## Client Architecture
 
 | Path | Role |
 | --- | --- |
@@ -173,15 +140,10 @@ built from that table.
 | `src/shell/CommandPalette.tsx`, `src/shell/Copilot.tsx` | the two overlays |
 | `src/styles/theme.css` | tokens + Tailwind `@theme` bridge |
 | `src/styles/app.css`, `surfaces.css` | the furniture |
-| `src/styles/landing.css`, `auth.css` | scoped to `/` and the auth screens |
+| `src/styles/landing.css`, `auth.css` | scoped to `/` and the auth screens — do not reach into them from app screens |
 
-Two dead dependencies worth knowing about: `lucide-react` (icons are hand-drawn in
-`icons.tsx`) and `date-fns` (dates are handled in `format.ts`). `@dnd-kit/*` **is** used, by
-`src/routes/project/Board.tsx` and intended for the group builder.
+Two dead dependencies worth knowing about: `lucide-react` (icons are hand-drawn in `icons.tsx`) and `date-fns` (dates are handled in `format.ts`). `@dnd-kit/*` **is** used, by `src/routes/project/Board.tsx` and intended for the group builder.
 
-## Where the marketing page gets its numbers
+## Where the Marketing Page Gets Its Numbers
 
-`GET /api/public/story` runs the same engines against the seed and returns the figures the
-landing page prints. Nothing on the landing page is written by hand — that is the house rule
-about proof, enforced in code. `src/routes/landing/story.ts` is the client-side reader of
-that payload.
+`GET /api/public/story` runs the same engines against the seed and returns the figures the landing page prints. Nothing on the landing page is written by hand — that is the house rule about proof, enforced in code. `src/routes/landing/story.ts` is the client-side reader of that payload.

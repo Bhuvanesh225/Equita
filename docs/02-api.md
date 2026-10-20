@@ -1,35 +1,20 @@
-# 02 — API contract
+# 02 — API Contract
 
-Every screen in the remaining work renders data that already exists. This file is the
-map from endpoint to screen, with the exact keys the server returns. Verify anything
-you are unsure of with `node scripts/shapes.mjs teacher` (see `docs/05-verification.md`).
+Every screen in the remaining work renders data that already exists. This file is the map from endpoint to screen, with the exact keys the server returns. Verify anything you are unsure of with `node scripts/shapes.mjs teacher` (see `docs/05-verification.md`).
 
-Base URL in dev: `http://127.0.0.1:8787`. The Vite dev server proxies `/api` and
-`/events`, so the browser uses relative paths (`/api/...`).
+Base URL in dev: `http://127.0.0.1:8787`. The Vite dev server proxies `/api` and `/events`, so the browser uses relative paths (`/api/...`).
 
 ## Conventions
 
-- **Auth** is a session cookie (`equita_session`). `requireAuth` returns `401` for API
-  routes with no session. `POST /api/auth/demo {email}` signs in any `*@equita.demo`
-  account with no password — it exists for demos and for the test scripts.
-- **Money/effort unit is hours.** Effort values are floats (e.g. `3.5`). Scores are
-  0–100 floats, usually rounded to 1dp. Shares are 0–1.
-- **Errors** are always `{ "error": "a sentence written for a person" }`, with status
-  `400` (bad input), `401` (not signed in), `403` (denied), `404` (missing), `409`
-  (a rule conflict, e.g. review required).
+- **Auth** is a session cookie (`equita_session`). `requireAuth` returns `401` for API routes with no session. `POST /api/auth/demo {email}` signs in any `*@equita.demo` account with no password — it exists for demos and for the test scripts.
+- **Money/effort unit is hours.** Effort values are floats (e.g. `3.5`). Scores are 0–100 floats, usually rounded to 1dp. Shares are 0–1.
+- **Errors** are always `{ "error": "a sentence written for a person" }`, with status `400` (bad input), `401` (not signed in), `403` (denied), `404` (missing), `409` (a rule conflict, e.g. review required).
 - **Timestamps** are ISO strings, always UTC.
-- **Live channel.** `GET /events` is an SSE stream (one JSON object per `data:` line,
-  heartbeats included). Any write on the server emits an event scoped to the people
-  who can see it. The client's `useApi` (default `live: true`) refetches on any event,
-  so **every screen updates itself with no extra work** — as long as it uses `useApi`.
-- **The two-step rule.** `POST /plan` and `POST /assign/auto` return a *proposal*.
-  Only the matching `/apply` call writes. Never merge them.
-- **`*` mounts.** `tasksRouter` and `planningRouter` are mounted at `/api` and declare
-  full paths (`/projects/:id/tasks`, `/projects/:id/plan`). `projectsRouter` is mounted
-  at `/api/projects` and declares `/:id/…`. Do not "fix" a 404 by assuming the wrong
-  prefix — check `server/index.js`.
+- **Live channel.** `GET /events` is an SSE stream (one JSON object per `data:` line, heartbeats included). Any write on the server emits an event scoped to the people who can see it. The client's `useApi` (default `live: true`) refetches on any event, so **every screen updates itself with no extra work** — as long as it uses `useApi`.
+- **The two-step rule.** `POST /plan` and `POST /assign/auto` return a *proposal*. Only the matching `/apply` call writes. Never merge them.
+- **`*` mounts.** `tasksRouter` and `planningRouter` are mounted at `/api` and declare full paths (`/projects/:id/tasks`, `/projects/:id/plan`). `projectsRouter` is mounted at `/api/projects` and declares `/:id/…`. Do not "fix" a 404 by assuming the wrong prefix — check `server/index.js`.
 
-## Endpoint index
+## Endpoint Index
 
 ### Identity
 
@@ -76,8 +61,7 @@ top       [{ slug, name, cluster, level, appetite }]                     (top 6)
 | GET | `/api/projects/:id/reviews/summary` | — | `{spread, members: [{id,name,reviews,reliability,quality,teamwork,notes}]}` (teacher) |
 | GET | `/api/projects/:id/nudges` | — | `{nudges}` |
 
-`GET /api/projects/:id` — **one call returns everything the workspace renders.** Top-level
-keys, with what each is for:
+`GET /api/projects/:id` — **one call returns everything the workspace renders.** Top-level keys, with what each is for:
 
 | Key | For |
 | --- | --- |
@@ -108,7 +92,7 @@ keys, with what each is for:
   unassigned }
 ```
 
-### Planning and allocation (the intelligence layer)
+### Planning and Allocation (the Intelligence Layer)
 
 All of these are mounted at `/api/projects/…` (fixed — see `docs/00-state.md` F1).
 
@@ -122,6 +106,7 @@ All of these are mounted at `/api/projects/…` (fixed — see `docs/00-state.md
 | GET | `/api/projects/:id/nudges` | — | `{nudges}` |
 
 `AutoAssignResult`:
+
 ```
 { assignments: [{taskId, taskTitle, userId, userName, score, parts, rationale, warnings}],
   unassigned:  [{taskId, taskTitle, effort, reason}],
@@ -143,8 +128,7 @@ All of these are mounted at `/api/projects/…` (fixed — see `docs/00-state.md
 | POST | `/api/tasks/:id/comments` | `{body}` | `{comment}` |
 | POST | `/api/tasks/:id/log` | `{hours (0.25–40), note?}` | `{task, ledger?}` |
 
-`GET /api/tasks/:id` → `candidates` is the allocator's ranked shortlist; **this is the
-"who fits best" list and it is already computed server-side.** Each entry:
+`GET /api/tasks/:id` → `candidates` is the allocator's ranked shortlist; **this is the "who fits best" list and it is already computed server-side.** Each entry:
 
 ```
 { memberId, name, hue, role, capacity, state, score, parts: {skill, headroom, equity, deadline},
@@ -170,9 +154,7 @@ All of these are mounted at `/api/projects/…` (fixed — see `docs/00-state.md
 | POST | `/api/classrooms/:id/projects` | `{name, brief?, dueAt?, teams:[{name, memberIds}], autoPlan?, autoAssign?}` | `{created:[{id,name,members,planned,placed}]}` |
 | GET | `/api/classrooms/:id/analytics` | — | `{analytics, trend, coverage, students, projects}` |
 
-`GET /api/classrooms/:id` top-level keys: (**`even` is the even share of _delivered_ work** —
-`member.even.credited`. The committed share is exposed separately as `evenCommitted`. Getting
-this wrong once produced two different "hours behind" on one screen; see T24.)
+`GET /api/classrooms/:id` top-level keys: (**`even` is the even share of _delivered_ work** — `member.even.credited`. The committed share is exposed separately as `evenCommitted`. Getting this wrong once produced two different "hours behind" on one screen; see T24.)
 
 | Key | For |
 | --- | --- |
@@ -188,8 +170,7 @@ this wrong once produced two different "hours behind" on one screen; see T24.)
 | `viewer` | `{id, isTeacher, role}` |
 | `gaps` | `[{cluster, name, strong, meanLevel, needed}]` |
 
-`GET /api/classrooms/:id/analytics` is the same numbers minus the roster bodies, plus a
-slim `students[]` and `projects[]` — use it for `/insights`, use `/:id` for the console.
+`GET /api/classrooms/:id/analytics` is the same numbers minus the roster bodies, plus a slim `students[]` and `projects[]` — use it for `/insights`, use `/:id` for the console.
 
 `GET /api/classrooms/:id/students/:userId` → `studentRecord`:
 
@@ -205,7 +186,7 @@ slim `students[]` and `projects[]` — use it for `/insights`, use `/:id` for th
   reading: "a written sentence about this student" }
 ```
 
-### Insights, notifications, copilot
+### Insights, Notifications, Copilot
 
 | Method | Path | Body | Response |
 | --- | --- | --- | --- |
@@ -219,15 +200,9 @@ slim `students[]` and `projects[]` — use it for `/insights`, use `/:id` for th
 | GET | `/api/insights/people/:id` | — | one person's record (for `/people/:id`) |
 
 `SearchResult` = `{kind: "project"|"task"|"person"|"class", id, title, subtitle, href, hue?}`.
-`href` values are the ones listed as broken in `docs/00-state.md` — **fix the router or
-the emitter before you wire a screen to them.**
+`href` values are the ones listed as broken in `docs/00-state.md` — **fix the router or the emitter before you wire a screen to them.**
 
-`GET /api/insights/dashboard` keys: `user`, `top`, `clusters`, `skillCount`, `cards`
-(project cards with `mine` and `unclaimedForMe`), `agenda` (the viewer's open tasks with
-`overdue` and `hoursUntilDue`), `week` (7 days of `hours`), `nudges`, `nudgeCounts`,
-`notifications`, `unreadCount`, `classes` (teacher only: `{students, groups, meanScore,
-worstScore, behind, overloaded, unplaced, urgent, attention[]}`), `activity`, `trend`,
-`summary` (`{projects, openHours, evenHours, creditedHours, dueToday, overdue, classes}`).
+`GET /api/insights/dashboard` keys: `user`, `top`, `clusters`, `skillCount`, `cards` (project cards with `mine` and `unclaimedForMe`), `agenda` (the viewer's open tasks with `overdue` and `hoursUntilDue`), `week` (7 days of `hours`), `nudges`, `nudgeCounts`, `notifications`, `unreadCount`, `classes` (teacher only: `{students, groups, meanScore, worstScore, behind, overloaded, unplaced, urgent, attention[]}`), `activity`, `trend`, `summary` (`{projects, openHours, evenHours, creditedHours, dueToday, overdue, classes}`).
 
 ### Public
 
@@ -236,7 +211,7 @@ worstScore, behind, overloaded, unplaced, urgent, attention[]}`), `activity`, `t
 | GET | `/api/public/story` | the numbers the landing page prints (no auth) |
 | GET | `/api/health` | `{ok, tables, tableNames, at}` |
 
-## Engine output: `equity`
+## Engine Output: `equity`
 
 The single most reused shape. Defined in `src/lib/types.ts` as `Equity`.
 
@@ -258,18 +233,13 @@ The single most reused shape. Defined in `src/lib/types.ts` as `Equity`.
   headline: "one sentence, written by the engine" }
 ```
 
-**`headline` is prose written by the engine.** Print it; do not write your own summary
-sentence next to it.
+**`headline` is prose written by the engine.** Print it; do not write your own summary sentence next to it.
 
-`EquityFlag.kind` values seen in the seed: `member-overloaded`, `member-behind`,
-`member-quiet`, `share-gap`, `free-rider`, `work-unclaimed`, `project-overdue`,
-`capacity-exceeded`, `never-reviewed`. `flagTitle(kind)` in `src/components/blocks.tsx`
-maps them to human labels — use it.
+`EquityFlag.kind` values seen in the seed: `member-overloaded`, `member-behind`, `member-quiet`, `share-gap`, `free-rider`, `work-unclaimed`, `project-overdue`, `capacity-exceeded`, `never-reviewed`. `flagTitle(kind)` in `src/components/blocks.tsx` maps them to human labels — use it.
 
-`RebalanceSuggestion.kind`: `move` | `claim` | `share`. **`fromId` is `null` for work
-nobody took on** — every reason string must handle that (it already does server-side).
+`RebalanceSuggestion.kind`: `move` | `claim` | `share`. **`fromId` is `null` for work nobody took on** — every reason string must handle that (it already does server-side).
 
-## Group proposal (group builder)
+## Group Proposal (Group Builder)
 
 `POST /api/classrooms/:id/groups/preview` → `GroupProposal`:
 
@@ -289,11 +259,9 @@ nobody took on** — every reason string must handle that (it already does serve
   rosterSize: number }
 ```
 
-Role ids to render: `coordinator` ("Keeps it moving"), `builder` ("Makes the thing"), and
-others the engine picks — always print `label`, never the raw `role`, unless the label is
-absent.
+Role ids to render: `coordinator` ("Keeps it moving"), `builder` ("Makes the thing"), and others the engine picks — always print `label`, never the raw `role`, unless the label is absent.
 
-## Screen → endpoint map for the unbuilt work
+## Screen → Endpoint Map for the Unbuilt Work
 
 | Screen | Endpoints |
 | --- | --- |
