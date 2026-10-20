@@ -1,4 +1,4 @@
-.PHONY: install dev build test smoke clean
+.PHONY: install dev build test smoke browser-install clean
 
 install:
 	npm ci
@@ -17,6 +17,9 @@ test:
 	node scripts/test.mjs
 	node scripts/write-path.mjs
 	EQUITA_DB=data/equita-test.db node scripts/encscan.mjs
+
+browser-install:
+	npx playwright install chromium
 
 smoke:
 	npm run smoke

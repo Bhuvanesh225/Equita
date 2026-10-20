@@ -12,6 +12,7 @@ dist/
 
 # verification output
 .shots/
+.shots*/
 .tmp/
 
 # local scratch kept outside version control

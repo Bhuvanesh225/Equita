@@ -171,13 +171,12 @@ export function Hero({ story, signedIn }: { story: Story | null; signedIn: boole
           <span className="monitor__chrome-text">{story?.classroom?.name ?? "the demo"}</span>
         </div>
 
-        <div className="monitor__tabs" role="tablist" aria-label="Three groups in the dataset">
+        <div className="monitor__tabs" role="group" aria-label="Three groups in the dataset">
           {situations.map((situation, position) => (
             <button
               key={situation.id}
               type="button"
-              role="tab"
-              aria-selected={position === index}
+              aria-pressed={position === index}
               className="monitor__tab"
               data-active={position === index}
               onClick={() => choose(position)}

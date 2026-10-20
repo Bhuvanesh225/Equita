@@ -122,3 +122,20 @@
 
 @media (max-width: 54rem) { .eq-moments { grid-template-columns: repeat(2, minmax(0, 1fr)); }.eq-roll__states { grid-template-columns: repeat(3, minmax(0, 1fr)); }.eq-start-grid, .eq-questions, .eq-roll__note { grid-template-columns: 1fr; }.eq-roll__note img { max-width: 28rem; } }
 @media (max-width: 38rem) { .eq-moments { grid-template-columns: 1fr; }.eq-roll__states { grid-template-columns: repeat(2, minmax(0, 1fr)); }.eq-roll__row { grid-template-columns: minmax(0, 1fr) 6rem; row-gap: 0.2rem; }.eq-roll__row > span:nth-child(2) { grid-column: 1; }.eq-roll__row > span:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; align-self: center; }.eq-start-grid article { min-height: 0; }.eq-questions__answer { min-height: 0; }.eq-footer__grid > div { min-width: 0; } }
+/* The hero audience switch uses native pressed semantics rather than a tab widget. */
+.eq-audience--hero button[aria-pressed="true"] {
+  background: var(--eq-acid);
+  color: var(--eq-acid-ink);
+}
+
+/* Keep text links and the story pager comfortable targets without turning them
+   into oversized marketing buttons. */
+.eq-nav a,
+.eq-header__link,
+.eq-inline-link,
+.eq-footer__grid a,
+.eq-story__controls button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+}

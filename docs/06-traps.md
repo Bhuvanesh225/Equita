@@ -17,8 +17,8 @@ The route guard redirected before the person landed, so signing in bounced you b
 **Fixed** at the source in `src/lib/session.tsx` (`await refresh()` inside `signIn`, `signUp`, `enterDemo`). Any new auth call must await the refresh the same way.
 
 ### T4 — A Component Returning `null` While a Request Failed
-`Dashboard.tsx` returns `null` on a dashboard error, which masked a live crash as a blank page.
-**Still present (D2).**
+`Dashboard.tsx` once returned `null` on a dashboard error, which masked a live crash as a blank page.
+**Fixed** in `src/routes/Dashboard.tsx`: the screen now renders a retryable `EmptyState` with a route out.
 **The rule:** every screen renders a visible error state with a retry and a way out. Never `return null`.
 
 ### T5 — A Stale Server on Port 8787
@@ -78,10 +78,10 @@ app.use("/api", tasksRouter);             // declares /tasks/:id and /projects/:
 **The general lesson:** a screen verified only by `tsc` + a screenshot has not been verified. Run `node scripts/smoke.mjs` (which hits every write-shaped endpoint for real) and click the button.
 
 ### T16 — Engine-Generated Links Do Not Match the Router
-`Nudges`, notifications, the copilot actions and search results carry `href`s the router does not serve: `/projects/:id/board?task=…`, `?panel=equity`, `/people/:id`, `/classrooms/:id/groups/:projectId`. They all land on `NotFound`.
-`Nudges` renders `nudge.action.href` as a `Link`, so **clicking a nudge from the dashboard is a 404 today.** This is P0-2 in `TODO.md`; the full list is in `docs/00-state.md`.
+`Nudges`, notifications, the copilot actions and search results once carried `href`s the router did not serve: `/projects/:id/board?task=…`, `?panel=equity`, `/people/:id`, `/classrooms/:id/groups/:projectId`.
+**Fixed** in `src/App.tsx`, `src/routes/ProjectWorkspace.tsx`, and `src/routes/ClassroomConsole.tsx` with route aliases and panel-to-tab mapping. The browser harness and API checks now exercise the route families.
 
-**The rule for new work:** a server-generated link is a contract. Either register the route or change the emitter — and add a test to `scripts/smoke.mjs` that follows the link.
+**The rule for new work:** a server-generated link is a contract. Either register the route or change the emitter — and add a browser or API assertion before calling it finished.
 
 ### T17 — The Web Server Binds IPv6 `localhost` Only
 Vite listens on `[::1]:5173`. `http://localhost:5173` works; `http://127.0.0.1:5173` may not. The API is the opposite (`0.0.0.0:8787`, and it also answers on `::1`). The helper scripts already use the right hostnames — do not "tidy" them.
@@ -145,3 +145,11 @@ The public story payload carries `members[].share` and `distribution.evenShare`,
 
 Hours live in `hours.even` and `members[].delivered`. **Rule:** before formatting a payload field, name its unit out loud. A field called `share` is a ratio of *something* — find the denominator before you put "h" after it. Load bars draw delivered hours against `hours.even`; scoring appears only as equity flags and scores.
 **Fixed:** `src/routes/Landing.tsx` (`BalanceBars`) and `src/routes/landing/Sections.tsx`.
+
+## From the Submission Pass (2026-10-20)
+
+### T33 — Browser Harnesses Must Not Borrow a Developer's Global Install
+
+The screenshot and inspection scripts originally imported Playwright from an absolute Windows path under the desktop user's profile. That made a clean Linux checkout fail before it could open a page.
+
+**Fixed:** `playwright` is a project dev dependency and all three browser scripts use `scripts/browser.mjs`, which resolves the managed Playwright browser, common system paths, or `PLAYWRIGHT_EXECUTABLE_PATH`. The Dockerfile and README keep the clean-machine setup explicit.

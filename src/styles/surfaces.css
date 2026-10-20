@@ -1310,7 +1310,8 @@
   color: var(--color-ink);
 }
 
-.tab[aria-selected="true"] {
+.tab[aria-selected="true"],
+.tab[aria-pressed="true"] {
   color: var(--color-ink);
   border-bottom-color: var(--color-ink);
 }

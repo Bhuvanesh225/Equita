@@ -11,6 +11,11 @@ The main limitation is evidence, not product depth: the community stories and im
 history are seeded demonstrations rather than measurements from a real classroom pilot.
 That should be said plainly in the presentation.
 
+The submission pass also closed the main delivery risk from the earlier review: the
+Linux build is clean from a fresh `npm ci`, the browser harness is project-local rather
+than tied to one Windows profile, and the desktop/mobile layout audits are clean for
+the landing page plus the teacher's core routes.
+
 ## Provisional rubric score
 
 | Criterion | Weight | Score | Judgement |
@@ -43,3 +48,11 @@ The story to say out loud is:
 - Complete the two-browser live-update and full 390px/ink route sweeps.
 - Add automated contrast and keyboard interaction checks for the remaining composite widgets.
 - Explain classroom privacy, retention, and who can see student-level attention in the pitch.
+
+## Evidence boundary
+
+The score is a judgement of the working submission, not a claim of classroom outcomes.
+The product has a real local API, real persistence, real calculations, and a real
+preview/apply intervention path. Its people and situations are seeded demonstrations.
+Until a consented pilot exists, present the impact claim as **potential impact** and the
+seed as reproducible product evidence.

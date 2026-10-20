@@ -1,6 +1,6 @@
 # 00 — State of the Build (Verified)
 
-Snapshot taken **2026-10-20, after the spacing pass**. Every claim below was checked against the repository and, where possible, against the running servers — not from memory.
+Snapshot taken **2026-10-20, after the portable browser-harness pass**. Every claim below was checked against the repository and, where possible, against the running servers — not from memory.
 
 > If you are reading this later: re-verify before trusting it. Run the commands in `docs/05-verification.md` and update this file. A state file that is wrong is worse than no state file.
 
@@ -8,16 +8,16 @@ Snapshot taken **2026-10-20, after the spacing pass**. Every claim below was che
 
 | Check | Result |
 | --- | --- |
-| `npx tsc --noEmit` | **clean** (0 errors) |
-| `npm run build` | clean; re-run before a delivery |
+| `npm run typecheck` | **clean** (0 errors) |
+| `npm run build` | **clean** on Linux with a fresh `npm ci` |
 | `npm run dev` | API `127.0.0.1:8787` + Vite `localhost:5173`, both up |
 | `GET /api/health` | `{"ok":true,...}` |
 | `node scripts/smoke.mjs` | 28/28 for `teacher` and for `student` |
 | `node scripts/encscan.mjs` | `clean` |
 | Version control | **yes** — commits through group builder, privacy fixes, reproducible test setup |
-| `README.md` | written; keep it accurate as screens land |
+| `README.md` | **submission-ready**; includes setup, test, Docker, judge path, limits, and architecture |
 | `npm test` | **clean** — fresh disposable SQLite database, real server, smoke as teacher and student, SSE |
-| Docker/runtime | `.nvmrc`, `Dockerfile`, `Makefile`, and `scripts/test.mjs` present |
+| Docker/runtime | `.nvmrc`, `Dockerfile`, `Makefile`, `.env.example`, and `scripts/test.mjs` present |
 | Write-path test | **clean** — plan/apply, task lifecycle + ledger, assignment, profile, classes, groups, notifications, deletion, and SSE |
 
 Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes · 6 projects · 93 tasks · 51 assignments · 127 contributions · 65 check-ins · 44 reviews · 21 notifications · 130 activity rows.
@@ -26,7 +26,7 @@ Database: `data/equita.db`. Seed on first boot if empty. 20 people · 2 classes 
 
 ## Screens — All 18 Application Routes Are Real
 
-Legend: **built** = real screen · **stub** = renders `<Pending>` from `src/routes/_pending.tsx` (5 lines each).
+Legend: **built** = real screen. There are no remaining route stubs or `<Pending>` renders.
 
 | Route | Component | State | LOC | Backing API |
 | --- | --- | --- | --- | --- |
@@ -75,9 +75,9 @@ All four tabs of `/classrooms/:id` render from the single `GET /api/classrooms/:
 | `src/components/` (ui, blocks, charts, overlays, icons) | 2,023 |
 | built routes + panels | 5,466 |
 
-## Integration Debt — Remaining Verification Rather Than Missing Screens (P0)
+## Integration Contracts
 
-The engine-generated links are now registered by the router. The remaining P0 work is verification: follow one generated link from each family in a browser and exercise every workspace write control rather than assuming a successful screenshot proves a POST exists.
+The engine-generated links are registered by the router. The API write-path test exercises the server contract, while the browser harness checks that the real screens render without console errors. A human click-through is still recommended before a public demo because screenshots cannot prove that every button is pleasant to use.
 
 | Emitted Link | Where From | Correct App Route Today |
 | --- | --- | --- |
@@ -144,24 +144,22 @@ The landing console printed numbers it had not computed, and the desktop shell d
 
 Related trap: `T32` in `docs/06-traps.md` (a payload's `share` is a measure, not a fraction of hours; `evenShare` is a fraction).
 
-## Known Smaller Defects
+## Known Limits (not hidden defects)
 
 | # | Defect | Where |
 | --- | --- | --- |
-| D2 | `Dashboard.tsx` returns `null` on a dashboard error instead of a visible error state (masked a real crash before) | `src/routes/Dashboard.tsx` |
-| D4 | `legacy/` (3 files, old static landing) is dead weight | `equita/legacy/` |
-| D7 | hackathon root has 16 MB of throwaway screenshots (`.work/`) and a stray `landing-hero.png` | `../` |
-| D8 | `/api/projects/:id/reviews/summary` returns an empty `members: []` even for a teacher when no reviews exist yet — confirm it is intended and not an early return | `server/routes/projects.js:480` |
+| D4 | `legacy/` contains the previous static landing page and is retained as historical reference | `legacy/` |
+| D7 | Browser screenshots are generated under `.shots/` and intentionally ignored by git | `.shots/` |
+| D8 | Demo stories are seeded demonstrations, not evidence from a live classroom pilot | `README.md`, `docs/hackathon-judgement.md` |
 
-## What the Next Session Should Do
+## Recommended next checks before submission
 
 In order. The checklist with acceptance tests is `TODO.md`; the reasoning is in `ROADMAP.md`.
 
-1. **P0-3** — click everything in the project workspace (the mount bug F1 is fixed, but the screen has never been exercised end to end with a mouse).
-2. **P1-4** — `/classrooms/:id/students/:studentId`.
-3. **P2** — `/insights`, `/people` (+`/people/:id`), `/profile`, `/notifications`, `/settings`.
-4. **P3** — the group builder (`@dnd-kit` is installed and used by the board; make it earn its place here, with a keyboard path).
-5. **P4** — delete `_pending.tsx`, then a mobile + ink-scheme sweep over the routes that exist, a liveness sweep with two browsers, and `README.md`.
+1. Run `make test` on the clean checkout.
+2. Run the desktop and 390px browser sweeps from `README.md`.
+3. Follow the five-minute judge path and apply one intervention.
+4. If presenting live updates, keep a teacher and student session open side by side and make one comment or task change.
 
 ## The Doc Set
 

@@ -2,123 +2,202 @@
 
 **Project coordination that keeps group work even.**
 
-Equita plans student project work in hours, places each task with a person whose skills and bandwidth match it, and shows the group as a number when the split has tipped. It works for a group of friends with no teacher (standalone) and for a class whose teacher needs to see every group at once.
+Equita is a working web app for the invisible labour of school group projects. It turns a brief into sized work, matches tasks to skills and capacity, shows each person's delivered hours against an even share, and gives a teacher or group a specific next move before the deadline.
 
-The short version of the thesis: *a checklist records work; it never distributes it.* Equita's whole subject is the distribution — each person's hours against an even share, and the gap between what was promised and what actually landed.
+It is deliberately more than a checklist: **visible imbalance → explainable recommendation → human-approved intervention → measurable refreshed state**.
 
-![The landing page](public/landing-hero.png)
+> **Submission note:** the demo data is invented but deterministic in structure. It is clearly labelled in the product and is not presented as evidence from a real classroom pilot.
 
-## Quick Start for Judges
+## Judge in five minutes
 
-For the fastest honest demo, open <http://localhost:5173/login?demo=teacher>. It signs in through the same demo endpoint as the visible account buttons and opens Amara's teacher workspace. Show the story in this order:
+### Fastest route
 
-1. **Today** — the teacher sees class attention rather than a fake personal task list.
-2. **Class console → Attention** — open the student who is carrying or falling behind.
-3. **The project → Fairness** — show the even-share tick, the five weighted measures, and the explainable move Equita proposes.
-4. **Apply one move** — the intervention receipt shows the fairness score before, the fresh score after, the task moved, and which number was an engine projection rather than an outcome.
-
-This is the core claim of the project: **visible imbalance → explainable recommendation → human-approved intervention → a refreshed, measurable result.** The dataset is invented but seeded, so every figure can be reproduced with `npm run seed`.
-
-## Run It
-
-Node **24.16.0** is pinned in `.nvmrc`. 22.13+ also works, because that is the release where `node:sqlite` stopped requiring a CLI flag; there is no native build step.
-
-```bash
-npm install
-npm run dev          # API on :8787 + Vite on :5173, both hot-reloading
+```text
+http://localhost:5173/login?demo=teacher
 ```
 
-- App: <http://localhost:5173>
-- API: <http://127.0.0.1:8787>
-- The database is created and seeded on first boot: `data/equita.db`
+That shortcut uses the same real demo sign-in endpoint as the visible buttons on the login page. From there:
 
-Other scripts:
+1. Open **Today**. The teacher sees class attention, not an empty personal task list.
+2. Open **Classrooms → Systems Design 2A → Attention**.
+3. Open the student or group with the clearest load gap.
+4. Open the project’s **Fairness** panel.
+5. Point out the even-share tick, five weighted measures, per-person load bars, and explainable suggestion.
+6. Apply one suggested move. The receipt distinguishes the score before, fresh score after, moved task, and engine projection.
+
+### The story to say out loud
+
+> Group work problem → visible imbalance → explainable recommendation → teacher-approved intervention → measurable refreshed state.
+
+### What to look for
+
+- **Community relevance:** a familiar school problem — quiet overload and unequal credit in shared projects.
+- **Impact potential:** the app catches pressure while there is still time to redistribute it.
+- **Technical execution:** a real Express API, SQLite persistence, live SSE updates, two-step preview/apply writes, and reproducible checks.
+- **Creativity:** fairness is expressed as hours, shares, signals, and a named intervention rather than another task list.
+- **Accessibility:** responsive paper-first UI, labelled form controls, keyboard-friendly menus, visible focus states, and a non-drag path through group formation.
+
+## Run locally
+
+### Requirements
+
+- Node **24.16.0**, pinned in `.nvmrc` (Node 22.13+ also supports this app’s `node:sqlite` usage).
+- npm 10+.
+- No database server, API key, or external service is required for the demo.
 
 ```bash
-npm run build        # production build
-npm start             # serve the built app and API on :8787
-npm run typecheck    # tsc --noEmit
-npm run seed         # wipe and reseed the demo dataset
-npm run smoke        # hit every endpoint the screens need and assert a status
-npm test              # offline API + write-path test: fresh DB, real server, both demo roles, SSE
+nvm install
+nvm use
+npm ci
+npm run dev
 ```
 
-The same checks are available as `make test`. It starts its own local API and SQLite database, so it does not need a running dev server or an internet connection.
+Open:
+
+- Web app: <http://localhost:5173>
+- API health: <http://127.0.0.1:8787/api/health>
+
+The first server boot creates and seeds `data/equita.db` if it has no accounts. Local database files are ignored by git. To intentionally reset the demo:
+
+```bash
+npm run seed
+```
+
+Resetting changes generated IDs and removes local changes in the demo database.
+
+### Production-like local run
+
+```bash
+npm run build
+npm start
+```
+
+The Express server serves `dist/`, the API, and the `/events` live channel on port 8787.
+
+## Test and verification
+
+The single offline acceptance command is:
+
+```bash
+make test
+```
+
+It runs the typecheck, production build, fresh-database API smoke test as teacher and student, the disposable write-path test, SSE verification, and the UTF-8 seed scan. It does not need a running server or network access.
+
+Equivalent commands:
+
+```bash
+npm run typecheck
+npm run build
+npm test
+node scripts/encscan.mjs
+```
+
+### Browser checks
+
+Browser checks are project-local and no longer depend on a machine-specific Playwright installation:
+
+```bash
+npm ci
+npx playwright install chromium
+
+# screenshots and browser-console report
+node scripts/shoot.mjs teacher .shots /today /classrooms /projects
+
+# layout, overflow, hit-target, and accessible-name audit
+node scripts/inspect.mjs teacher /today /classrooms /projects
+
+# mobile pass
+EQUITA_WIDTH=390 node scripts/inspect.mjs teacher /today /classrooms /projects
+EQUITA_WIDTH=390 node scripts/shoot.mjs teacher .shots-mobile /today
+```
+
+On a minimal Linux machine, Chromium may also need its OS libraries. Use the matching Playwright system-dependency installation for that machine, or run the app in the supplied Docker image. `PLAYWRIGHT_EXECUTABLE_PATH` can point the harness at an existing browser.
+
+For Windows Git Bash, prefix route-based browser commands with `MSYS_NO_PATHCONV=1` so `/today` is not rewritten as a filesystem path.
+
+The reports are intentionally mechanical: `problems: []`, `hOverflow: 0`, and empty `clipped`, `overflow`, `overlap`, `small`, and `unlabelled` arrays are the target.
 
 ## Deploy with Docker
 
-The image builds the Vite client and runs the Express server that serves the client, API and live event stream on one port. The SQLite data directory is a named volume so a container restart does not erase work:
+The Dockerfile pins the Node image, installs production dependencies from the lockfile, builds the client, runs as the unprivileged `node` user, and keeps SQLite in a named volume.
 
 ```bash
-docker build -t equita .
-docker run --rm -p 8787:8787 -v equita-data:/app/data equita
+docker build -t equita:submission .
+docker run -d --name equita-submission -p 8787:8787 -v equita-data:/app/data equita:submission
+curl -fsS http://127.0.0.1:8787/api/health
+docker rm -f equita-submission
 ```
 
-Open <http://localhost:8787>. The first boot seeds the demonstration dataset when the volume is empty. Do not bake secrets into the image; this demo uses the built-in accounts listed below.
+Then open <http://localhost:8787>.
 
-Behind TLS, set `TRUST_PROXY=1` (or your proxy hop count) so Express believes `X-Forwarded-Proto`; set `COOKIE_SECURE=1` if the proxy does not expose HTTPS to the app. `PORT` and `EQUITA_DB` override the defaults.
+For a reverse proxy, set `TRUST_PROXY=1` (or the number of proxy hops). Set `COOKIE_SECURE=1` only when the public connection is HTTPS. All supported environment variables are listed in [`.env.example`](.env.example); the demo has no required secrets.
 
-## Demo Accounts
+## Demo accounts
 
-All seeded accounts share the password **`equita2026`**, and any `@equita.demo` address can be opened with one click from the sign-in screen (no password). Start with:
+All seeded accounts use the password **`equita2026`**. The login page also offers one-click demo access.
 
-| Account | Who |
+| Email | Role | Best for |
+| --- | --- | --- |
+| `amara@equita.demo` | Teacher | Full classroom demo, attention, fairness, intervention |
+| `tobias@equita.demo` | Teacher | Second class and comparison view |
+| `maya@equita.demo` | Student | The carrying-member view across projects |
+| `june@equita.demo` | Student | Standalone group with no teacher or class |
+
+## What is real in the demo
+
+The app is backed by a real local API and SQLite database. The seeded dataset contains 20 people, 2 classrooms, 6 projects, 93 tasks, 51 assignments, 127 contribution records, 65 check-ins, 44 reviews, 21 notifications, and 130 activity records.
+
+The six seeded situations are intentionally different:
+
+1. a drifting group where Maya is carrying the work;
+2. a quiet but capable student;
+3. unclaimed work before unfairness becomes visible;
+4. a near deadline with overdue tasks;
+5. a healthy group that shows what “good” looks like;
+6. a standalone student team with no teacher.
+
+The numbers are computed from this seed by the same engines used by the screens. The stories are not field research, and the product does not claim that they are.
+
+## Architecture
+
+- **Client:** React 19, TypeScript 5.9, Vite 8, Tailwind CSS v4, React Router 7.
+- **Server:** Express 5 and Node’s built-in SQLite API.
+- **Persistence:** SQLite under `data/`, with deterministic seed stories in `server/seed-stories.js`.
+- **Live updates:** authenticated Server-Sent Events at `/events`; the client refreshes API-backed screens after relevant writes.
+- **Intelligence:** fairness scoring across five weighted measures, brief planning, skill/capacity allocation, classroom grouping, nudges, and copilot responses.
+- **Deployment:** one Express process serves the built client, JSON API, and live stream.
+
+For the detailed request lifecycle and data model, read [`docs/01-architecture.md`](docs/01-architecture.md) and [`docs/02-api.md`](docs/02-api.md).
+
+## Design and accessibility
+
+Equita’s visual language treats the school project brief as the interface: paper ground, ink, one teal accent, clear signal colours, and a repeated **load bar** that places each person’s delivered hours against the even-share tick. The radius-0 surfaces and hand-drawn icons are intentional; see [`DESIGN.md`](DESIGN.md).
+
+The core workflows use semantic buttons and labelled fields. Group formation has a visible **Move to…** menu in addition to pointer dragging, so the outcome is available without drag-and-drop. Browser audits check hit targets, accessible names, overflow, clipping, and console errors. The next meaningful accessibility improvements would be automated contrast assertions and a complete multi-browser keyboard regression suite.
+
+Privacy is deliberately simple in this demo: teachers can see class-level attention and student records; teammates only see the project information permitted by the API; the seed is local and disposable. A production deployment would need school consent, retention rules, and a clear policy for how attention signals are used.
+
+## Repository map
+
+| Path | Purpose |
 | --- | --- |
-| `amara@equita.demo` | a teacher with a class of 13 and four groups |
-| `maya@equita.demo` | a student carrying more than her share across three projects |
-| `june@equita.demo` | a student running an independent team with no class and no teacher |
+| `src/` | React app, routes, shared UI, live client state, CSS |
+| `server/` | Express app, SQLite access, seed, engines, route modules |
+| `scripts/test.mjs` | Offline integration test with a disposable database |
+| `scripts/write-path.mjs` | Preview/apply, task, class, profile, notification, deletion, and SSE writes |
+| `scripts/smoke.mjs` | Non-mutating endpoint contract check |
+| `scripts/shoot.mjs` | Project-local Chromium screenshot harness |
+| `scripts/inspect.mjs` | Mechanical layout and accessibility-adjacent audit |
+| `docs/00-state.md` | Current verified build state |
+| `docs/05-verification.md` | Verification commands and write-path guidance |
+| `docs/09-demo-data.md` | Seed accounts and story arcs |
+| `docs/hackathon-judgement.md` | Rubric score, judgement, and demo narrative |
 
-## What Is In It
+## Submission judgement
 
-| Surface | State |
-| --- | --- |
-| Marketing page (`/`) | built — every number on it is computed by the same engines from the same seed |
-| Auth (`/login`, `/signup`, `/join`) | built |
-| Today (`/today`) | built |
-| Projects (`/projects`, `/projects/:id`) | built — board, fairness panel, planning, allocation, task sheet, reviews |
-| Classes (`/classrooms`, console, group builder, student record) | built |
-| Fairness, People, Profile, Notifications, Settings | built |
+**Current judgement: strong finalist and credible prize contender.** The concept is specific, technically deep, and unusually coherent for a hackathon submission. The main deduction is evidence: the community stories are seeded demonstrations rather than measured results from a real classroom pilot. Present that limitation plainly. The current provisional score is **89/100**; see the full criterion-by-criterion assessment in [`docs/hackathon-judgement.md`](docs/hackathon-judgement.md).
 
-## How It Is Built
+## Contributing safely
 
-- **Client** React 19 · Vite 8 · TypeScript 5.9 · Tailwind v4. Hand-drawn icons and charts, no icon or chart dependency.
-- **Server** Express 5 · `node:sqlite`. One session cookie, one SSE channel (`/events`) that every screen subscribes to, so the whole app updates live without anyone wiring a refresh.
-- **The intelligence layer** (the part that is finished, and the reason the product is not a checklist): skill matching, project context, an equity engine scoring five weighted measures, a planner that turns a brief into a sized task list, an allocator that ranks candidates and explains itself, classroom grouping, nudges, and a copilot. Roughly 2,650 lines under `server/engines/`.
-
-Read `docs/01-architecture.md` for the map, `DESIGN.md` for why it looks like this, and `docs/02-api.md` for every endpoint and its exact response shape.
-
-The hackathon-specific judgement, score breakdown and recommended presentation are in [`docs/hackathon-judgement.md`](docs/hackathon-judgement.md).
-
-## The Demo Dataset Is a Set of Situations
-
-The seed is not filler. Each of the six projects is a case the product exists to reveal: one group drifting with a member silently behind, one where a capable person has gone quiet, one too early for unfairness but with 40% of the work unclaimed, one near a deadline nobody is prioritising, one that is working well, and one independent team with no teacher at all. `server/seed-stories.js` owns those arcs and `docs/09-demo-data.md` explains what each screen should be able to show about them.
-
-## Verification
-
-Four harnesses, all of which sign in through the real API and drive a real headless Chromium or the real endpoints — so none of them depends on a browser tab you happen to have open:
-
-```bash
-MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots /projects   # screenshots + console errors
-MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher /projects        # clipped text, overlap, hit targets
-node scripts/shapes.mjs teacher                                      # the shape of every response
-node scripts/smoke.mjs teacher                                       # every endpoint answers
-```
-
-`MSYS_NO_PATHCONV=1` is required on Windows/Git Bash, or the leading `/` in a route is rewritten into a filesystem path. Widths and schemes come from the environment: `EQUITA_WIDTH=390`. Equita is intentionally light-mode only; see `docs/05-verification.md`.
-
-## Working on It
-
-`AGENTS.md` is the contract for a coding agent (read order, non-negotiables, the definition of done). `TODO.md` is the live task list and `ROADMAP.md` explains the order. Everything else is in `docs/`:
-
-| File | Contents |
-| --- | --- |
-| `docs/00-state.md` | **verified** state: what is built, what is stubbed, what is broken |
-| `docs/01-architecture.md` | process, request lifecycle, database, the engines |
-| `docs/02-api.md` | every endpoint, with exact keys, and which screen needs it |
-| `docs/03-design-system.md` | tokens, primitives, furniture classes, the signature component |
-| `docs/04-conventions.md` | the patterns every existing screen follows |
-| `docs/05-verification.md` | how to check a screen, and how to exercise a write |
-| `docs/06-traps.md` | bugs already paid for — do not rediscover them |
-| `docs/07-screen-specs.md`, `docs/08-screen-specs-small.md` | a spec per remaining screen |
-| `docs/09-demo-data.md` | accounts, ids, and the six situations |
-| `docs/10-decisions.md` | decisions that should not be re-litigated, and the open ones |
+Read [`AGENTS.md`](AGENTS.md) before changing the project. Keep the runtime pinned, use `npm ci`, never commit `data/`, generated screenshots, credentials, or machine-specific paths, and run `make test` after every working step. Update the relevant `docs/` state record when behavior or verification changes.

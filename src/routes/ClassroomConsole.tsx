@@ -155,14 +155,13 @@ export default function ClassroomConsole() {
           </>
         }
         tabs={
-          <div className="tabs" role="tablist" aria-label="Sections of this class">
+          <div className="tabs" role="group" aria-label="Sections of this class">
             {TABS.map((item) => (
               <button
                 key={item.value}
                 type="button"
-                role="tab"
                 className="tab"
-                aria-selected={tab === item.value}
+                aria-pressed={tab === item.value}
                 onClick={() => setTab(item.value)}
               >
                 {item.label}

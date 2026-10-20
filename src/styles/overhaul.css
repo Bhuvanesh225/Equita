@@ -392,7 +392,8 @@
   font-weight: 650;
 }
 
-.tab[aria-selected="true"] {
+.tab[aria-selected="true"],
+.tab[aria-pressed="true"] {
   color: var(--color-accent-deep);
   border-bottom-color: var(--color-accent);
 }

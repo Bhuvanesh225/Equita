@@ -258,13 +258,12 @@ export function Questions({ questions, open, onOpen }: { questions: Array<{ q: s
         />
 
         <div className="cards land__reveal" data-reveal>
-          <div className="cards__tabs" role="tablist" aria-label="Questions">
+          <div className="cards__tabs" role="group" aria-label="Questions">
             {questions.map((question, position) => (
               <button
                 key={question.q}
                 type="button"
-                role="tab"
-                aria-selected={position === open}
+                aria-pressed={position === open}
                 className="cards__tab"
                 data-active={position === open}
                 onClick={() => onOpen(position)}
@@ -276,7 +275,7 @@ export function Questions({ questions, open, onOpen }: { questions: Array<{ q: s
           </div>
 
           <div className="cards__stack">
-            <div className="cards__card" role="tabpanel">
+            <div className="cards__card" aria-live="polite">
               <span className="land__index">{String(Math.min(open, questions.length - 1) + 1).padStart(2, "0")}</span>
               <div>
                 <h3 className="cards__q">{current?.q}</h3>

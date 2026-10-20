@@ -148,9 +148,9 @@ function Hero({ audience, story, signedIn, setAudience }: { audience: Audience; 
             <Link className="eq-button eq-button--acid" to={action.href}>{action.label}</Link>
             <Link className="eq-inline-link" to={audience === "teacher" ? "/signup" : "/join"}>{audience === "teacher" ? "Start a student group" : "Join a class with a code"}</Link>
           </div>
-          <div className="eq-audience eq-audience--hero" role="tablist" aria-label="Choose who you are">
-            <button type="button" role="tab" aria-selected={audience === "group"} onClick={() => setAudience("group")}><span>For groups</span><small>Make the split fair</small></button>
-            <button type="button" role="tab" aria-selected={audience === "teacher"} onClick={() => setAudience("teacher")}><span>For classrooms</span><small>See every group</small></button>
+          <div className="eq-audience eq-audience--hero" role="group" aria-label="Choose who you are">
+            <button type="button" aria-pressed={audience === "group"} onClick={() => setAudience("group")}><span>For groups</span><small>Make the split fair</small></button>
+            <button type="button" aria-pressed={audience === "teacher"} onClick={() => setAudience("teacher")}><span>For classrooms</span><small>See every group</small></button>
           </div>
         </div>
         <div className="eq-hero__visual" data-reveal>
@@ -177,8 +177,8 @@ function StorySection({ situation }: { situation?: StorySituation }) {
         <div className="eq-section__intro"><p className="eq-kicker">A group, caught in the middle</p><h2>From tension to a next step.</h2><p>Equita is not a prettier checklist. It follows the work as it moves, shows the pressure building, and gives the group something practical to decide.</p></div>
         <div className="eq-story" data-reveal>
           <div className="eq-story__rail">
-            <div className="eq-story__steps" role="tablist" aria-label="Equita story steps">
-              {STORY_STEPS.map((item, index) => <button type="button" role="tab" aria-selected={item.id === step} className="eq-story__step" data-active={item.id === step} key={item.id} onClick={() => setStep(item.id)}><span>{String(index + 1).padStart(2, "0")}</span><b>{item.label}</b><small>{item.title}</small></button>)}
+            <div className="eq-story__steps" role="group" aria-label="Equita story steps">
+              {STORY_STEPS.map((item, index) => <button type="button" aria-pressed={item.id === step} className="eq-story__step" data-active={item.id === step} key={item.id} onClick={() => setStep(item.id)}><span>{String(index + 1).padStart(2, "0")}</span><b>{item.label}</b><small>{item.title}</small></button>)}
             </div>
             <div className="eq-story__controls"><button type="button" onClick={() => setStep(STORY_STEPS[Math.max(0, stepIndex - 1)].id)} disabled={stepIndex === 0}>Previous</button><span>{stepIndex + 1} / {STORY_STEPS.length}</span><button type="button" onClick={() => setStep(STORY_STEPS[Math.min(STORY_STEPS.length - 1, stepIndex + 1)].id)} disabled={stepIndex === STORY_STEPS.length - 1}>Next</button></div>
           </div>
@@ -199,7 +199,7 @@ function SignalsSection({ situation }: { situation?: StorySituation }) {
   const score = situation?.parts[selected[0]] ?? 0;
   return (
     <section className="eq-section eq-section--signals" id="signals">
-      <div className="eq-frame"><div className="eq-section__intro"><p className="eq-kicker">The reasoning layer</p><h2>Every signal earns its place.</h2><p>Open the parts of the score. Each one is a different way a group can drift, and each one points to a different conversation.</p></div><div className="eq-signals" data-reveal><div className="eq-signals__list" role="tablist" aria-label="Fairness score signals">{PART_DEFINITIONS.map(([key, label]) => <button type="button" role="tab" aria-selected={key === active} data-active={key === active} key={key} onClick={() => setActive(key)}><span>{label}</span><strong>{situation?.parts[key] ?? "—"}</strong></button>)}</div><div className="eq-signals__detail"><div className="eq-signals__detail-top"><span className="eq-micro">{selected[1]}</span><strong className={toneTextClass(scoreTone(score))}>{score}</strong></div><h3>{selected[2]}</h3><p>{situation?.lane.note ?? "The group story will appear here once the dataset is ready."}</p><div className="eq-signal-meter"><span style={{ width: `${score}%` }} /><i style={{ left: `${situation?.distribution.evenShare ? Math.min(100, situation.distribution.evenShare * 100) : 25}%` }} /></div><div className="eq-signals__detail-foot"><span>Current group</span><span>{situation ? `${situation.counts.done} closed · ${hours(situation.hours.open)} open` : "Reading…"}</span></div></div></div></div>
+      <div className="eq-frame"><div className="eq-section__intro"><p className="eq-kicker">The reasoning layer</p><h2>Every signal earns its place.</h2><p>Open the parts of the score. Each one is a different way a group can drift, and each one points to a different conversation.</p></div><div className="eq-signals" data-reveal><div className="eq-signals__list" role="group" aria-label="Fairness score signals">{PART_DEFINITIONS.map(([key, label]) => <button type="button" aria-pressed={key === active} data-active={key === active} key={key} onClick={() => setActive(key)}><span>{label}</span><strong>{situation?.parts[key] ?? "—"}</strong></button>)}</div><div className="eq-signals__detail" aria-live="polite"><div className="eq-signals__detail-top"><span className="eq-micro">{selected[1]}</span><strong className={toneTextClass(scoreTone(score))}>{score}</strong></div><h3>{selected[2]}</h3><p>{situation?.lane.note ?? "The group story will appear here once the dataset is ready."}</p><div className="eq-signal-meter"><span style={{ width: `${score}%` }} /><i style={{ left: `${situation?.distribution.evenShare ? Math.min(100, situation.distribution.evenShare * 100) : 25}%` }} /></div><div className="eq-signals__detail-foot"><span>Current group</span><span>{situation ? `${situation.counts.done} closed · ${hours(situation.hours.open)} open` : "Reading…"}</span></div></div></div></div>
     </section>
   );
 }
@@ -283,7 +283,7 @@ function QuestionsSection({ story }: { story: Story | null }) {
   const current = questions[open] ?? questions[0];
   return (
     <section className="eq-section eq-section--questions" id="questions">
-      <div className="eq-frame"><div className="eq-section__intro"><p className="eq-kicker">Questions worth answering</p><h2>Not a black box.</h2><p>The rules are part of the product. Read the answer, then open the live demo and check the numbers yourself.</p></div><div className="eq-questions" data-reveal><div className="eq-questions__list" role="tablist" aria-label="Questions about Equita">{questions.map((question, index) => <button type="button" role="tab" aria-selected={index === open} data-active={index === open} key={question.q} onClick={() => setOpen(index)}><span>{question.q}</span><strong>→</strong></button>)}</div><div className="eq-questions__answer" role="tabpanel"><span className="eq-micro">{current?.q}</span>{(current?.a ?? []).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></div></div>
+       <div className="eq-frame"><div className="eq-section__intro"><p className="eq-kicker">Questions worth answering</p><h2>Not a black box.</h2><p>The rules are part of the product. Read the answer, then open the live demo and check the numbers yourself.</p></div><div className="eq-questions" data-reveal><div className="eq-questions__list" role="group" aria-label="Questions about Equita">{questions.map((question, index) => <button type="button" aria-pressed={index === open} data-active={index === open} key={question.q} onClick={() => setOpen(index)}><span>{question.q}</span><strong>→</strong></button>)}</div><div className="eq-questions__answer" aria-live="polite"><span className="eq-micro">{current?.q}</span>{(current?.a ?? []).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></div></div>
     </section>
   );
 }

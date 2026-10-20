@@ -1,17 +1,17 @@
 # 05 — Verification
 
-Four checks are automated, and two of them sign in through the real API and drive a real Chromium. **Use them. Do not "eyeball it".** Every tool below was run successfully at the time this file was written.
+The repository has an offline acceptance command and a project-local browser harness. **Use them. Do not "eyeball it".** Rerun the relevant checks after every meaningful change.
 
 ## The Four Scripts
 
 | Script | What It Proves | Command |
 | --- | --- | --- |
-| `scripts/shoot.mjs` | the screen renders, with no console errors and no page errors; writes a full-page PNG + `report.json` | `MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots /projects` |
-| `scripts/inspect.mjs` | layout: clipped text, overflow, sibling overlap, hit-targets < 24px, unlabelled icon controls, sideways scroll | `MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher /projects` |
+| `scripts/shoot.mjs` | the screen renders, with no console errors and no page errors; writes a full-page PNG + `report.json` | `node scripts/shoot.mjs teacher .shots /projects` |
+| `scripts/inspect.mjs` | layout: clipped text, overflow, sibling overlap, hit-targets < 24px, unlabelled icon controls, sideways scroll | `node scripts/inspect.mjs teacher /projects` |
 | `scripts/smoke.mjs` | every endpoint a screen depends on answers, with the right method and prefix | `node scripts/smoke.mjs teacher` |
 | `scripts/shapes.mjs` | the exact keys of every API response (a type tree, not raw JSON) | `node scripts/shapes.mjs teacher` |
 
-Plus two older ones: `scripts/probe.mjs` (raw DOM + console when a screen renders nothing) and `scripts/encscan.mjs` (scans the DB for double-encoded UTF-8; re-run after any seed edit).
+Plus two supporting checks: `scripts/probe.mjs` (raw DOM + console when a screen renders nothing) and `scripts/encscan.mjs` (scans the DB for double-encoded UTF-8; re-run after any seed edit). The browser scripts import the project-local `playwright` package through `scripts/browser.mjs`; there are no absolute machine paths.
 
 `npm run smoke` is the same as `node scripts/smoke.mjs`. `npm run selfcheck` is an alias.
 
@@ -27,6 +27,14 @@ Plus two older ones: `scripts/probe.mjs` (raw DOM + console when a screen render
 | `free` | `june@equita.demo` | a student in no class |
 | `none` | — | a stranger, for `/`, `/login`, `/signup` |
 
+### Browser setup
+
+```bash
+npx playwright install chromium
+```
+
+The harness locates Playwright's managed Chromium, common Linux paths, or `PLAYWRIGHT_EXECUTABLE_PATH`. On a minimal Linux host, install the browser's system libraries using the host package manager or use the Docker image.
+
 ### Windows / Git Bash
 
 - **`MSYS_NO_PATHCONV=1` is mandatory** for `shoot.mjs`, `inspect.mjs` and `probe.mjs`. Without it, Git Bash rewrites the leading `/` of a route into a filesystem path and the script navigates nowhere.
@@ -38,8 +46,8 @@ Plus two older ones: `scripts/probe.mjs` (raw DOM + console when a screen render
 
 ```bash
 # mobile
-EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher /today /projects
-EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots /today
+EQUITA_WIDTH=390 node scripts/inspect.mjs teacher /today /projects
+EQUITA_WIDTH=390 node scripts/shoot.mjs teacher .shots /today
 ```
 
 Screenshots are suffixed `-390` so a mobile capture never silently overwrites the desktop one. The audit row reports the viewport and fixed paper scheme.
@@ -54,7 +62,6 @@ Screenshots are suffixed `-390` so a mobile capture never silently overwrites th
 
 ```bash
 # 0. once per session
-cd "E:/Hackathons/Neighborhood Hacks/equita"
 npm run dev &            # or two terminals: npm run dev:api / npm run dev:web
 curl -s http://127.0.0.1:8787/api/health
 
@@ -62,9 +69,9 @@ curl -s http://127.0.0.1:8787/api/health
 npx tsc --noEmit
 
 # 2. after every screen
-MSYS_NO_PATHCONV=1 node scripts/shoot.mjs teacher .shots <route>
-MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
-EQUITA_WIDTH=390 MSYS_NO_PATHCONV=1 node scripts/inspect.mjs teacher <route>
+node scripts/shoot.mjs teacher .shots <route>
+node scripts/inspect.mjs teacher <route>
+EQUITA_WIDTH=390 node scripts/inspect.mjs teacher <route>
 
 # 3. before you believe a screen works at all
 node scripts/smoke.mjs          # then: click the write path by hand (below)

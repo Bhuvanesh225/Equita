@@ -174,14 +174,13 @@ export default function ProjectWorkspace() {
           </>
         }
         tabs={
-          <div className="tabs" role="tablist" aria-label="Sections of this project">
+          <div className="tabs" role="group" aria-label="Sections of this project">
             {TABS.map((item) => (
               <button
                 key={item.value}
                 type="button"
-                role="tab"
                 className="tab"
-                aria-selected={tab === item.value}
+                aria-pressed={tab === item.value}
                 onClick={() => setParam("tab", item.value === "board" ? null : item.value)}
               >
                 {item.label}
