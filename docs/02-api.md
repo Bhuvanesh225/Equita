@@ -56,7 +56,7 @@ top       [{ slug, name, cluster, level, appetite }]                     (top 6)
 | POST | `/api/projects/:id/equity/snapshot` | — | `{week, equity}` |
 | GET | `/api/projects/:id/activity` | `?limit=60` | `{activity}` |
 | POST | `/api/projects/:id/checkin` | `{mood: ahead\|steady\|behind\|stuck, note?, blockers?}` | `{ok, week, mood}` |
-| GET | `/api/projects/:id/reviews` | — | `{reviews}` |
+| GET | `/api/projects/:id/reviews` | — | `{reviews}` (teacher) |
 | POST | `/api/projects/:id/reviews` | `{subjectId, reliability, quality, teamwork (1-5), note?}` | `{review}` |
 | GET | `/api/projects/:id/reviews/summary` | — | `{spread, members: [{id,name,reviews,reliability,quality,teamwork,notes}]}` (teacher) |
 | GET | `/api/projects/:id/nudges` | — | `{nudges}` |
@@ -75,7 +75,7 @@ top       [{ slug, name, cluster, level, appetite }]                     (top 6)
 | `comments` | `[{id, taskId, authorId, authorName, authorHue, body, mentions, createdAt}]` |
 | `checkins` | `[{id, userId, week, mood, note, blockers, createdAt, name, hue}]` |
 | `latestCheckin` | `{ [userId]: checkin }` |
-| `reviews` | `{all: [], mine: [], awaiting: [{id, name, hue}]}` — `awaiting` is who *you* still owe a review |
+| `reviews` | `{all, mine, awaiting: [{id, name, hue}]}` — `all` is populated only for the teacher or owner; everyone else gets `mine` and `awaiting`, and `awaiting` is who *you* still owe a review |
 | `nudges` | `[{id, kind, severity, title, body, action:{label, href}, memberId?, projectId?, projectName?}]` |
 | `nudgeCounts` | `{total, critical, warn, info}` |
 | `insights` | `{demand:[{slug,name,weight,hours,tasks}], suggestions:[…]}` |
@@ -121,12 +121,14 @@ All of these are mounted at `/api/projects/…` (fixed — see `docs/00-state.md
 | --- | --- | --- | --- |
 | POST | `/api/projects/:id/tasks` | `{title, detail?, phase?, effort?, priority?, dueAt?, required?, needsReview?, deliverable?, assigneeId?, dependsOn?}` | `{task}` |
 | GET | `/api/tasks/:id` | — | `{task, comments, contributions, requiredNames, blockedBy, candidates}` |
-| PATCH | `/api/tasks/:id` | any subset of the create body | `{task}` |
-| DELETE | `/api/tasks/:id` | — | `{ok}` |
+| PATCH | `/api/tasks/:id` | any subset of the create body except `assigneeId` (use `/assign`); effort, priority, deadline, dependencies, review rule and required skills are lead-only | `{task}` |
+| DELETE | `/api/tasks/:id` | —; lead/teacher, or its author while it is neither done nor credited | `{ok}` |
 | POST | `/api/tasks/:id/status` | `{status, note?, actualEffort?, deliverable?, verifiedBy?, force?}` | `{task, ledger?}` or `{task, unchanged}` or `409 needs-review` |
 | POST | `/api/tasks/:id/assign` | `{userId \| null, force?}` | `{task, warning?}` |
 | POST | `/api/tasks/:id/comments` | `{body}` | `{comment}` |
 | POST | `/api/tasks/:id/log` | `{hours (0.25–40), note?}` | `{task, ledger?}` |
+
+`force` on status or assignment is accepted only from the project lead, teacher or owner; a member cannot use it to skip review, a dependency or capacity. A completed task is credited once, even if it is reopened and closed again.
 
 `GET /api/tasks/:id` → `candidates` is the allocator's ranked shortlist; **this is the "who fits best" list and it is already computed server-side.** Each entry:
 

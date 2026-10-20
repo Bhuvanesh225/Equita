@@ -31,6 +31,10 @@ const PORT = Number(process.env.PORT || 8787);
 
 export const app = express();
 app.disable("x-powered-by");
+// Behind a reverse proxy (the documented production shape), Express has to be
+// told to trust `X-Forwarded-Proto` or `req.secure` is always false and the
+// session cookie is never marked Secure.
+if (process.env.TRUST_PROXY) app.set("trust proxy", Number(process.env.TRUST_PROXY) || 1);
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 

@@ -69,7 +69,7 @@ authRouter.post("/signup", (req, res) => {
 
   let joined = null;
   if (body.joinCode) {
-    const classroom = get(`SELECT id, name FROM classrooms WHERE code = ?`, body.joinCode.toUpperCase());
+    const classroom = get(`SELECT id, name FROM classrooms WHERE code = ? AND archived_at IS NULL`, body.joinCode.toUpperCase());
     if (classroom) {
       run(
         `INSERT OR IGNORE INTO enrollments (id, classroom_id, user_id, role, created_at) VALUES (?, ?, ?, 'student', ?)`,

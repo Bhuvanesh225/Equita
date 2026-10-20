@@ -27,7 +27,7 @@ browser (React 19 + Vite 8, TS, Tailwind v4)
 
 Everything runs in one Node process. `npm run dev` runs two: `node --watch server/index.js` (API on `:8787`) and `vite` (`:5173`, proxying `/api` and `/events`).
 
-**No native build step.** `node:sqlite` is used directly, so Node 22.5+ is the only requirement. `DatabaseSync` is synchronous — that is why routes are written with plain `all`/`get`/`run` calls and no `await`.
+**No native build step.** `node:sqlite` is used directly, so Node 22.13+ is the only requirement. `DatabaseSync` is synchronous — that is why routes are written with plain `all`/`get`/`run` calls and no `await`.
 
 ## The Request Lifecycle for a Read
 
@@ -135,14 +135,14 @@ So when you render a member, show **credited** against **even**, and **committed
 | `src/components/blocks.tsx` | composed blocks incl. `PageHead`, `Nudges`, `useTaskMoves` |
 | `src/components/charts.tsx` | hand-drawn SVG charts |
 | `src/components/overlays.tsx` | `Dialog`, `Drawer`, `Menu`, `Confirm` |
-| `src/components/icons.tsx` | hand-drawn icons (no icon dependency; `lucide-react` is installed and unused) |
+| `src/components/icons.tsx` | hand-drawn icons (no icon dependency) |
 | `src/shell/AppShell.tsx` | the rail, topbar, mobile nav, scheme switch, `UiProvider` |
 | `src/shell/CommandPalette.tsx`, `src/shell/Copilot.tsx` | the two overlays |
 | `src/styles/theme.css` | tokens + Tailwind `@theme` bridge |
 | `src/styles/app.css`, `surfaces.css` | the furniture |
 | `src/styles/landing.css`, `auth.css` | scoped to `/` and the auth screens — do not reach into them from app screens |
 
-Two dead dependencies worth knowing about: `lucide-react` (icons are hand-drawn in `icons.tsx`) and `date-fns` (dates are handled in `format.ts`). `@dnd-kit/*` **is** used, by `src/routes/project/Board.tsx` and intended for the group builder.
+The two former dead dependencies, `lucide-react` (icons are hand-drawn in `icons.tsx`) and `date-fns` (dates are handled in `format.ts`), have been removed. `@dnd-kit/*` **is** used, by `src/routes/project/Board.tsx` and intended for the group builder.
 
 ## Where the Marketing Page Gets Its Numbers
 

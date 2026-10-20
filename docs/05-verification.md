@@ -30,7 +30,7 @@ Plus two older ones: `scripts/probe.mjs` (raw DOM + console when a screen render
 ### Windows / Git Bash
 
 - **`MSYS_NO_PATHCONV=1` is mandatory** for `shoot.mjs`, `inspect.mjs` and `probe.mjs`. Without it, Git Bash rewrites the leading `/` of a route into a filesystem path and the script navigates nowhere.
-- `node` here is v24; the server needs 22.5+ for `node:sqlite`.
+- `node` here is v24; the server needs 22.13+ for an unflagged `node:sqlite`.
 
 ## Widths and Schemes
 

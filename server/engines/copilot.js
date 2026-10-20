@@ -22,10 +22,17 @@ const has = (text, ...words) => words.some((w) => text.includes(w));
 export function pickProject(userId, projectId) {
   if (projectId) return loadProject(projectId);
   const rows = all(
-    `SELECT p.id FROM projects p
-       JOIN project_members pm ON pm.user_id = p.id
-      WHERE pm.user_id = ? AND p.status IN ('active','review')
+    `SELECT DISTINCT p.id FROM projects p
+       LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ?
+       LEFT JOIN enrollments e ON e.classroom_id = p.classroom_id AND e.user_id = ? AND e.role IN ('teacher','assistant')
+       LEFT JOIN classrooms c ON c.id = p.classroom_id AND c.owner_id = ?
+      WHERE (pm.user_id = ? OR e.user_id = ? OR c.owner_id = ?) AND p.status IN ('active','review')
       ORDER BY p.due_at IS NULL, p.due_at LIMIT 6`,
+    userId,
+    userId,
+    userId,
+    userId,
+    userId,
     userId,
   );
   if (!rows.length) return null;

@@ -42,6 +42,23 @@ const TaskInput = z.object({
   dependsOn: z.array(z.string()).max(20).optional(),
 });
 
+/** A patch changes only the fields it names: no defaults, so nothing is reset. */
+const TaskPatch = z
+  .object({
+    title: z.string().trim().min(2, "Give the task a name").max(160),
+    detail: z.string().trim().max(3000),
+    phase: z.enum(["discover", "define", "build", "review", "ship"]),
+    effort: z.coerce.number().min(0.25).max(80),
+    priority: z.coerce.number().int().min(1).max(3),
+    dueAt: isoDate,
+    required: SkillRefs,
+    needsReview: z.coerce.boolean(),
+    deliverable: z.string().trim().max(500),
+    assigneeId: z.string().trim().max(64).nullable(),
+    dependsOn: z.array(z.string()).max(20),
+  })
+  .partial();
+
 /** Create a task, optionally on the spot for somebody. */
 tasksRouter.post("/projects/:id/tasks", (req, res) => {
   const { row: project } = access(req, req.params.id);
@@ -161,9 +178,25 @@ tasksRouter.get("/tasks/:id", (req, res) => {
 
 tasksRouter.patch("/tasks/:id", (req, res) => {
   const { task, project, memberRole, teaching, owner } = taskAccess(req, req.params.id);
-  const body = parse(TaskInput.partial(), req.body);
-  const isLead = memberRole === "lead" || teaching || owner || task.created_by === req.user.id || task.assignee_id === req.user.id;
-  if (!isLead) deny("Only the lead or the person on the task can change it.");
+  const body = parse(TaskPatch, req.body);
+  if (body.assigneeId !== undefined && (body.assigneeId || null) !== task.assignee_id) {
+    bad("Use the assignment endpoint to change who does the task.");
+  }
+  const isLead = memberRole === "lead" || teaching || owner;
+  const onTask = task.created_by === req.user.id || task.assignee_id === req.user.id;
+  if (!isLead && !onTask) deny("Only the lead or the person on the task can change it.");
+  if (!isLead) {
+    const nextDue = body.dueAt ? new Date(body.dueAt).toISOString() : null;
+    const changed = [
+      body.effort !== undefined && body.effort !== task.effort && "effort",
+      body.priority !== undefined && body.priority !== task.priority && "priority",
+      body.dueAt !== undefined && nextDue !== task.due_at && "deadline",
+      body.needsReview !== undefined && Boolean(body.needsReview) !== Boolean(task.needs_review) && "review rule",
+      body.dependsOn !== undefined && JSON.stringify(body.dependsOn) !== JSON.stringify(json(task.depends_on, [])) && "dependencies",
+      body.required !== undefined && JSON.stringify(normaliseRequired(body.required)) !== JSON.stringify(normaliseRequired(task.required_skills)) && "skills",
+    ].filter(Boolean);
+    if (changed.length) deny(`Only the lead can change a task's ${changed.join(", ")}.`);
+  }
 
   const patch = [];
   const values = [];
@@ -181,26 +214,12 @@ tasksRouter.patch("/tasks/:id", (req, res) => {
   if (body.deliverable !== undefined) push("deliverable", body.deliverable);
   if (body.needsReview !== undefined) push("needs_review", body.needsReview ? 1 : 0);
   if (body.dependsOn !== undefined) push("depends_on", json(body.dependsOn, []));
-  if (body.assigneeId !== undefined) push("assignee_id", body.assigneeId || null);
   if (!patch.length) return res.json({ task: shapeTask(task) });
 
   push("updated_at", nowIso());
   tx(() => {
     run(`UPDATE tasks SET ${patch.join(", ")} WHERE id = ?`, ...values, task.id);
     run(`UPDATE projects SET updated_at = ? WHERE id = ?`, nowIso(), project.id);
-    if (body.assigneeId !== undefined && body.assigneeId !== task.assignee_id) {
-      run(
-        `INSERT INTO assignments (id, project_id, task_id, user_id, kind, status, score, rationale, created_by, created_at)
-         VALUES (?, ?, ?, ?, 'manual', 'active', 0, ?, ?, ?)`,
-        newId("asg"),
-        project.id,
-        task.id,
-        body.assigneeId || null,
-        `${req.user.name} reassigned it.`,
-        req.user.id,
-        nowIso(),
-      );
-    }
   });
 
   record({
@@ -215,9 +234,19 @@ tasksRouter.patch("/tasks/:id", (req, res) => {
 
 tasksRouter.delete("/tasks/:id", (req, res) => {
   const { task, project, memberRole, teaching, owner } = taskAccess(req, req.params.id);
-  if (!(memberRole === "lead" || teaching || owner || task.created_by === req.user.id)) deny("Only the lead or whoever added it can delete it.");
-  run(`DELETE FROM tasks WHERE id = ?`, task.id);
-  run(`UPDATE tasks SET depends_on = ? WHERE project_id = ? AND depends_on LIKE ?`, json([], []), project.id, `%${task.id}%`);
+  const isLead = memberRole === "lead" || teaching || owner;
+  if (!isLead && task.created_by !== req.user.id) deny("Only the lead or whoever added it can delete it.");
+  const credited = get(`SELECT 1 FROM contributions WHERE task_id = ?`, task.id);
+  if (!isLead && (task.status === "done" || credited)) deny("Only the lead can delete work that is done or has hours against it.");
+  tx(() => {
+    run(`DELETE FROM tasks WHERE id = ?`, task.id);
+    for (const row of all(`SELECT id, depends_on FROM tasks WHERE project_id = ?`, project.id)) {
+      const deps = json(row.depends_on, []);
+      if (deps.includes(task.id)) {
+        run(`UPDATE tasks SET depends_on = ? WHERE id = ?`, json(deps.filter((id) => id !== task.id), []), row.id);
+      }
+    }
+  });
   record({ verb: "task.deleted", subject: `${req.user.name} deleted “${task.title}”`, projectId: project.id, actorId: req.user.id });
   res.json({ ok: true });
 });
@@ -248,6 +277,7 @@ tasksRouter.post("/tasks/:id/status", (req, res) => {
   const canOverride = memberRole === "lead" || teaching || owner;
 
   if (task.status === body.status) return res.json({ task: shapeTask(task), unchanged: true });
+  if (body.force && !canOverride) deny("Only the lead can override the review rule or the dependencies.");
 
   if (body.status === "blocked" && !body.note.trim()) {
     bad("Say what it is blocked on. A blocked task with no reason is just a stopped task.");
@@ -302,19 +332,23 @@ tasksRouter.post("/tasks/:id/status", (req, res) => {
     run(`UPDATE projects SET updated_at = ? WHERE id = ?`, now, project.id);
 
     if (body.status === "done") {
-      // The single most important write in the product.
-      run(
-        `INSERT INTO contributions (id, project_id, task_id, user_id, kind, effort, note, verified_by, created_at)
-         VALUES (?, ?, ?, ?, 'complete', ?, ?, ?, ?)`,
-        newId("con"),
-        project.id,
-        task.id,
-        task.assignee_id ?? req.user.id,
-        effort,
-        body.note || `completed “${task.title}”`,
-        body.verifiedBy ?? null,
-        now,
-      );
+      // The single most important write in the product. A task earns its hours
+      // once: reopening it to add a fix must not credit the same work twice.
+      const credited = get(`SELECT 1 FROM contributions WHERE task_id = ? AND kind = 'complete'`, task.id);
+      if (!credited) {
+        run(
+          `INSERT INTO contributions (id, project_id, task_id, user_id, kind, effort, note, verified_by, created_at)
+           VALUES (?, ?, ?, ?, 'complete', ?, ?, ?, ?)`,
+          newId("con"),
+          project.id,
+          task.id,
+          task.assignee_id ?? req.user.id,
+          effort,
+          body.note || `completed “${task.title}”`,
+          body.verifiedBy ?? null,
+          now,
+        );
+      }
     } else if (body.status === "blocked") {
       run(
         `INSERT INTO contributions (id, project_id, task_id, user_id, kind, effort, note, created_at)
@@ -382,8 +416,9 @@ tasksRouter.post("/tasks/:id/assign", (req, res) => {
   const ctx = loadProject(project.id);
   const isLead = memberRole === "lead" || teaching || owner;
   const isAssignee = task.assignee_id === req.user.id;
-  if (!isLead && !isAssignee && body.userId !== req.user.id) deny("Only the lead can hand work to somebody else.");
-  if (!isLead && body.userId === req.user.id && task.assignee_id && !isAssignee) deny("That task belongs to somebody else. Ask the lead.");
+  if (!isLead && body.userId && body.userId !== req.user.id) deny("Only the lead can hand work to somebody else.");
+  if (!isLead && body.userId !== req.user.id && !isAssignee) deny("That task belongs to somebody else. Ask the lead.");
+  if (!isLead && body.force) deny("Only the lead can override capacity.");
 
   if (body.userId && !ctx.members.some((m) => m.id === body.userId)) bad("That person is not on this project.");
 
@@ -410,22 +445,24 @@ tasksRouter.post("/tasks/:id/assign", (req, res) => {
     run(`UPDATE tasks SET assignee_id = ?, updated_at = ? WHERE id = ?`, body.userId, now, task.id);
     run(`UPDATE projects SET updated_at = ? WHERE id = ?`, now, project.id);
     if (previous && previous !== body.userId) {
-      run(`UPDATE assignments SET status = 'superseded' WHERE task_id = ? AND status = 'active'`, task.id);
+      run(`UPDATE assignments SET status = 'superseded' WHERE task_id = ? AND status IN ('active', 'accepted')`, task.id);
     }
-    run(
-      `INSERT INTO assignments (id, project_id, task_id, user_id, kind, status, score, breakdown, rationale, created_by, created_at)
-       VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`,
-      newId("asg"),
-      project.id,
-      task.id,
-      body.userId,
-      body.acceptSuggestion ? "auto" : "manual",
-      Number(req.body.score ?? 0),
-      json(body.breakdown ?? {}, {}),
-      body.note || (body.acceptSuggestion ? "Accepted from a suggestion." : `${req.user.name} assigned it directly.`),
-      req.user.id,
-      now,
-    );
+    if (body.userId) {
+      run(
+        `INSERT INTO assignments (id, project_id, task_id, user_id, kind, status, score, breakdown, rationale, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`,
+        newId("asg"),
+        project.id,
+        task.id,
+        body.userId,
+        body.acceptSuggestion ? "auto" : "manual",
+        Number(req.body.score ?? 0),
+        json(body.breakdown ?? {}, {}),
+        body.note || (body.acceptSuggestion ? "Accepted from a suggestion." : `${req.user.name} assigned it directly.`),
+        req.user.id,
+        now,
+      );
+    }
   });
 
   if (body.userId && body.userId !== previous) {
@@ -444,7 +481,7 @@ tasksRouter.post("/tasks/:id/assign", (req, res) => {
       projectId: project.id,
       actorId: req.user.id,
       meta: { taskId: task.id },
-      notify: [{ userId: previous, title: `“${task.title}” was reassigned`, body: `${req.user.name} moved it off your list.`, link: `/projects/${project.id}` }],
+      notify: [{ userId: previous, title: `“${task.title}” was taken off your list`, body: `${req.user.name} unassigned it.`, link: `/projects/${project.id}` }],
     });
   }
 

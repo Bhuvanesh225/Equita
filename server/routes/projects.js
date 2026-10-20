@@ -81,9 +81,8 @@ projectsRouter.get("/", (req, res) => {
     `SELECT DISTINCT p.* FROM projects p
        LEFT JOIN project_members pm ON pm.project_id = p.id
        LEFT JOIN enrollments e ON e.classroom_id = p.classroom_id AND e.user_id = ?
-      WHERE (pm.user_id = ? OR e.user_id = ? OR p.owner_id = ?) AND p.status != 'archived'
+      WHERE (pm.user_id = ? OR e.role IN ('teacher', 'assistant') OR p.owner_id = ?) AND p.status != 'archived'
       ORDER BY p.updated_at DESC`,
-    req.user.id,
     req.user.id,
     req.user.id,
     req.user.id,
@@ -226,7 +225,9 @@ projectsRouter.get("/:id", (req, res) => {
     comments: ctx.comments.slice(-80).map((c) => ({ ...c, authorHue: names[c.authorId]?.hue ?? null })),
     checkins,
     latestCheckin: Object.fromEntries([...latestCheckin.entries()].map(([id, c]) => [id, c])),
-    reviews: { all: reviews, mine: myReviews, awaiting: awaitingMyReview },
+    // The full list is the teacher's view. A teammate sees the reviews they
+    // wrote and who still needs one; another person's note is not theirs to read.
+    reviews: { all: teaching || owner ? reviews : myReviews, mine: myReviews, awaiting: awaitingMyReview },
     nudges,
     nudgeCounts: summarise(nudges),
     insights: {
@@ -300,9 +301,9 @@ projectsRouter.patch("/:id", (req, res) => {
 /* ---------- members ------------------------------------------------------ */
 
 projectsRouter.post("/:id/members", (req, res) => {
-  const { row } = access(req, req.params.id);
+  const { row, teaching } = access(req, req.params.id);
   const isLead = get(`SELECT role FROM project_members WHERE project_id = ? AND user_id = ?`, row.id, req.user.id)?.role === "lead";
-  if (!isLead && row.owner_id !== req.user.id) deny("Only the lead can add people to this project.");
+  if (!isLead && !teaching && row.owner_id !== req.user.id) deny("Only the lead or the teacher can add people to this project.");
   const body = parse(z.object({ members: z.array(z.union([z.string(), z.object({ email: z.string(), name: z.string().optional() })])).min(1).max(40) }), req.body);
   const added = addProjectMembers(row.id, body.members);
   const fresh = added.filter((a) => !a.alreadyMember);
@@ -426,7 +427,7 @@ projectsRouter.post("/:id/checkin", (req, res) => {
 /* ---------- peer reviews ------------------------------------------------- */
 
 projectsRouter.get("/:id/reviews", (req, res) => {
-  access(req, req.params.id);
+  access(req, req.params.id, { needTeach: true });
   const rows = all(`SELECT * FROM reviews WHERE project_id = ? ORDER BY created_at DESC`, req.params.id);
   const names = nameMap(rows.flatMap((r) => [r.reviewer_id, r.subject_id]));
   res.json({ reviews: rows.map((r) => ({ ...r, reviewerName: names[r.reviewer_id], subjectName: names[r.subject_id] })) });
@@ -448,29 +449,40 @@ projectsRouter.post("/:id/reviews", (req, res) => {
   if (!get(`SELECT 1 FROM project_members WHERE project_id = ? AND user_id = ?`, req.params.id, body.subjectId)) {
     bad("That person is not on this project.");
   }
-  run(
-    `INSERT INTO reviews (id, project_id, reviewer_id, subject_id, reliability, quality, teamwork, note, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT (project_id, reviewer_id, subject_id) DO UPDATE SET
-       reliability = excluded.reliability, quality = excluded.quality, teamwork = excluded.teamwork, note = excluded.note, created_at = excluded.created_at`,
-    newId("rev"),
+  const existing = get(
+    `SELECT 1 FROM reviews WHERE project_id = ? AND reviewer_id = ? AND subject_id = ?`,
     req.params.id,
     req.user.id,
     body.subjectId,
-    body.reliability,
-    body.quality,
-    body.teamwork,
-    body.note,
-    nowIso(),
   );
-  run(
-    `INSERT INTO contributions (id, project_id, user_id, kind, effort, note, created_at) VALUES (?, ?, ?, 'review', 0.5, ?, ?)`,
-    newId("con"),
-    req.params.id,
-    req.user.id,
-    "peer review submitted",
-    nowIso(),
-  );
+  const now = nowIso();
+  tx(() => {
+    run(
+      `INSERT INTO reviews (id, project_id, reviewer_id, subject_id, reliability, quality, teamwork, note, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (project_id, reviewer_id, subject_id) DO UPDATE SET
+         reliability = excluded.reliability, quality = excluded.quality, teamwork = excluded.teamwork, note = excluded.note, created_at = excluded.created_at`,
+      newId("rev"),
+      req.params.id,
+      req.user.id,
+      body.subjectId,
+      body.reliability,
+      body.quality,
+      body.teamwork,
+      body.note,
+      now,
+    );
+    if (!existing) {
+      run(
+        `INSERT INTO contributions (id, project_id, user_id, kind, effort, note, created_at) VALUES (?, ?, ?, 'review', 0.5, ?, ?)`,
+        newId("con"),
+        req.params.id,
+        req.user.id,
+        "peer review submitted",
+        now,
+      );
+    }
+  });
   const target = get(`SELECT name FROM users WHERE id = ?`, body.subjectId)?.name;
   record({
     verb: "review.given",
@@ -487,7 +499,7 @@ projectsRouter.post("/:id/reviews", (req, res) => {
 
 /** What the teacher sees: the aggregated peer view, and who nobody trusts. */
 projectsRouter.get("/:id/reviews/summary", (req, res) => {
-  access(req, req.params.id);
+  access(req, req.params.id, { needTeach: true });
   const rows = all(`SELECT * FROM reviews WHERE project_id = ?`, req.params.id);
   const bySubject = new Map();
   for (const row of rows) {

@@ -207,6 +207,7 @@ function applyAutoAssign(req, ctx, { result, pool }) {
     for (const item of computed.assignments) {
       if (!byId.has(item.userId)) continue;
       run(`UPDATE tasks SET assignee_id = ?, updated_at = ? WHERE id = ?`, item.userId, now, item.taskId);
+      run(`UPDATE assignments SET status = 'superseded' WHERE task_id = ? AND status IN ('active', 'accepted')`, item.taskId);
       run(
         `INSERT INTO assignments (id, project_id, task_id, user_id, kind, status, score, breakdown, rationale, created_by, created_at)
          VALUES (?, ?, ?, ?, 'auto', 'accepted', ?, ?, ?, ?, ?)`,
@@ -304,7 +305,7 @@ planningRouter.post("/projects/:id/rebalance/apply", (req, res) => {
   tx(() => {
     run(`UPDATE tasks SET assignee_id = ?, updated_at = ? WHERE id = ?`, body.toId, now, task.id);
     run(`UPDATE projects SET updated_at = ? WHERE id = ?`, now, row.id);
-    run(`UPDATE assignments SET status = 'superseded' WHERE task_id = ? AND status = 'active'`, task.id);
+    run(`UPDATE assignments SET status = 'superseded' WHERE task_id = ? AND status IN ('active', 'accepted')`, task.id);
     run(
       `INSERT INTO assignments (id, project_id, task_id, user_id, kind, status, score, breakdown, rationale, created_by, created_at)
        VALUES (?, ?, ?, ?, 'rebalanced', 'accepted', ?, ?, ?, ?, ?)`,

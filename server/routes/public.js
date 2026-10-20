@@ -71,7 +71,7 @@ function laneFor(key, equity) {
   if (key === "working") {
     return {
       title: "The group that is working",
-      note: `Five people, and no one holding more than ${Math.round(Math.max(...members.map((m) => m.shares.credited)) * 100)} per cent of the delivered work.`,
+      note: `${members.length} ${members.length === 1 ? "person" : "people"}, and no one holding more than ${Math.round(Math.max(...members.map((m) => m.shares.credited)) * 100)} per cent of the delivered work.`,
     };
   }
   if (key === "quiet") {
@@ -84,7 +84,9 @@ function laneFor(key, equity) {
   }
   return {
     title: "The group that drifted apart",
-    note: top ? `${top.name.split(" ")[0]} holds ${Math.round(top.shares.credited * 100)} per cent of the delivered work for four people.` : "The split has come apart.",
+    note: top
+      ? `${top.name.split(" ")[0]} holds ${Math.round(top.shares.credited * 100)} per cent of the delivered work across ${members.length} ${members.length === 1 ? "person" : "people"}.`
+      : "The split has come apart.",
   };
 }
 

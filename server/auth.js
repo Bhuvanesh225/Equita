@@ -60,22 +60,41 @@ function userFromCookie(req) {
 export function currentUser(req) {
   if (req._user !== undefined) return req._user;
   req._user = userFromCookie(req);
-  if (req._user) run(`UPDATE users SET last_seen_at = ? WHERE id = ?`, nowIso(), req._user.id);
+  if (req._user) {
+    // Every API call resolves the session. Writing the timestamp each time turns
+    // one page load into a dozen SQLite writes; five minutes is close enough for
+    // a "last seen" column.
+    const seen = req._user.last_seen_at ? new Date(req._user.last_seen_at).getTime() : 0;
+    if (Date.now() - seen > 5 * 60_000) {
+      run(`UPDATE users SET last_seen_at = ? WHERE id = ?`, nowIso(), req._user.id);
+    }
+  }
   return req._user;
+}
+
+/**
+ * A cookie is marked Secure only when this request actually arrived over TLS
+ * (or the deployment says so explicitly), so http://localhost still works while
+ * a school's https deployment never sends the session over plain http.
+ */
+function cookieOptions(res) {
+  return {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: res.req?.secure === true || process.env.COOKIE_SECURE === "1",
+    path: "/",
+  };
 }
 
 export function setSessionCookie(res, sessionId) {
   res.cookie(COOKIE, sessionId, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false, // a school laptop on http://localhost is the normal case
+    ...cookieOptions(res),
     maxAge: SESSION_DAYS * 86_400_000,
-    path: "/",
   });
 }
 
 export function clearSessionCookie(res) {
-  res.clearCookie(COOKIE, { path: "/" });
+  res.clearCookie(COOKIE, cookieOptions(res));
 }
 
 export function requireAuth(req, res, next) {

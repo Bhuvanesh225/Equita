@@ -10,8 +10,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { all, get, run } from "../db.js";
 import { round, nowIso, json, weekKey, DAY } from "../util.js";
-import { requireAuth } from "../auth.js";
-import { parse, shapeProject, nameMap, hueMap, shapeActivity } from "../api.js";
+import { requireAuth, canTeach, isOnProject } from "../auth.js";
+import { parse, deny, shapeProject, nameMap, hueMap, shapeActivity } from "../api.js";
 import { loadProject } from "../engines/context.js";
 import { computeEquity, equityHistory } from "../engines/equity.js";
 import { personalNudges, summarise, unreadNotifications, classroomNudges } from "../engines/nudges.js";
@@ -35,6 +35,27 @@ const myProjects = (userId) =>
     userId,
     userId,
   );
+
+/**
+ * The copilot reads engines for whatever id it is given, so the route has to
+ * prove the scope belongs to the caller before it asks a question. Without this
+ * any signed-in account could read another team's board by guessing a `prj_` id.
+ */
+function assertCopilotScope(userId, { projectId, classroomId }) {
+  if (classroomId) {
+    const enrolled = get(`SELECT 1 FROM enrollments WHERE classroom_id = ? AND user_id = ?`, classroomId, userId);
+    if (!enrolled && !canTeach(userId, classroomId)) deny("You are not in that class.");
+  }
+  if (projectId) {
+    const project = get(`SELECT owner_id, classroom_id FROM projects WHERE id = ?`, projectId);
+    if (!project) deny("That project does not exist.");
+    const allowed =
+      project.owner_id === userId ||
+      isOnProject(userId, projectId) ||
+      (project.classroom_id ? canTeach(userId, project.classroom_id) : false);
+    if (!allowed) deny("You are not on that project.");
+  }
+}
 
 /** Shared by the dashboard and the projects list so the two cannot drift. */
 export function projectCard(row, userId) {
@@ -182,8 +203,18 @@ insightsRouter.get("/dashboard", (req, res) => {
 
   const recentActivity = all(
     `SELECT a.* FROM activity a
-      WHERE a.project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)
+      WHERE a.project_id IN (
+        SELECT project_id FROM project_members WHERE user_id = ?
+        UNION
+        SELECT p.id FROM projects p
+          JOIN enrollments e ON e.classroom_id = p.classroom_id
+         WHERE e.user_id = ? AND e.role IN ('teacher', 'assistant')
+        UNION
+        SELECT id FROM projects WHERE owner_id = ?
+      )
       ORDER BY a.created_at DESC LIMIT 24`,
+    userId,
+    userId,
     userId,
   );
   const names = hueMap(recentActivity.map((a) => a.actor_id));
@@ -279,10 +310,11 @@ insightsRouter.post("/copilot", (req, res) => {
     }),
     req.body,
   );
+  const scope = { projectId: body.projectId ?? null, classroomId: body.classroomId ?? null };
+  assertCopilotScope(req.user.id, scope);
   const answer = ask(body.question, {
     userId: req.user.id,
-    projectId: body.projectId ?? null,
-    classroomId: body.classroomId ?? null,
+    ...scope,
   });
   res.json(answer);
 });
@@ -290,6 +322,7 @@ insightsRouter.post("/copilot", (req, res) => {
 insightsRouter.get("/copilot/starters", (req, res) => {
   const projectId = typeof req.query.projectId === "string" ? req.query.projectId : null;
   const classroomId = typeof req.query.classroomId === "string" ? req.query.classroomId : null;
+  assertCopilotScope(req.user.id, { projectId, classroomId });
   res.json({ questions: starterQuestions(req.user.id, projectId, classroomId) });
 });
 

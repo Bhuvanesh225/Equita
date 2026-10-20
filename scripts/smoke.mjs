@@ -49,6 +49,8 @@ if (signin.status !== 200 || !signin.payload?.user) {
   process.exit(2);
 }
 
+const isTeacher = signin.payload.user.role === "teacher";
+
 /* ---------- real ids, so the paths under test are real paths --------------- */
 
 const projects = await call("GET", "/api/projects");
@@ -74,7 +76,7 @@ const checks = [
   ["project equity", "GET", `/api/projects/${project}/equity`, undefined, [200]],
   ["project activity", "GET", `/api/projects/${project}/activity`, undefined, [200]],
   ["project nudges", "GET", `/api/projects/${project}/nudges`, undefined, [200]],
-  ["project reviews", "GET", `/api/projects/${project}/reviews`, undefined, [200]],
+  ["project reviews", "GET", `/api/projects/${project}/reviews`, undefined, isTeacher ? [200] : [403]],
   ["task detail", "GET", `/api/tasks/${task}`, undefined, [200]],
   ["candidate shortlist", "GET", `/api/projects/${project}/assign/${task}`, undefined, [200]],
   ["plan preview", "POST", `/api/projects/${project}/plan`, { utilisation: 0.6 }, [200, 201]],

@@ -21,7 +21,7 @@ This is the core claim of the project: **visible imbalance → explainable recom
 
 ## Run It
 
-Node **24.16.0** is pinned in `.nvmrc` (22.5+ also works because the server uses `node:sqlite`, with no native build step).
+Node **24.16.0** is pinned in `.nvmrc`. 22.13+ also works, because that is the release where `node:sqlite` stopped requiring a CLI flag; there is no native build step.
 
 ```bash
 npm install
@@ -55,6 +55,8 @@ docker run --rm -p 8787:8787 -v equita-data:/app/data equita
 ```
 
 Open <http://localhost:8787>. The first boot seeds the demonstration dataset when the volume is empty. Do not bake secrets into the image; this demo uses the built-in accounts listed below.
+
+Behind TLS, set `TRUST_PROXY=1` (or your proxy hop count) so Express believes `X-Forwarded-Proto`; set `COOKIE_SECURE=1` if the proxy does not expose HTTPS to the app. `PORT` and `EQUITA_DB` override the defaults.
 
 ## Demo Accounts
 

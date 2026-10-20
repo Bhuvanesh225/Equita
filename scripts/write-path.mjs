@@ -68,8 +68,11 @@ const teacherProjects = await call(teacher, "GET", "/api/projects");
 const projectId = teacherProjects.projects[0].id;
 const beforeWorkspace = await call(teacher, "GET", `/api/projects/${projectId}`);
 const beforeTaskCount = beforeWorkspace.tasks.length;
-const memberId = beforeWorkspace.members.find((member) => member.id !== beforeWorkspace.viewer.id)?.id ?? beforeWorkspace.members[0]?.id;
+const mayaId = beforeWorkspace.members.find((member) => member.email === student)?.id;
+const memberId = mayaId ?? beforeWorkspace.members.find((member) => member.id !== beforeWorkspace.viewer.id)?.id ?? beforeWorkspace.members[0]?.id;
 if (!memberId) throw new Error("seeded project has no member to exercise assignment writes");
+if (!mayaId) throw new Error("the seeded project does not include the student used for permission checks");
+await call(student, "GET", `/api/projects/${projectId}/reviews`, undefined, [403]);
 
 // Planning is explicitly preview-then-apply; the preview must not change the board.
 const dueAt = new Date(Date.now() + 14 * 86_400_000).toISOString();
@@ -100,10 +103,32 @@ await call(teacher, "POST", `/api/tasks/${taskId}/assign`, { userId: memberId, f
 await call(teacher, "POST", `/api/tasks/${taskId}/comments`, { body: "The write path is under test." });
 await call(teacher, "POST", `/api/tasks/${taskId}/log`, { hours: 0.5, note: "Checked the route and response." });
 await call(teacher, "POST", `/api/tasks/${taskId}/status`, { status: "doing" });
+
+// A member can edit the description but not the structure, cannot hand the task
+// to somebody else through PATCH, and cannot force a close past the review rule.
+await call(student, "PATCH", `/api/tasks/${taskId}`, { title: "Write the verified browser note, as Maya" });
+await call(student, "PATCH", `/api/tasks/${taskId}`, { effort: 4 }, [403]);
+await call(student, "PATCH", `/api/tasks/${taskId}`, { assigneeId: beforeWorkspace.viewer.id }, [400]);
+await call(student, "POST", `/api/tasks/${taskId}/status`, { status: "done", force: true }, [403]);
+await call(student, "POST", `/api/tasks/${taskId}/assign`, { userId: mayaId, force: true }, [403]);
+const otherMember = beforeWorkspace.members.find(
+  (member) => member.id !== mayaId && member.id !== beforeWorkspace.viewer.id && member.role !== "lead",
+);
+if (otherMember) {
+  await call(otherMember.email, "POST", `/api/tasks/${taskId}/assign`, { userId: null }, [403]);
+}
+
 await call(teacher, "POST", `/api/tasks/${taskId}/status`, { status: "done", actualEffort: 1, note: "Verified end to end." });
 const finished = await call(teacher, "GET", `/api/tasks/${taskId}`);
 if (finished.task.status !== "done" || !finished.contributions.some((entry) => entry.kind === "complete")) {
   throw new Error("closing a task did not create the completion ledger entry");
+}
+const completeCount = finished.contributions.filter((entry) => entry.kind === "complete").length;
+await call(teacher, "POST", `/api/tasks/${taskId}/status`, { status: "doing", note: "Reopened by the write path." });
+await call(teacher, "POST", `/api/tasks/${taskId}/status`, { status: "done", actualEffort: 1, note: "Closed again." });
+const reopened = await call(teacher, "GET", `/api/tasks/${taskId}`);
+if (reopened.contributions.filter((entry) => entry.kind === "complete").length !== completeCount) {
+  throw new Error("reopening and closing a task credited it twice");
 }
 
 // Auto-assignment also remains a two-step action.
@@ -151,6 +176,23 @@ const beforeNotifications = await call(student, "GET", "/api/insights/notificati
 await call(student, "POST", "/api/insights/notifications/read", { all: true });
 const afterNotifications = await call(student, "GET", "/api/insights/notifications");
 if (afterNotifications.unread !== 0 || afterNotifications.unread > beforeNotifications.unread) throw new Error("mark-all-read did not clear notifications");
+
+// Work that is done or has hours against it cannot be removed by its author;
+// only the lead or teacher may clear it.
+const studentTask = await call(student, "POST", `/api/projects/${projectId}/tasks`, {
+  title: "Student-authored task with credited hours",
+  phase: "build",
+  effort: 1,
+  priority: 2,
+  dueAt,
+  required: [],
+});
+const studentTaskId = studentTask.task.id;
+await call(teacher, "POST", `/api/tasks/${studentTaskId}/assign`, { userId: mayaId, force: true });
+await call(teacher, "POST", `/api/tasks/${studentTaskId}/status`, { status: "doing" });
+await call(teacher, "POST", `/api/tasks/${studentTaskId}/status`, { status: "done", actualEffort: 1 });
+await call(student, "DELETE", `/api/tasks/${studentTaskId}`, undefined, [403]);
+await call(teacher, "DELETE", `/api/tasks/${studentTaskId}`);
 
 // Finally remove the temporary task to cover the destructive task path.
 await call(teacher, "DELETE", `/api/tasks/${taskId}`);

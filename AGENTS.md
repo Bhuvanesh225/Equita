@@ -7,7 +7,7 @@ Read this file first. It is written for the next agent, not for a human reader. 
 **Equita** — project coordination that keeps group work even. A student team (or a teacher with a class) plans work in hours, the allocator places each task with a person whose skills and bandwidth match, and the product shows the group as numbers when the split has tipped.
 
 Repository root: `E:/Hackathons/Neighborhood Hacks/equita`
-Stack: React 19 + Vite 8 + TypeScript 5.9 + Tailwind v4 (client) · Express 5 + `node:sqlite` (server). Node 22.5+ is required (no native build step).
+Stack: React 19 + Vite 8 + TypeScript 5.9 + Tailwind v4 (client) · Express 5 + `node:sqlite` (server). Node 22.13+ is required (no native build step).
 
 ## Read in This Order
 
