@@ -298,13 +298,18 @@ export function Nudges({ nudges, empty, compact }: { nudges: Nudge[]; empty?: st
 /* ---------- activity ---------------------------------------------------- */
 
 const VERB_TONE: Record<string, string> = {
-  "task.completed": "var(--color-accent)",
+  /*
+   * These paint the headline of an activity row, so they are the *text* shade of
+   * each signal. The vivid accent is a fill colour; as 13px text on paper it
+   * measured 2.5:1, which is a word a reader has to guess at.
+   */
+  "task.completed": "var(--color-accent-deep)",
   "task.blocked": "var(--color-risk)",
   "task.created": "var(--color-ink-3)",
   "task.assigned": "var(--color-ink-3)",
-  "task.helped": "var(--color-accent)",
+  "task.helped": "var(--color-accent-deep)",
   "checkin.posted": "var(--color-ink-3)",
-  "review.posted": "var(--color-accent)",
+  "review.posted": "var(--color-accent-deep)",
   "equity.snapshot": "var(--color-ink-3)",
   "project.created": "var(--color-ink-3)",
   "assignment.auto": "var(--color-ink-3)",
@@ -323,9 +328,16 @@ export function ActivityFeed({ activity, limit = 12, showPerson = true }: { acti
               {entry.subject}
             </span>
           </span>
-          <span className="rowitem__sub nowrap" title={entry.createdAt}>
-            {relativeTime(entry.createdAt)}
-          </span>
+          {/*
+           * Seeded history has no timestamp of its own. It used to print
+           * "never" down the whole column, which reads as a fault rather than
+           * as a date we do not have, so the column is simply omitted.
+           */}
+          {entry.createdAt ? (
+            <span className="rowitem__sub nowrap" title={entry.createdAt}>
+              {relativeTime(entry.createdAt)}
+            </span>
+          ) : null}
         </li>
       ))}
     </ol>

@@ -118,7 +118,7 @@ export function LineChart({
         ) : null}
       </svg>
 
-      <div className="row row--between" style={{ fontSize: "0.625rem", color: "var(--color-ink-3)" }}>
+      <div className="row row--between" style={{ fontSize: "0.6875rem", color: "var(--color-ink-3)" }}>
         <span>{labels[0]?.label ?? ""}</span>
         <span>
           {hover !== null

@@ -17,7 +17,7 @@ import { ApiError } from "../lib/api";
 import { useApi, useToast } from "../lib/live";
 import { hours, plural } from "../lib/format";
 import { Avatar, EmptyState, LoadBar, Meter, Panel, Spinner, Stat, StateChip, Tag } from "../components/ui";
-import { ActivityFeed, MoodTag, Nudges, PageHead, Quiet, ScoreMark, useTaskMoves } from "../components/blocks";
+import { ActivityFeed, MoodTag, Nudges, PageHead, PersonRow, Quiet, ScoreMark, useTaskMoves } from "../components/blocks";
 import { Menu } from "../components/overlays";
 import { IconArrowRight, IconPlus, IconSparkle, IconWand } from "../components/icons";
 import { TaskFormDialog } from "./project/TaskForm";
@@ -461,18 +461,21 @@ function PeopleTab({ workspace, onOpenTask }: { workspace: Workspace; onOpenTask
         <Panel title="How they are working" hint="the signals behind the score">
           <div className="stack stack--tight">
             {workspace.equity.members.map((member) => (
-              <div key={member.id} className="row row--between" style={{ gap: "0.5rem" }}>
-                <span className="row" style={{ gap: "0.4rem", minWidth: 0 }}>
-                  <Avatar name={member.name} hue={member.hue} size="sm" />
-                  <span className="truncate" style={{ fontSize: "var(--text-sm)" }}>
-                    {member.name}
-                  </span>
-                </span>
-                <span className="card__meta tnum nowrap">
-                  {member.checkinCount} check-ins · {member.commentCount} notes · {member.reviewCount} reviews
-                  {member.daysSinceSignal !== null ? ` · last heard ${member.daysSinceSignal}d ago` : " · never heard from"}
-                </span>
-              </div>
+              /*
+               * A person row rather than one line: the name and the four counts
+               * together need about 460px, and this panel is a rail. On one line
+               * the name was truncated to "Di...", which is worse than no name.
+               */
+              <PersonRow
+                key={member.id}
+                person={{ id: member.id, name: member.name, hue: member.hue }}
+                note={[
+                  plural(member.checkinCount, "check-in"),
+                  plural(member.commentCount, "note"),
+                  plural(member.reviewCount, "review"),
+                  member.daysSinceSignal === null ? "never heard from" : `heard ${member.daysSinceSignal}d ago`,
+                ].join(" · ")}
+              />
             ))}
           </div>
         </Panel>

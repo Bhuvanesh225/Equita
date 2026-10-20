@@ -119,7 +119,7 @@ function NotificationBell() {
               right: "-2px",
               background: "var(--color-risk)",
               color: "#fff",
-              fontSize: "0.625rem",
+              fontSize: "0.6875rem",
               fontWeight: 700,
               lineHeight: 1.3,
               padding: "0 3px",
@@ -135,7 +135,7 @@ function NotificationBell() {
       {open ? (
         <>
           <div className="scrim scrim--soft" style={{ zIndex: 88 }} onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="menu" style={{ right: 0, top: "calc(100% + 0.4rem)", width: "min(24rem, calc(100vw - 2rem))", padding: 0, zIndex: 89 }} role="dialog" aria-label="Notifications">
+          <div className="menu notif__menu" style={{ padding: 0, zIndex: 89 }} role="dialog" aria-label="Notifications">
             <div className="panel__head" style={{ minHeight: "2.5rem" }}>
               <span className="panel__title" style={{ fontSize: "var(--text-sm)" }}>
                 Notifications
@@ -333,7 +333,7 @@ function TopBar({ counts }: { counts: { unread: number; openTasks: number } }) {
               <IconSearch size={15} />
             </span>
             <span className="input" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", textAlign: "left" }}>
-              <span style={{ color: "var(--color-ink-3)" }}>Search projects, tasks, people…</span>
+              <span className="search__label" style={{ color: "var(--color-ink-3)" }}>Search projects, tasks, people...</span>
               <Kbd>⌘K</Kbd>
             </span>
           </button>

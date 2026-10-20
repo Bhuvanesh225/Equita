@@ -192,10 +192,14 @@ export default function Settings() {
             </Field>
             <Quiet>
               What you can do, and how much you want more of it, is on{" "}
+              {/*
+               * The full stop belongs to the link. `.tap` is inline-block, so a
+               * period left outside it wraps onto a line of its own.
+               */}
               <Link className="tap" to="/profile">
-                your strengths
-              </Link>
-              . That page is the allocator's input; this one is your account.
+                your strengths.
+              </Link>{" "}
+              That page is the allocator's input; this one is your account.
             </Quiet>
           </div>
         </Panel>

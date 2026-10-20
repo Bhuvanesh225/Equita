@@ -14,8 +14,14 @@
   --color-paper-3: #d9d8cf;
   --color-surface: #fffdf8;
   --color-ink: #102a2a;
-  --color-ink-2: #496461;
-  --color-ink-3: #738984;
+  --color-ink-2: #3a5450;
+  /*
+   * The muted ink was 3.3:1 on paper and 3.66:1 on surface — legible only to
+   * someone who is looking for it, and it carries the meta line on every card,
+   * panel foot, table head and chart axis. Darkened, with ink-2 pulled down to
+   * keep the three-step ink ladder readable: 8.1:1 · 6.6:1 · 4.6:1 on paper-2.
+   */
+  --color-ink-3: #4e6b64;
   --color-line: #cbd3ce;
   --color-line-strong: #aabdb5;
 
@@ -24,11 +30,11 @@
   --color-accent-soft: #d9f3e8;
   --color-accent-deep: #08775a;
 
-  --color-over: #b66d21;
+  --color-over: #9d5a12;
   --color-over-soft: #faecd6;
-  --color-risk: #c95149;
+  --color-risk: #b23a30;
   --color-risk-soft: #f8dfda;
-  --color-quiet: #55707a;
+  --color-quiet: #4d656e;
   --color-quiet-soft: #e3edef;
 
   --color-brand: #102a2a;
@@ -108,14 +114,23 @@
 .grid--stats {
   border: 0;
   border-top: 3px solid var(--color-ink);
-  background: var(--color-ink);
-  gap: 1px;
+  background: transparent;
+  gap: 0;
 }
 
-.grid--stats > * {
+/*
+ * The 1px lines used to be the container's ink background showing through a 1px
+ * gap, which painted every unused cell of the last row as a solid ink block —
+ * eight stats in six columns is a black rectangle. The cells carry the lines
+ * instead, so an unfinished row ends in paper. `:nth-child(n)` is here only to
+ * outrank the border trims in app.css.
+ */
+.grid--stats > *:nth-child(n) {
   min-height: 6.25rem;
   padding: 1rem 1.15rem;
   border: 0;
+  border-right: 1px solid var(--color-ink);
+  border-bottom: 1px solid var(--color-ink);
   background: var(--color-surface);
 }
 
@@ -205,12 +220,58 @@
     transform 0.18s var(--ease-out-quint);
 }
 
-.btn:hover {
-  transform: translateY(-1px);
+/*
+ * .btn above is later in the cascade than app.css, so the size modifiers have
+ * to be restated here or they lose: every .btn--sm rendered at full size, and
+ * .btn--icon inherited the inline padding above, which left its content box
+ * about 3px wide and squeezed the svg flat — every close, bell and copy-code
+ * button in the app collapsed to a speck.
+ */
+.btn--sm {
+  height: 1.875rem;
+  padding-inline: 0.55rem;
+  font-size: var(--text-xs);
+}
+
+.btn--icon {
+  width: 2.5rem;
+  /* A dialog header is a flex row; without this a long title squeezes the close
+     button narrower than its icon. */
+  flex: none;
+  padding-inline: 0;
+}
+
+.btn--icon.btn--sm {
+  width: 1.875rem;
 }
 
 .btn:active {
   transform: translateY(1px);
+}
+
+/* app.css's touch-target bump sits before .btn above and lost the same way. */
+@media (pointer: coarse) {
+  .btn {
+    height: 2.75rem;
+    padding-inline: 1rem;
+  }
+
+  .btn--sm {
+    height: 2.5rem;
+    padding-inline: 0.7rem;
+  }
+
+  .btn--icon {
+    width: 2.75rem;
+  }
+
+  .btn--icon.btn--sm {
+    width: 2.5rem;
+  }
+}
+
+.btn:hover {
+  transform: translateY(-1px);
 }
 
 .btn--primary {
@@ -1078,7 +1139,7 @@
 
   .monitor__tab {
     min-height: 4.75rem;
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
   }
 
   .monitor__tab b {

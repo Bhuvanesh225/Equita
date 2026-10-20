@@ -552,7 +552,7 @@ export function BlockGrid({
           <tr>
             <th />
             {columns.map((column) => (
-              <th key={column} style={{ textAlign: "center", fontSize: "0.625rem" }}>
+              <th key={column} style={{ textAlign: "center", fontSize: "0.6875rem" }}>
                 {column}
               </th>
             ))}

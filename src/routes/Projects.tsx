@@ -328,9 +328,8 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
           <div className={`callout callout--${project.equity && project.equity.score < 45 ? "risk" : "over"}`}>
             {attentionSentence(project)}
             <Link className="tap" to={`/projects/${project.id}`}>
-              Open the board
+              Open the board.
             </Link>
-            .
           </div>
         ) : null}
       </div>

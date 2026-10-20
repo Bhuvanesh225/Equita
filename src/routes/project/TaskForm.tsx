@@ -60,7 +60,12 @@ export function SkillPicker({
         </span>
       </span>
       <input className="input" placeholder="Search the skill list" value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search skills" />
-      <div className="stack" style={{ gap: "0.5rem", maxHeight: "13rem", overflowY: "auto" }}>
+      {/*
+        * The chip list is never a scroll region of its own: both places that use
+        * it — the task dialog's body and the strengths page — already scroll, and
+        * a nested box clips a row of chips through the middle.
+        */}
+      <div className="stack" style={{ gap: "0.5rem" }}>
         {groups.map(([cluster, items]) => (
           <div key={cluster} className="stack" style={{ gap: "0.3rem" }}>
             <span className="label">{cluster.replace(/[-_]/g, " ")}</span>

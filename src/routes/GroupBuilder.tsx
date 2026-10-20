@@ -217,7 +217,7 @@ export default function GroupBuilder() {
       {proposal.gaps.some((gap) => gap.needed) ? <div className="callout callout--over"><strong>Thin coverage:</strong> {proposal.gaps.filter((gap) => gap.needed).map((gap) => `${gap.name} (${gap.strong} strong)`).join(" · ")}. The groups can still be committed, but the warning will stay visible in the class coverage reading.</div> : null}
 
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-        <div className="board" aria-label="Proposed groups">
+        <div className="board board--groups" aria-label="Proposed groups">
           {teams.map((team) => <TeamLane key={team.id ?? team.name} team={team} teams={teams} clusterNames={clusterNames} onMove={moveMember} />)}
         </div>
       </DndContext>
@@ -336,15 +336,27 @@ function MemberCard({
   const destinations = teams.filter((team) => (team.id ?? team.name) !== currentTeamId);
   return (
     <div ref={setNodeRef} style={{ transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined, opacity: isDragging ? 0.45 : 1 }}>
-      <div className="rowitem" style={{ gridTemplateColumns: "auto minmax(0,1fr) auto", alignItems: "center" }}>
-        <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label={`Drag ${member.name} to another group`} title="Drag to another group" {...listeners} {...attributes}>
-          <IconDrag size={14} />
-        </button>
-        <span style={{ minWidth: 0 }}>
-          <span className="rowitem__title"><Avatar name={member.name} hue={member.hue} size="sm" /> {member.name}</span>
-          <span className="rowitem__sub">{member.headline || "no headline"} · {hours(member.capacity)} a week</span>
+      <div className="stack stack--tight" style={{ minWidth: 0 }}>
+        {/*
+         * Two lines rather than three columns. A member row has a drag handle, an
+         * avatar, a name, a headline and a menu, and at a lane's width that is one
+         * element too many on one line: the name was being ellipsised to "Gra...".
+         */}
+        <div className="row row--between" style={{ gap: "0.5rem", alignItems: "center" }}>
+          <span className="row" style={{ gap: "0.35rem", minWidth: 0 }}>
+            <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label={`Drag ${member.name} to another group`} title="Drag to another group" {...listeners} {...attributes}>
+              <IconDrag size={14} />
+            </button>
+            <Avatar name={member.name} hue={member.hue} size="sm" />
+            <span className="rowitem__title" style={{ minWidth: 0 }}>
+              {member.name}
+            </span>
+          </span>
+          <Menu label="Move to..." items={destinations.map((team) => ({ label: team.name, onSelect: () => onMove(member.id, team.id ?? team.name) }))} />
+        </div>
+        <span className="rowitem__sub" title={`${member.headline || "no headline"} · ${hours(member.capacity)} a week`}>
+          {member.headline || "no headline"} · {hours(member.capacity)} a week
         </span>
-        <Menu label="Move to…" items={destinations.map((team) => ({ label: team.name, onSelect: () => onMove(member.id, team.id ?? team.name) }))} />
       </div>
     </div>
   );

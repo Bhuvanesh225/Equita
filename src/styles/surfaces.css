@@ -183,6 +183,18 @@
   font-size: var(--text-sm);
 }
 
+/*
+ * The placeholder is a span rather than a real input's placeholder, so on a
+ * narrow topbar it wrapped onto a second line inside a fixed-height box and the
+ * overflow was clipped. One line with an ellipsis is the same label, kept.
+ */
+.topbar__search .search__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .topbar__actions {
   display: flex;
   align-items: center;
@@ -277,6 +289,20 @@
   min-height: 12rem;
   scroll-snap-align: start;
   transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/*
+ * A group in the builder carries a coverage reading, a member list and a roles
+ * footer, which is more per lane than a task board asks for. At 19rem the member
+ * row could not hold a drag handle, an avatar, a name and a menu at once, so the
+ * names ellipsised to three letters.
+ */
+.board--groups .lane {
+  /*
+   * Wide enough for a member row, but never so wide that a phone shows just the
+   * one lane with no hint that the next group is off to the right.
+   */
+  flex-basis: min(22rem, calc(100% - 2.5rem));
 }
 
 .lane--active {
@@ -602,7 +628,7 @@
 
 .chart__axis {
   fill: var(--color-ink-3);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-family: var(--font-sans);
 }
 
@@ -636,7 +662,7 @@
 }
 .chart__rule-label {
   fill: var(--color-ink-3);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 .chart-legend {
@@ -678,7 +704,7 @@
 }
 
 .week__value {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: var(--color-ink-2);
   text-align: center;
@@ -709,7 +735,8 @@
 }
 
 .week__col--today .week__label {
-  color: var(--color-accent);
+  /* Text, not a fill: the vivid accent is 2.5:1 at this size. */
+  color: var(--color-accent-deep);
   font-weight: 600;
 }
 
@@ -732,7 +759,7 @@
 }
 .donut__label {
   fill: var(--color-ink-3);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 /* ---------- flags and callouts ----------------------------------------- */
@@ -946,6 +973,28 @@
   box-shadow: 0 16px 36px -14px rgb(0 0 0 / 0.3);
   padding: 0.25rem;
   animation: fade-in 0.12s ease both;
+}
+
+/*
+ * The bell popover. On a wide bar it hangs off the bell, but the bell is not the
+ * rightmost control (the account menu is), so on a narrow bar a right-anchored
+ * popover of this width runs off the left edge and its rows are cut. Below 40rem
+ * it is pinned to the screen instead of to the bell.
+ */
+.notif__menu {
+  top: calc(100% + 0.4rem);
+  right: 0;
+  width: min(24rem, calc(100vw - 2rem));
+}
+
+@media (max-width: 40rem) {
+  .notif__menu {
+    position: fixed;
+    top: 3.6rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+  }
 }
 
 .menu__item {

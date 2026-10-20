@@ -125,7 +125,12 @@ function ProofColumn() {
 
       <div className="stack stack--tight">
         <p className="auth__eyebrow">What it says about this group</p>
-        <p style={{ margin: 0, fontSize: "var(--text-sm)", lineHeight: 1.5, color: "var(--color-ink-2)" }}>{situation.headline}</p>
+        {/*
+          * This column is the brand panel, which is ink. A hard-coded ink-2 here
+          * measured 2.4:1 — the one paragraph in the column that nobody had
+          * re-coloured when the panel went dark.
+          */}
+        <p style={{ margin: 0, fontSize: "var(--text-sm)", lineHeight: 1.5, color: "var(--color-brand-muted)" }}>{situation.headline}</p>
         {situation.move ? (
           <div className="callout">
             <strong>{situation.move.taskTitle}</strong> — {hours(situation.move.effort)} from {situation.move.from ?? "nobody"} to{" "}

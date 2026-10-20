@@ -646,7 +646,7 @@
 .avatar--sm {
   width: 1.375rem;
   height: 1.375rem;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
 }
 .avatar-group {
   display: flex;
@@ -747,7 +747,7 @@
 .loadbar__scale {
   display: flex;
   justify-content: space-between;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--color-ink-3);
   font-variant-numeric: tabular-nums;
 }
