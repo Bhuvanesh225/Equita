@@ -9,14 +9,9 @@
  *
  * account is `teacher`, `student`, or `none` for the pages a stranger sees.
  */
-import { createRequire } from "node:module";
-import { existsSync } from "node:fs";
-import { mkdir, readdir, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-
-const require = createRequire(import.meta.url);
-const { chromium } = require("C:/Users/pusap/AppData/Roaming/npm/node_modules/@playwright/mcp/node_modules/playwright-core");
+import { launchBrowser } from "./browser.mjs";
 
 const ACCOUNTS = {
   teacher: "amara@equita.demo",
@@ -35,27 +30,7 @@ const routes = routeArgs.length ? routeArgs : ["/today"];
 const outDir = path.resolve(outArg);
 await mkdir(outDir, { recursive: true });
 
-/**
- * The bundled browser revisions and this playwright-core disagree about which
- * build is current, so the newest one actually present on the machine wins.
- */
-async function findChromium() {
-  const cache = path.join(os.homedir(), "AppData", "Local", "ms-playwright");
-  const names = await readdir(cache).catch(() => []);
-  const builds = names.filter((name) => /^chromium(_headless_shell)?-\d+$/.test(name)).sort((a, b) => Number(b.split("-").pop()) - Number(a.split("-").pop()));
-  for (const build of builds) {
-    const tails = build.startsWith("chromium_headless_shell")
-      ? ["chrome-headless-shell-win64/chrome-headless-shell.exe"]
-      : ["chrome-win64/chrome.exe", "chrome-win/chrome.exe"];
-    for (const tail of tails) {
-      const candidate = path.join(cache, build, tail);
-      if (existsSync(candidate)) return candidate;
-    }
-  }
-  return undefined;
-}
-
-const browser = await chromium.launch({ headless: true, executablePath: await findChromium() });
+const browser = await launchBrowser();
 
 /*
  * Viewport and scheme come from the environment so the route arguments stay

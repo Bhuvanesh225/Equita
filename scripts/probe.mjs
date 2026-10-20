@@ -5,32 +5,13 @@
  *
  *   MSYS_NO_PATHCONV=1 node scripts/probe.mjs teacher /today
  */
-import { createRequire } from "node:module";
-import { existsSync } from "node:fs";
-import { readdir } from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-
-const require = createRequire(import.meta.url);
-const { chromium } = require("C:/Users/pusap/AppData/Roaming/npm/node_modules/@playwright/mcp/node_modules/playwright-core");
+import { launchBrowser } from "./browser.mjs";
 
 const ACCOUNTS = { teacher: "amara@equita.demo", teacher2: "tobias@equita.demo", student: "maya@equita.demo", free: "june@equita.demo", none: null };
 const [, , accountArg = "teacher", route = "/today"] = process.argv;
 const account = ACCOUNTS[accountArg];
 
-async function findChromium() {
-  const cache = path.join(os.homedir(), "AppData", "Local", "ms-playwright");
-  const names = await readdir(cache).catch(() => []);
-  const builds = names.filter((n) => /^chromium(_headless_shell)?-\d+$/.test(n)).sort((a, b) => Number(b.split("-").pop()) - Number(a.split("-").pop()));
-  for (const build of builds) {
-    for (const tail of ["chrome-headless-shell-win64/chrome-headless-shell.exe", "chrome-win64/chrome.exe", "chrome-win/chrome.exe"]) {
-      const candidate = path.join(cache, build, tail);
-      if (existsSync(candidate)) return candidate;
-    }
-  }
-}
-
-const browser = await chromium.launch({ headless: true, executablePath: await findChromium() });
+const browser = await launchBrowser();
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const messages = [];
 context.on("page", (page) => {

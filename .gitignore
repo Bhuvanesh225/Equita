@@ -1,5 +1,6 @@
 # dependencies and build output
 node_modules/
+node_modules.*/
 dist/
 
 # the database, its write-ahead log and its shared memory
