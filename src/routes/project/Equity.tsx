@@ -115,7 +115,7 @@ export function EquityPanel({
           </div>
 
           <div className="stack stack--tight">
-            <Stat size="sm" value={equity.distribution.evenShare.toFixed(1)} label="Even share" note={`hours each, of ${plural(equity.totals.members, "person", "people")}`} />
+            <Stat size="sm" value={(equity.totals.credited / Math.max(1, equity.totals.members)).toFixed(1)} label="Even share" note={`delivered hours each, of ${plural(equity.totals.members, "person", "people")}`} />
             <Stat size="sm" value={equity.distribution.gini.toFixed(2)} label="Gini of delivered work" note={describeGini(equity.distribution.gini)} />
             <Stat size="sm" value={equity.totals.unassigned ? hours(equity.totals.unassigned) : "0h"} label="Nobody's yet" tone={equity.totals.unassigned ? "over" : "accent"} note="unclaimed work on the board" />
           </div>
@@ -192,7 +192,7 @@ export function EquityPanel({
               />
               <p className="card__meta" style={{ lineHeight: 1.45 }}>
                 {equity.totals.credited} hours delivered between {plural(equity.totals.members, "person", "people")}. An even split is{" "}
-                {hours(equity.distribution.evenShare)} each. The gap between the busiest and the quietest is {hours(equity.distribution.maxGap)}.
+                {hours(equity.totals.credited / Math.max(1, equity.totals.members))} each. The gap between the busiest and the quietest is {hours(equity.distribution.maxGap)}.
               </p>
             </div>
           </Panel>

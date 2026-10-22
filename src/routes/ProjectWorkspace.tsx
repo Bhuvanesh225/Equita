@@ -154,7 +154,7 @@ export default function ProjectWorkspace() {
           </>
         }
         title={workspace.project.name}
-        sub={`${plural(workspace.members.length, "person", "people")} · ${hours(workspace.equity.totals.committed)} committed · an even share is ${hours(workspace.equity.distribution.evenShare)}`}
+        sub={`${plural(workspace.members.length, "person", "people")} · ${hours(workspace.equity.totals.committed)} committed · an even share is ${hours(workspace.equity.totals.committed / Math.max(1, workspace.members.length))}`}
         actions={
           <>
             <ScoreMark score={workspace.equity.score} gini={workspace.equity.distribution.gini} />

@@ -213,7 +213,7 @@ function ClassProjectPanel({ project, classroomId }: { project: ClassProject; cl
         <ProgressLine
           value={modest.progress}
           expected={equity.timeline.elapsed}
-          label={`An even share here is ${hours(equity.distribution.evenShare)}`}
+          label={`An even share here is ${hours(equity.totals.credited / Math.max(1, equity.totals.members))}`}
         />
 
         <div className="stack" style={{ gap: "0.75rem", marginTop: "0.5rem" }}>
