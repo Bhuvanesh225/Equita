@@ -55,8 +55,8 @@ function spaFallback(): Plugin {
       const server = assets.find((file) => /^server-.*\.js$/.test(file));
       const wasm = assets.find((file) => /^sql-wasm-.*\.wasm$/.test(file));
       const tags = [
-        server ? `<link rel="modulepreload" crossorigin href="/assets/${server}">` : "",
-        wasm ? `<link rel="preload" as="fetch" crossorigin="anonymous" type="application/wasm" href="/assets/${wasm}">` : "",
+        server ? `<link rel="modulepreload" crossorigin fetchpriority="high" href="/assets/${server}">` : "",
+        wasm ? `<link rel="preload" as="fetch" crossorigin="anonymous" fetchpriority="high" type="application/wasm" href="/assets/${wasm}">` : "",
       ].filter(Boolean);
 
       let html = readFileSync(index, "utf8");

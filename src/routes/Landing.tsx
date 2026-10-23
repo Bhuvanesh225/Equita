@@ -158,7 +158,7 @@ function Hero({ audience, story, signedIn, setAudience }: { audience: Audience; 
           <div className="eq-visual__title"><div><span className="eq-micro">{situation?.dueLabel ?? "Project in motion"}</span><h2>{situation?.name ?? "Reading the project"}</h2></div><strong className={`eq-score eq-score--${scoreTone(situation?.score ?? 0)}`}>{situation?.score ?? "—"}</strong></div>
           <p className="eq-visual__headline">{situation?.headline ?? "Preparing the demo dataset for this browser."}</p>
           <BalanceBars situation={situation} />
-          <div className="eq-visual__caption"><span>The line is the even share.</span><span>{situation ? `${situation.members.length} people · ${situation.counts.tasks} tasks` : "First visit: building the demo data (about a second)."}</span></div>
+          <div className="eq-visual__caption"><span>The line is the even share.</span><span>{situation ? `${situation.members.length} people · ${situation.counts.tasks} tasks` : "First visit: loading the demo data."}</span></div>
         </div>
       </div>
       <div className="eq-frame eq-hero__proof"><span>One product, two rooms</span><span>Student groups</span><span>Teacher console</span><span>Every hour has a name</span></div>
