@@ -1,3 +1,4 @@
+# Force cache clear for deploy
 [package]
 name = "equita"
 version = "1.0.0"
