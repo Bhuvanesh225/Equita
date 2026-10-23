@@ -315,14 +315,6 @@ export default function Landing() {
   // If the saved demo database exists but the landing is still showing its
   // placeholders, one reload is cheaper than leaving a blank first visit.
   useEffect(() => {
-    if (story) {
-      try {
-        window.sessionStorage.removeItem(LANDING_RELOAD_KEY);
-      } catch {
-        /* storage unavailable: nothing to clear */
-      }
-      return;
-    }
     let savedAt: number | null = null;
     const timer = window.setInterval(() => {
       let saved = false;
@@ -336,7 +328,14 @@ export default function Landing() {
       if (Date.now() - savedAt < 4000) return;
       const score = document.querySelector(".eq-score")?.textContent?.trim() ?? "";
       const roll = document.querySelector(".eq-roll__count")?.textContent?.trim() ?? "";
-      if (score && Number.isFinite(Number(score)) && /students on the roll/.test(roll)) return;
+      if (score && Number.isFinite(Number(score)) && /students on the roll/.test(roll)) {
+        try {
+          window.sessionStorage.removeItem(LANDING_RELOAD_KEY);
+        } catch {
+          /* storage unavailable: nothing to clear */
+        }
+        return;
+      }
       try {
         if (window.sessionStorage.getItem(LANDING_RELOAD_KEY)) return;
         window.sessionStorage.setItem(LANDING_RELOAD_KEY, "1");
@@ -346,7 +345,7 @@ export default function Landing() {
       window.location.reload();
     }, 500);
     return () => window.clearInterval(timer);
-  }, [story]);
+  }, []);
   const rootRef = useReveal(!!story);
   const [audience, setAudience] = useState<Audience>("group");
   const situation = useMemo(() => audience === "teacher" ? story?.situations.find((item) => item.key === "quiet") ?? story?.situations[1] ?? story?.situations[0] : story?.situations[0], [audience, story]);
