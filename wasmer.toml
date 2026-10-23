@@ -11,4 +11,4 @@ command = "npm run build"
 [command]
 name = "start"
 command = "node"
-args = ["server/seed.js", "--reset", "&&", "node", "server/index.js"]
+args = ["server/index.js"]
