@@ -52,6 +52,9 @@ async function ensureReady() {
         if (!window.sessionStorage.getItem(COLD_RELOAD_KEY)) {
           window.sessionStorage.setItem(COLD_RELOAD_KEY, "1");
           window.location.reload();
+          // Do not let a pending screen request paint the cold-start state after
+          // the reload has begun. The navigation replaces this promise.
+          await new Promise<void>(() => {});
         }
       } catch {
         /* storage unavailable: let the page continue on the live database */
