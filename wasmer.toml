@@ -2,9 +2,13 @@
 name = "equita"
 version = "1.0.0"
 
+[dependencies]
+node = "^22"
+
 [build]
 command = "npm run build"
 
 [command]
-name = "web"
-command = "node server/seed.js --reset && node server/index.js"
+name = "start"
+command = "node"
+args = ["server/seed.js", "--reset", "&&", "node", "server/index.js"]
