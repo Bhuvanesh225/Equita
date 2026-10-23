@@ -44,10 +44,10 @@ async function ensureReady() {
     const { seedIfEmpty } = await import("../../../server/seed.js");
     seedIfEmpty();
 
-    // The first visit writes the seeded database to localStorage. Reload once
+    // The first landing visit writes the seeded database to localStorage. Reload once
     // so the page reads that saved copy instead of holding the cold-start
     // state; the guard keeps a blocked write from looping.
-    if (coldStart) {
+    if (coldStart && window.location.pathname === "/") {
       try {
         if (!window.sessionStorage.getItem(COLD_RELOAD_KEY)) {
           window.sessionStorage.setItem(COLD_RELOAD_KEY, "1");

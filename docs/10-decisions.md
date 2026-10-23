@@ -183,4 +183,4 @@ The public deployment is a static Vite build, so `/api/*` returns HTML/404 and n
 
 Cold-starting the browser backend means loading the SQLite WASM, seeding it, and writing the result to `localStorage`. On a slow static edge the landing can spend several seconds on placeholders, and a transient boot failure used to leave it there.
 
-**Decided:** after the seed commits, the demo reloads the tab once, guarded by `sessionStorage["equita.demo.cold-reload"]`. The second boot reads the saved database and renders from it. The guard makes a failed or blocked storage write stay put instead of looping.
+**Decided:** after the seed commits on the landing route (`/`), the demo reloads the tab once, guarded by `sessionStorage["equita.demo.cold-reload"]`. The second boot reads the saved database and renders from it. The guard makes a failed or blocked storage write stay put instead of looping.
