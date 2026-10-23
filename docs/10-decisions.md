@@ -179,8 +179,10 @@ The public deployment is a static Vite build, so `/api/*` returns HTML/404 and n
 
 
 
-## O-09 - The Landing Refreshes Only If Its Data Is Missing
+## O-09 - Every Open Starts With One Hard Refresh
 
-Cold-starting the browser backend means loading the SQLite WASM, seeding it, and writing the result to `localStorage`. On a slow static edge the landing can spend several seconds on placeholders, and a transient boot failure used to leave it there.
+Wasmer caches `index.html` for 24 hours while each deploy removes the hashed assets that HTML references. A returning browser could keep old HTML and ask for files the new deployment no longer served.
 
-**Decided:** the landing does not reload on every cold start. Once the saved database exists, a watchdog checks the rendered hero score and class roll. If they are still placeholders four seconds later, the tab reloads once, guarded by `sessionStorage["equita.landing.reload.v1"]`. If the reload still shows placeholders, the saved database is dropped and the tab reloads once more to reseed. When the seeded values do appear, the guards are cleared so a later failure can recover the same way. A saved database is only reused when its core tables are present.
+**Decided:** every full document open performs one cache-bypassing reload before the demo boots. An inline head script adds `hr=<timestamp>` and calls `location.replace`; the reloaded page removes the marker and strips it with `history.replaceState`. The query marker is the loop guard, with sessionStorage covering hosts that drop the query on a deep-link fallback. In-app route changes are history updates, not document loads, so they do not refresh.
+
+After that single refresh, the landing checks whether its seeded elements actually rendered. If the saved database exists but the hero score and class roll are still placeholders four seconds later, it reloads once, guarded by `sessionStorage["equita.landing.reload.v1"]`. A second failure drops the saved database and reloads once more to reseed. A saved database is reused only when its core tables are present.

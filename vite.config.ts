@@ -67,6 +67,40 @@ function spaFallback(): Plugin {
         writeFileSync(index, html);
       }
 
+      // Every full open gets one cache-bypassing reload. The query marker is
+      // the loop guard; sessionStorage covers hosts that drop the query on a
+      // deep-link fallback.
+      if (!html.includes("equita-hard-refresh")) {
+        const hardRefresh = `<script>
+      (function () {
+        var KEY = "equita.hard-refresh";
+        var url = new URL(location.href);
+        var marked = url.searchParams.has("hr");
+        var attempted = false;
+        try {
+          attempted = sessionStorage.getItem(KEY) === "1";
+        } catch (error) {
+          return;
+        }
+        if (marked) {
+          try { sessionStorage.removeItem(KEY); } catch (error) {}
+          url.searchParams.delete("hr");
+          try { history.replaceState(null, "", url.toString()); } catch (error) {}
+          return;
+        }
+        if (attempted) {
+          try { sessionStorage.removeItem(KEY); } catch (error) {}
+          return;
+        }
+        try { sessionStorage.setItem(KEY, "1"); } catch (error) { return; }
+        url.searchParams.set("hr", Date.now().toString(36));
+        location.replace(url.toString());
+      })();
+    </script>`;
+        html = html.replace("<head>", `<head>\n    ${hardRefresh}`);
+        writeFileSync(index, html);
+      }
+
       // Wasmer serves index.html with a one-day browser cache, so a new deploy
       // can leave a tab running an obsolete build whose hashed assets are gone.
       // A build marker plus a no-store check lets any future cached page notice
