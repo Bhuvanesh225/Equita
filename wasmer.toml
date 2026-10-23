@@ -1,0 +1,10 @@
+[package]
+name = "equita"
+version = "1.0.0"
+
+[build]
+command = "npm run build"
+
+[command]
+name = "web"
+command = "node server/seed.js --reset && node server/index.js"
