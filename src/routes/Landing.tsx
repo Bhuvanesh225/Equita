@@ -10,6 +10,7 @@ import { MOMENTS, PART_DEFINITIONS, STATE_LABELS, buildQuestions } from "./landi
 import type { Story, StorySituation } from "./landing/types";
 
 const LANDING_RELOAD_KEY = "equita.landing.reload.v1";
+const LANDING_RESET_KEY = "equita.landing.reset.v1";
 
 type Audience = "group" | "teacher";
 type StoryStep = "split" | "pressure" | "move";
@@ -331,14 +332,33 @@ export default function Landing() {
       if (score && Number.isFinite(Number(score)) && /students on the roll/.test(roll)) {
         try {
           window.sessionStorage.removeItem(LANDING_RELOAD_KEY);
+          window.sessionStorage.removeItem(LANDING_RESET_KEY);
         } catch {
           /* storage unavailable: nothing to clear */
         }
         return;
       }
+      let lastReload = 0;
       try {
-        if (window.sessionStorage.getItem(LANDING_RELOAD_KEY)) return;
-        window.sessionStorage.setItem(LANDING_RELOAD_KEY, "1");
+        lastReload = Number(window.sessionStorage.getItem(LANDING_RELOAD_KEY)) || 0;
+      } catch {
+        return;
+      }
+      if (lastReload && Date.now() - lastReload < 30000) {
+        // A reload did not bring the data back: the saved database itself is
+        // the suspect. Drop it and reseed once.
+        try {
+          if (window.sessionStorage.getItem(LANDING_RESET_KEY)) return;
+          window.sessionStorage.setItem(LANDING_RESET_KEY, "1");
+          window.localStorage.removeItem(DEMO_DB_KEY);
+        } catch {
+          return;
+        }
+        window.location.reload();
+        return;
+      }
+      try {
+        window.sessionStorage.setItem(LANDING_RELOAD_KEY, String(Date.now()));
       } catch {
         return;
       }

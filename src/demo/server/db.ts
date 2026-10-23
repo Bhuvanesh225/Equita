@@ -52,8 +52,20 @@ let database: InstanceType<Awaited<ReturnType<typeof initSqlJs>>["Database"]> | 
 const open = () => {
   if (database) return database;
   const saved = restore();
-  database = saved ? new SQL.Database(saved) : new SQL.Database();
-  if (!saved) database.exec(schema);
+  if (saved) {
+    try {
+      const candidate = new SQL.Database(saved);
+      // A saved file can be valid SQLite but from a partial write or an older
+      // schema. Only keep it if the tables the product reads are all there.
+      candidate.exec("SELECT COUNT(*) FROM users; SELECT COUNT(*) FROM projects; SELECT COUNT(*) FROM tasks;");
+      database = candidate;
+      return database;
+    } catch {
+      /* stale or partial saved database: rebuild from the schema and reseed */
+    }
+  }
+  database = new SQL.Database();
+  database.exec(schema);
   return database;
 };
 

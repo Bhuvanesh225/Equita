@@ -66,6 +66,43 @@ function spaFallback(): Plugin {
         html = html.replace("</head>", `    ${tags.join("\n    ")}\n  </head>`);
         writeFileSync(index, html);
       }
+
+      // Wasmer serves index.html with a one-day browser cache, so a new deploy
+      // can leave a tab running an obsolete build whose hashed assets are gone.
+      // A build marker plus a no-store check lets any future cached page notice
+      // and replace itself once.
+      const build = `${server ?? "dev"}-${Date.now().toString(36)}`;
+      writeFileSync(path.join(out, "version.json"), JSON.stringify({ build }));
+      if (!html.includes('name="equita-build"')) {
+        const versionCheck = `<meta name="equita-build" content="${build}">
+    <script>
+      (function () {
+        try {
+          var meta = document.querySelector('meta[name="equita-build"]');
+          var current = meta && meta.getAttribute("content");
+          if (!current) return;
+          fetch("/version.json?t=" + Date.now(), { cache: "no-store" })
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (data) {
+              if (!data || !data.build || data.build === current) return;
+              var key = "equita.build." + current + "." + data.build;
+              try {
+                if (sessionStorage.getItem(key)) return;
+                sessionStorage.setItem(key, "1");
+              } catch (error) {
+                return;
+              }
+              var url = new URL(location.href);
+              url.searchParams.set("v", data.build);
+              location.replace(url.toString());
+            })
+            .catch(function () {});
+        } catch (error) {}
+      })();
+    </script>`;
+        html = html.replace("</head>", `    ${versionCheck}\n  </head>`);
+        writeFileSync(index, html);
+      }
       copyFileSync(index, path.join(out, "404.html"));
     },
   };

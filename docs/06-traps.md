@@ -168,4 +168,8 @@ On a static host the first figure cannot exist until `sql.js` and the demo route
 
 ### T37 - Do Not Reload A Cold Landing Unconditionally
 A reload immediately after the cold seed adds a second full boot even when the first screen already has its data, and it wipes any interaction that happened while the seed ran. The landing must check whether the seeded elements actually rendered.
-**Fixed:** once the saved database exists, the landing watches the hero score and class roll for four seconds; only if both are still placeholders does it reload once, guarded by `sessionStorage["equita.landing.reload.v1"]`.
+**Fixed:** once the saved database exists, the landing watches the hero score and class roll for four seconds. If both are still placeholders it reloads once, guarded by `sessionStorage["equita.landing.reload.v1"]`; a second failure drops the saved database and reseeds.
+
+### T38 - A Cached index.html Outlived Its Hashed Assets
+Wasmer serves `index.html` with `cache-control: max-age=86400` while each deploy replaces the content-hashed assets. A tab that kept yesterday's HTML asked for files the new deployment no longer had, so it never reached the new code and no amount of normal reloading helped.
+**Fixed:** the build writes `version.json` and a build marker into the page; a no-store check reloads once to `?v=<build>` when they differ. Existing caches need one hard refresh to pick this up.
