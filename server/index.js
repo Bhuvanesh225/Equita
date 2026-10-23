@@ -77,7 +77,7 @@ app.use("/api", (_req, res) => res.status(404).json({ error: "No such endpoint."
 
 /* ---------- static build, when there is one ----------------------------- */
 
-const dist = path.join(here, "..", "dist");
+const dist = path.join(here, "..", "build_output"); // <--- Updated to build_output
 if (existsSync(path.join(dist, "index.html"))) {
   app.use(express.static(dist, { index: false, maxAge: "1h" }));
   app.get(/^(?!\/api|\/events).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
