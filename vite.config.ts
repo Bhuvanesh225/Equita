@@ -42,6 +42,7 @@ export default defineConfig({
   build: {
     target: "es2022",
     sourcemap: false,
+    outDir: "build_output", // <--- Forces Vite to build here instead of 'dist' to bypass Wasmer's static detector
     rollupOptions: {
       output: {
         // Vendor code is split by module path rather than by package name, which
