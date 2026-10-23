@@ -167,3 +167,13 @@ Even for a teacher, with no reviews yet. Confirm whether that is intended (nothi
 ## O-07 · Is `/insights` Worth a Screen of Its Own, or a Tab on `/today`?
 
 The dashboard already contains `classes`, `cards`, `trend` and `nudges`. `/insights` risks being a second dashboard. `docs/07-screen-specs.md` caps it at six sections and gives it a distinct job (fairness as a subject, compared across projects and classes). If, while building it, it turns into a duplicate of `/today`, fold the useful parts into `/today` and redirect — and record that here.
+---
+
+## O-08 � Static Hosting Needs a Browser Backend
+
+The public deployment is a static Vite build, so `/api/*` returns HTML/404 and no session can be created. A server runtime on the same host is not available (`node:sqlite` is not part of the edge runtime), and asking judges to run Docker defeats a link-based demo.
+
+**Decided:** the client probes `/api/health`. A live JSON server keeps priority. Otherwise `src/demo/*` runs the real `server/routes/*` and `server/engines/*` in the tab against `sql.js`, seeded by `server/seed.js`, with the database and session cookie kept in `localStorage`. The build emits `404.html` for SPA deep links. Plain `npm run dev` still uses the real API.
+
+**Consequences:** static demo writes are per-browser and not shared across tabs; the shared database and `/events` require the Express process. The Node shims (`express`, `node:crypto`, process, Buffer) are build-time aliases in `vite.config.ts`, never a parallel API.
+

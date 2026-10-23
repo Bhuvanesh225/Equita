@@ -1,10 +1,54 @@
-import { defineConfig } from "vite";
+import { defineConfig, normalizePath, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "node:url";
+import { copyFileSync, existsSync } from "node:fs";
+import path from "node:path";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const demo = (file: string) => normalizePath(path.join(here, "src", "demo", "server", file));
+
+/**
+ * A static host has no API process. The client build swaps the four Node-only
+ * pieces of the server for browser equivalents, so the real routes and engines
+ * can run against a WASM SQLite database inside the tab.
+ *
+ * A live server is still preferred at runtime; see `src/demo/mode.ts`.
+ */
+function browserDemo(): Plugin {
+  return {
+    name: "equita-browser-demo",
+    enforce: "pre",
+    resolveId(source, importer) {
+      if (source === "express") return demo("express.ts");
+      if (source === "node:crypto") return demo("crypto.ts");
+      if (importer && /[\\/]server[\\/]/.test(importer)) {
+        if (source === "./db.js" || source === "../db.js") return demo("db.ts");
+        if (source === "./bus.js") return demo("bus.ts");
+      }
+      return null;
+    },
+  };
+}
+
+/**
+ * Wasmer's static host does not answer unknown paths with `index.html`, so a
+ * refresh on `/today` was a hard 404. Static Web Server does serve `404.html`,
+ * and that copy boots the same SPA on the requested path.
+ */
+function spaFallback(): Plugin {
+  return {
+    name: "equita-spa-fallback",
+    closeBundle() {
+      const out = path.join(here, "build_output");
+      const index = path.join(out, "index.html");
+      if (existsSync(index)) copyFileSync(index, path.join(out, "404.html"));
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [browserDemo(), react(), tailwindcss(), spaFallback()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -56,3 +100,4 @@ export default defineConfig({
     },
   },
 });
+

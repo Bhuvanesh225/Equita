@@ -9,6 +9,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import "./demo/polyfills";
 import "./styles/theme.css";
 import "./styles/app.css";
 import "./styles/surfaces.css";
@@ -21,6 +22,7 @@ import { App } from "./App";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("The #root element is missing from index.html");
+document.documentElement.lang ||= "en";
 
 createRoot(root).render(
   <StrictMode>

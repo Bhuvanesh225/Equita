@@ -21,6 +21,7 @@ import {
   type ReactNode,
 } from "react";
 import { ApiError, api } from "./api";
+import { resolveMode } from "../demo/mode";
 
 /* ---------- the event stream -------------------------------------------- */
 
@@ -52,7 +53,17 @@ export function LiveProvider({ enabled, children }: { enabled: boolean; children
     }
     let source: EventSource | null = null;
     let retry: ReturnType<typeof setTimeout> | null = null;
+    let stopDemo: (() => void) | null = null;
+    let serverMode = false;
     let stopped = false;
+
+    const receive = (event: LiveEvent) => {
+      if (event.type === "hello") return;
+      setConnected(true);
+      setLast(event);
+      setRecent((list) => [event, ...list].slice(0, 30));
+      setVersion((n) => n + 1);
+    };
 
     const open = () => {
       if (stopped) return;
@@ -60,12 +71,7 @@ export function LiveProvider({ enabled, children }: { enabled: boolean; children
       source.onopen = () => setConnected(true);
       source.onmessage = (message) => {
         try {
-          const event = JSON.parse(message.data) as LiveEvent;
-          if (event.type === "hello") return;
-          setConnected(true);
-          setLast(event);
-          setRecent((list) => [event, ...list].slice(0, 30));
-          setVersion((n) => n + 1);
+          receive(JSON.parse(message.data) as LiveEvent);
         } catch {
           /* a malformed frame is not worth breaking the stream over */
         }
@@ -80,8 +86,21 @@ export function LiveProvider({ enabled, children }: { enabled: boolean; children
       };
     };
 
-    open();
+    void resolveMode().then(async (mode) => {
+      if (stopped) return;
+      if (mode === "demo") {
+        const { onDemoEvent } = await import("../demo/server");
+        if (stopped) return;
+        stopDemo = onDemoEvent((event) => receive(event as LiveEvent));
+        setConnected(true);
+        return;
+      }
+      serverMode = true;
+      open();
+    });
+
     const onFocus = () => {
+      if (!serverMode) return;
       if (!source || source.readyState === EventSource.CLOSED) open();
     };
     window.addEventListener("focus", onFocus);
@@ -90,6 +109,7 @@ export function LiveProvider({ enabled, children }: { enabled: boolean; children
       stopped = true;
       window.removeEventListener("focus", onFocus);
       if (retry) clearTimeout(retry);
+      stopDemo?.();
       source?.close();
     };
   }, [enabled]);

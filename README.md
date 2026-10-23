@@ -131,6 +131,17 @@ docker rm -f equita-submission
 
 Then open <http://localhost:8787>.
 
+## Deploy as static files
+
+Static hosts such as Wasmer and GitHub Pages have no Node process, so the client ships a browser demo backend. On load it probes `/api/health`; when a live API answers, nothing changes. When it does not, the real Express routes and engines run inside the tab against a `sql.js` SQLite database seeded from `server/seed.js` and persisted in `localStorage`. The build also copies `index.html` to `404.html`, so a refresh on `/today` or `/projects/:id` boots the same app on hosts that serve that file.
+
+```bash
+npm run build
+# upload build_output/ to any static host
+```
+
+Demo writes stay in the visitor's browser and are not shared between people or tabs. Use the Docker build above when the demo needs one shared database and the `/events` stream.
+
 For a reverse proxy, set `TRUST_PROXY=1` (or the number of proxy hops). Set `COOKIE_SECURE=1` only when the public connection is HTTPS. All supported environment variables are listed in [`.env.example`](.env.example); the demo has no required secrets.
 
 ## Demo accounts

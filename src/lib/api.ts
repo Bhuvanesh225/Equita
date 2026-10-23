@@ -6,6 +6,7 @@
  * codes. The server's own messages are already written that way, so they are
  * passed through untouched.
  */
+import { resolveMode } from "../demo/mode";
 
 export class ApiError extends Error {
   status: number;
@@ -32,18 +33,26 @@ type Options = Omit<RequestInit, "body"> & { json?: unknown; signal?: AbortSigna
 
 export async function api<T = unknown>(path: string, options: Options = {}): Promise<T> {
   const { json, headers, ...rest } = options;
+  const init: RequestInit = {
+    credentials: "same-origin",
+    headers: {
+      Accept: "application/json",
+      ...(json === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(headers ?? {}),
+    },
+    body: json === undefined ? undefined : JSON.stringify(json),
+    ...rest,
+  };
+
   let response: Response;
   try {
-    response = await fetch(path, {
-      credentials: "same-origin",
-      headers: {
-        Accept: "application/json",
-        ...(json === undefined ? {} : { "Content-Type": "application/json" }),
-        ...(headers ?? {}),
-      },
-      body: json === undefined ? undefined : JSON.stringify(json),
-      ...rest,
-    });
+    const backend = await resolveMode();
+    if (backend === "demo") {
+      const { demoFetch } = await import("../demo/server");
+      response = await demoFetch(path, init);
+    } else {
+      response = await fetch(path, init);
+    }
   } catch (error) {
     if ((error as Error)?.name === "AbortError") throw error;
     throw new ApiError(0, "Could not reach the server. Check that it is running, then try again.");
@@ -90,3 +99,4 @@ export function qs(params: Record<string, string | number | boolean | null | und
   const text = search.toString();
   return text ? `?${text}` : "";
 }
+
