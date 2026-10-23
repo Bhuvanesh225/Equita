@@ -75,7 +75,7 @@ export function saveNow() {
 }
 
 function scheduleSave() {
-  if (saveTimer) return;
+  if (saveTimer || depth > 0) return;
   saveTimer = setTimeout(saveNow, 350);
 }
 
@@ -128,6 +128,10 @@ class Statement {
 export const db = {
   exec(sql: string) {
     open().exec(sql);
+    // A transaction is a single unit: exporting the database halfway through it
+    // would persist rows the transaction may still roll back. `COMMIT` is the
+    // first point at which the new state is real.
+    if (/^\s*(BEGIN|SAVEPOINT|RELEASE|ROLLBACK)\b/i.test(sql)) return;
     if (!/^\s*(SELECT|PRAGMA)\b/i.test(sql)) scheduleSave();
   },
   prepare(sql: string) {
@@ -181,6 +185,10 @@ export function tx<T>(fn: () => T): T {
     throw error;
   } finally {
     depth--;
+    // The first transaction to finish is the moment the database is coherent
+    // again. Writing it now means a refresh cannot land between COMMIT and the
+    // debounced save and throw the work away.
+    if (depth === 0) saveNow();
   }
 }
 

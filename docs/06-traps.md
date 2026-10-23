@@ -153,3 +153,10 @@ Hours live in `hours.even` and `members[].delivered`. **Rule:** before formattin
 The screenshot and inspection scripts originally imported Playwright from an absolute Windows path under the desktop user's profile. That made a clean Linux checkout fail before it could open a page.
 
 **Fixed:** `playwright` is a project dev dependency and all three browser scripts use `scripts/browser.mjs`, which resolves the managed Playwright browser, common system paths, or `PLAYWRIGHT_EXECUTABLE_PATH`. The Dockerfile and README keep the clean-machine setup explicit.
+### T34 - A Debounced Save Could Fire Inside a Transaction
+`src/demo/server/db.ts` scheduled a localStorage export 350 ms after any write. During the seed (or a plan apply) those writes are inside `BEGIN`/`COMMIT`, so the timer could export rows the transaction had not committed — or still roll back. A refresh could then keep a half-built database.
+**Fixed:** `scheduleSave()` is a no-op while `depth > 0`, and the outer transaction writes once in `finally` after `COMMIT` or `ROLLBACK`. Any new background writer must respect the same rule.
+
+### T35 - The Landing Page Waited for the API Probe Before Loading the Demo
+On a static host the first figure cannot exist until `sql.js` and the demo router arrive, but both were only requested after `/api/health` failed. On a cold edge that put the landing page's numbers seconds behind its text.
+**Fixed:** the build injects `modulepreload` for the demo router and `preload` for the SQLite WASM into `index.html` and `404.html`; the browser now fetches them alongside the app bundle. If the demo chunk is renamed, `spaFallback()` finds the new hash automatically.

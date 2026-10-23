@@ -2,7 +2,7 @@ import { defineConfig, normalizePath, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "node:url";
-import { copyFileSync, existsSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -35,6 +35,12 @@ function browserDemo(): Plugin {
  * Wasmer's static host does not answer unknown paths with `index.html`, so a
  * refresh on `/today` was a hard 404. Static Web Server does serve `404.html`,
  * and that copy boots the same SPA on the requested path.
+ *
+ * The same pass preloads the browser demo's two heaviest files. On a static
+ * host the landing page cannot show a single figure until `sql.js` and the
+ * demo router have arrived, and both used to wait for the API probe to fail
+ * first. Fetching them alongside the app bundle removes that second wait; a
+ * live server ignores them.
  */
 function spaFallback(): Plugin {
   return {
@@ -42,7 +48,23 @@ function spaFallback(): Plugin {
     closeBundle() {
       const out = path.join(here, "dist");
       const index = path.join(out, "index.html");
-      if (existsSync(index)) copyFileSync(index, path.join(out, "404.html"));
+      if (!existsSync(index)) return;
+
+      const assetsDir = path.join(out, "assets");
+      const assets = existsSync(assetsDir) ? readdirSync(assetsDir) : [];
+      const server = assets.find((file) => /^server-.*\.js$/.test(file));
+      const wasm = assets.find((file) => /^sql-wasm-.*\.wasm$/.test(file));
+      const tags = [
+        server ? `<link rel="modulepreload" crossorigin href="/assets/${server}">` : "",
+        wasm ? `<link rel="preload" as="fetch" crossorigin="anonymous" type="application/wasm" href="/assets/${wasm}">` : "",
+      ].filter(Boolean);
+
+      let html = readFileSync(index, "utf8");
+      if (tags.length && !(server && html.includes(`/assets/${server}`))) {
+        html = html.replace("</head>", `    ${tags.join("\n    ")}\n  </head>`);
+        writeFileSync(index, html);
+      }
+      copyFileSync(index, path.join(out, "404.html"));
     },
   };
 }
