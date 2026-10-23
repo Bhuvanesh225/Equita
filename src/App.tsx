@@ -36,7 +36,7 @@ const NotFound = lazy(() => import("./routes/NotFound"));
 
 function Waiting({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="shell" style={{ paddingBlock: "4rem", display: "flex", justifyContent: "center" }}>
+    <div className="shell" role="status" aria-live="polite" aria-busy="true" style={{ paddingBlock: "4rem", display: "flex", justifyContent: "center" }}>
       <Spinner label={label} />
     </div>
   );
