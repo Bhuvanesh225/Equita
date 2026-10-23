@@ -90,7 +90,6 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
     secure: false,
   };
 
-  console.log("[demo req]", method, url.pathname, JSON.stringify(req.cookies), "body:", JSON.stringify(body));
   const result = app.handle(req);
   const payload = result.raw ?? JSON.stringify(result.payload ?? null);
   return new Response(payload, {
