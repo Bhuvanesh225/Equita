@@ -35,10 +35,21 @@ export function resolveMode(): Promise<BackendMode> {
     mode = resolved;
     if (resolved === "demo") {
       const { demoFetch } = await import("./server/index");
-      await demoFetch("/api/health");
+      try {
+        await demoFetch("/api/health");
+      } catch {
+        // A cold static host can drop the first WASM request. The seed is
+        // transactional, so a second attempt is safe and spares the person a
+        // blank page that only a refresh would clear.
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        await demoFetch("/api/health");
+      }
     }
     return resolved;
-  })();
+  })().catch((error) => {
+    pending = null;
+    throw error;
+  });
   return pending;
 }
 

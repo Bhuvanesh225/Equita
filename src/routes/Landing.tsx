@@ -299,7 +299,16 @@ function Footer() {
 
 export default function Landing() {
   const { user } = useSession();
-  const { data: story } = useApi<Story>("/api/public/story", { live: false });
+  const { data: story, error: storyError, refresh: refreshStory } = useApi<Story>("/api/public/story", { live: false });
+  const storyRetries = useRef(0);
+  // A cold static host can fail the first demo boot; one quiet retry is enough
+  // to turn a blank hero into the seeded story without asking for a refresh.
+  useEffect(() => {
+    if (story || !storyError || storyRetries.current > 0) return;
+    storyRetries.current += 1;
+    const timer = setTimeout(() => void refreshStory(), 1500);
+    return () => clearTimeout(timer);
+  }, [story, storyError, refreshStory]);
   const rootRef = useReveal(!!story);
   const [audience, setAudience] = useState<Audience>("group");
   const situation = useMemo(() => audience === "teacher" ? story?.situations.find((item) => item.key === "quiet") ?? story?.situations[1] ?? story?.situations[0] : story?.situations[0], [audience, story]);

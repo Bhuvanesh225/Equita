@@ -41,7 +41,12 @@ async function ensureReady() {
     await openDemoDatabase();
     const { seedIfEmpty } = await import("../../../server/seed.js");
     seedIfEmpty();
-  })();
+  })().catch((error) => {
+    // A failed first boot must not poison every later call for the life of the
+    // page. Clear the memo so the next request can try again.
+    ready = null;
+    throw error;
+  });
   return ready;
 }
 
