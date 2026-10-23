@@ -169,7 +169,7 @@ Even for a teacher, with no reviews yet. Confirm whether that is intended (nothi
 The dashboard already contains `classes`, `cards`, `trend` and `nudges`. `/insights` risks being a second dashboard. `docs/07-screen-specs.md` caps it at six sections and gives it a distinct job (fairness as a subject, compared across projects and classes). If, while building it, it turns into a duplicate of `/today`, fold the useful parts into `/today` and redirect — and record that here.
 ---
 
-## O-08 � Static Hosting Needs a Browser Backend
+## O-08 — Static Hosting Needs a Browser Backend
 
 The public deployment is a static Vite build, so `/api/*` returns HTML/404 and no session can be created. A server runtime on the same host is not available (`node:sqlite` is not part of the edge runtime), and asking judges to run Docker defeats a link-based demo.
 
@@ -177,3 +177,10 @@ The public deployment is a static Vite build, so `/api/*` returns HTML/404 and n
 
 **Consequences:** static demo writes are per-browser and not shared across tabs; the shared database and `/events` require the Express process. The Node shims (`express`, `node:crypto`, process, Buffer) are build-time aliases in `vite.config.ts`, never a parallel API.
 
+
+
+## O-09 - The First Static Visit Reloads Once
+
+Cold-starting the browser backend means loading the SQLite WASM, seeding it, and writing the result to `localStorage`. On a slow static edge the landing can spend several seconds on placeholders, and a transient boot failure used to leave it there.
+
+**Decided:** after the seed commits, the demo reloads the tab once, guarded by `sessionStorage["equita.demo.cold-reload"]`. The second boot reads the saved database and renders from it. The guard makes a failed or blocked storage write stay put instead of looping.

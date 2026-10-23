@@ -17,6 +17,15 @@ export type Row = Record<string, unknown>;
 
 const STORAGE_KEY = "equita.demo.database.v2";
 
+/** True when this tab has no saved demo database yet. */
+export const coldStart = (() => {
+  try {
+    return typeof window !== "undefined" && !window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return false;
+  }
+})();
+
 const SQL = await initSqlJs({ locateFile: () => wasmUrl });
 
 const decode = (text: string) => {
