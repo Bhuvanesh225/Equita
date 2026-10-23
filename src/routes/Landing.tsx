@@ -2,11 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { MemberDot } from "../components/ui";
+import { DEMO_DB_KEY } from "../demo/keys";
 import { hours, scoreTone, stateTone, toneTextClass, toneVar } from "../lib/format";
 import { useApi } from "../lib/live";
 import { useSession } from "../lib/session";
 import { MOMENTS, PART_DEFINITIONS, STATE_LABELS, buildQuestions } from "./landing/story";
 import type { Story, StorySituation } from "./landing/types";
+
+const LANDING_RELOAD_KEY = "equita.landing.reload.v1";
 
 type Audience = "group" | "teacher";
 type StoryStep = "split" | "pressure" | "move";
@@ -309,6 +312,41 @@ export default function Landing() {
     const timer = setTimeout(() => void refreshStory(), 1500);
     return () => clearTimeout(timer);
   }, [story, storyError, refreshStory]);
+  // If the saved demo database exists but the landing is still showing its
+  // placeholders, one reload is cheaper than leaving a blank first visit.
+  useEffect(() => {
+    if (story) {
+      try {
+        window.sessionStorage.removeItem(LANDING_RELOAD_KEY);
+      } catch {
+        /* storage unavailable: nothing to clear */
+      }
+      return;
+    }
+    let savedAt: number | null = null;
+    const timer = window.setInterval(() => {
+      let saved = false;
+      try {
+        saved = !!window.localStorage.getItem(DEMO_DB_KEY);
+      } catch {
+        return;
+      }
+      if (!saved) return;
+      savedAt ??= Date.now();
+      if (Date.now() - savedAt < 4000) return;
+      const score = document.querySelector(".eq-score")?.textContent?.trim() ?? "";
+      const roll = document.querySelector(".eq-roll__count")?.textContent?.trim() ?? "";
+      if (score && Number.isFinite(Number(score)) && /students on the roll/.test(roll)) return;
+      try {
+        if (window.sessionStorage.getItem(LANDING_RELOAD_KEY)) return;
+        window.sessionStorage.setItem(LANDING_RELOAD_KEY, "1");
+      } catch {
+        return;
+      }
+      window.location.reload();
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [story]);
   const rootRef = useReveal(!!story);
   const [audience, setAudience] = useState<Audience>("group");
   const situation = useMemo(() => audience === "teacher" ? story?.situations.find((item) => item.key === "quiet") ?? story?.situations[1] ?? story?.situations[0] : story?.situations[0], [audience, story]);

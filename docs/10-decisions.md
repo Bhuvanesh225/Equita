@@ -179,8 +179,8 @@ The public deployment is a static Vite build, so `/api/*` returns HTML/404 and n
 
 
 
-## O-09 - The First Static Visit Reloads Once
+## O-09 - The Landing Refreshes Only If Its Data Is Missing
 
 Cold-starting the browser backend means loading the SQLite WASM, seeding it, and writing the result to `localStorage`. On a slow static edge the landing can spend several seconds on placeholders, and a transient boot failure used to leave it there.
 
-**Decided:** after the seed commits on the landing route (`/`), the demo reloads the tab once, guarded by `sessionStorage["equita.demo.cold-reload"]`. The second boot reads the saved database and renders from it. The guard makes a failed or blocked storage write stay put instead of looping.
+**Decided:** the landing does not reload on a timer or on every cold start. Once the saved database exists, a watchdog checks the rendered hero score and class roll. If they are still placeholders four seconds later, the tab reloads once, guarded by `sessionStorage["equita.landing.reload.v1"]`. The second boot reads the saved database and renders from it. When the seeded values do appear, the guard is cleared so a later failure can recover the same way.

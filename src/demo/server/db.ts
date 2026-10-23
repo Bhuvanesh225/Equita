@@ -12,19 +12,11 @@ import initSqlJs from "sql.js";
 import wasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import schemaText from "../../../server/schema.sql?raw";
 import { val } from "../../../server/util.js";
+import { DEMO_DB_KEY } from "../keys";
 
 export type Row = Record<string, unknown>;
 
-const STORAGE_KEY = "equita.demo.database.v2";
-
-/** True when this tab has no saved demo database yet. */
-export const coldStart = (() => {
-  try {
-    return typeof window !== "undefined" && !window.localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return false;
-  }
-})();
+const STORAGE_KEY = DEMO_DB_KEY;
 
 const SQL = await initSqlJs({ locateFile: () => wasmUrl });
 

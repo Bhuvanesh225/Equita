@@ -165,3 +165,7 @@ On a static host the first figure cannot exist until `sql.js` and the demo route
 ### T36 - A Failed First Boot Was Cached Forever
 `ensureReady()` memoised its seed promise and `resolveMode()` memoised its own. If the first WASM load or seed failed, every later call reused the rejected promise, so the landing stayed blank until a full reload.
 **Fixed:** both memoised promises clear themselves on failure, `resolveMode()` retries `/api/health` once after 400 ms, and the landing retries the story once after 1.5 s. A refresh should never be the only way back.
+
+### T37 - Do Not Reload A Cold Landing Unconditionally
+A reload immediately after the cold seed adds a second full boot even when the first screen already has its data, and it wipes any interaction that happened while the seed ran. The landing must check whether the seeded elements actually rendered.
+**Fixed:** once the saved database exists, the landing watches the hero score and class roll for four seconds; only if both are still placeholders does it reload once, guarded by `sessionStorage["equita.landing.reload.v1"]`.

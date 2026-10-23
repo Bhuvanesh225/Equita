@@ -7,7 +7,7 @@
  * not answered by a live server.
  */
 import { createApp, readCookies, type DemoRequest } from "./express";
-import { coldStart, openDemoDatabase } from "./db";
+import { openDemoDatabase } from "./db";
 import { authRouter, skillsRouter } from "../../../server/routes/auth.js";
 import { projectsRouter } from "../../../server/routes/projects.js";
 import { tasksRouter } from "../../../server/routes/tasks.js";
@@ -36,30 +36,11 @@ app.fallback((_req, res) => {
 
 let ready: Promise<void> | null = null;
 
-const COLD_RELOAD_KEY = "equita.demo.cold-reload";
-
 async function ensureReady() {
   ready ??= (async () => {
     await openDemoDatabase();
     const { seedIfEmpty } = await import("../../../server/seed.js");
     seedIfEmpty();
-
-    // The first landing visit writes the seeded database to localStorage. Reload once
-    // so the page reads that saved copy instead of holding the cold-start
-    // state; the guard keeps a blocked write from looping.
-    if (coldStart && window.location.pathname === "/") {
-      try {
-        if (!window.sessionStorage.getItem(COLD_RELOAD_KEY)) {
-          window.sessionStorage.setItem(COLD_RELOAD_KEY, "1");
-          window.location.reload();
-          // Do not let a pending screen request paint the cold-start state after
-          // the reload has begun. The navigation replaces this promise.
-          await new Promise<void>(() => {});
-        }
-      } catch {
-        /* storage unavailable: let the page continue on the live database */
-      }
-    }
   })().catch((error) => {
     // A failed first boot must not poison every later call for the life of the
     // page. Clear the memo so the next request can try again.
