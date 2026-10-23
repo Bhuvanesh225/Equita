@@ -160,3 +160,8 @@ The screenshot and inspection scripts originally imported Playwright from an abs
 ### T35 - The Landing Page Waited for the API Probe Before Loading the Demo
 On a static host the first figure cannot exist until `sql.js` and the demo router arrive, but both were only requested after `/api/health` failed. On a cold edge that put the landing page's numbers seconds behind its text.
 **Fixed:** the build injects `modulepreload` for the demo router and `preload` for the SQLite WASM into `index.html` and `404.html`; the browser now fetches them alongside the app bundle. If the demo chunk is renamed, `spaFallback()` finds the new hash automatically.
+
+
+### T36 - A Failed First Boot Was Cached Forever
+`ensureReady()` memoised its seed promise and `resolveMode()` memoised its own. If the first WASM load or seed failed, every later call reused the rejected promise, so the landing stayed blank until a full reload.
+**Fixed:** both memoised promises clear themselves on failure, `resolveMode()` retries `/api/health` once after 400 ms, and the landing retries the story once after 1.5 s. A refresh should never be the only way back.
