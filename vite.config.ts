@@ -40,7 +40,7 @@ function spaFallback(): Plugin {
   return {
     name: "equita-spa-fallback",
     closeBundle() {
-      const out = path.join(here, "build_output");
+      const out = path.join(here, "dist");
       const index = path.join(out, "index.html");
       if (existsSync(index)) copyFileSync(index, path.join(out, "404.html"));
     },
@@ -86,7 +86,6 @@ export default defineConfig({
   build: {
     target: "es2022",
     sourcemap: false,
-    outDir: "build_output", // <--- Forces Vite to build here instead of 'dist' to bypass Wasmer's static detector
     rollupOptions: {
       output: {
         // Vendor code is split by module path rather than by package name, which
@@ -100,4 +99,5 @@ export default defineConfig({
     },
   },
 });
+
 

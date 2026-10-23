@@ -137,7 +137,7 @@ Static hosts such as Wasmer and GitHub Pages have no Node process, so the client
 
 ```bash
 npm run build
-# upload build_output/ to any static host
+# upload dist/ to any static host
 ```
 
 Demo writes stay in the visitor's browser and are not shared between people or tabs. Use the Docker build above when the demo needs one shared database and the `/events` stream.
@@ -212,3 +212,4 @@ Privacy is deliberately simple in this demo: teachers can see class-level attent
 ## Contributing safely
 
 Read [`AGENTS.md`](AGENTS.md) before changing the project. Keep the runtime pinned, use `npm ci`, never commit `data/`, generated screenshots, credentials, or machine-specific paths, and run `make test` after every working step. Update the relevant `docs/` state record when behavior or verification changes.
+
